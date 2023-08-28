@@ -1,0 +1,5 @@
+examples/minimal/minimal
+examples/minimal/*.o
+src/libmalloc_tag.so*
+src/*.o
+

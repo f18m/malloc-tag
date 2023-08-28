@@ -9,12 +9,13 @@ DEPS = \
 LIB_SRC = \
 	src/malloc_tag.cpp
 LIBS = \
-	src/libmalloc_tag.a
+	src/libmalloc_tag.so
 BINS = \
 	examples/minimal/minimal
 
 
 LIB_OBJ = $(subst .cpp,.o,$(LIB_SRC))
+LIB_VER = 1
 
 
 # Targets
@@ -26,20 +27,22 @@ format_check:
 	# if you have clang-format >= 10.0.0, this will work:
 	@clang-format --dry-run --Werror include/malloc_tag.hpp
 
-test: $(BINS)
-	tests/unit_tests --log_level=all --show_progress
+example: $(BINS)
+	@echo "Starting example application"
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) examples/minimal/minimal
 
 # just a synonim for "test":
-tests: test
+examples: test
 
 
 benchmarks: 
 	@echo TODO
 
 clean:
-	rm -f $(BINS) tests/*.o examples/minimal/*.o
+	find -name *.so -exec rm {} \;
+	find -name *.o -exec rm {} \;
 
-.PHONY: all test tests clean
+.PHONY: all example examples clean
 
 
 # Rules
@@ -50,8 +53,11 @@ clean:
 src/%: src/%.o
 	$(CC) -o $@ $^ -pthread
 
-src/libmalloc_tag.a: $(DEPS) $(LIB_OBJ)
-	ar crus $@ $(LIB_OBJ)
+src/libmalloc_tag.so: $(DEPS) $(LIB_OBJ)
+	$(CC) $(LINKER_FLAGS) \
+		$(LIB_OBJ) \
+		-shared -Wl,-soname,libmalloc_tag.so.$(LIB_VER) -o $@
+	cd src && ln -sf libmalloc_tag.so libmalloc_tag.so.$(LIB_VER) 
 
 examples/minimal/%: examples/minimal/%.o
 	$(CC) -o $@ $^ -pthread

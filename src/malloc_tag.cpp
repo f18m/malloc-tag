@@ -1,32 +1,36 @@
 #include "malloc_tag.h"
 
-extern void *__libc_malloc(size_t size);
-int malloc_hook_active = 1;
-
-void *
-my_malloc_hook(size_t size, void *caller)
+extern "C"
 {
-    void *result;
+    void *__libc_malloc(size_t size);
+    int malloc_hook_active = 1;
 
-    // deactivate hooks for logging
-    malloc_hook_active = 0;
+    void *
+    my_malloc_hook(size_t size, void *caller)
+    {
+        void *result;
 
-    result = malloc(size);
+        // deactivate hooks for logging
+        malloc_hook_active = 0;
 
-    // do logging
-    printf("ciao %zu", size);
+        result = malloc(size);
 
-    // reactivate hooks
-    malloc_hook_active = 1;
+        // do logging
+        printf("MYMALLOCHOOK %zu\n", size);
 
-    return result;
-}
+        // reactivate hooks
+        malloc_hook_active = 1;
 
-void *
-malloc(size_t size)
-{
-    void *caller = __builtin_return_address(0);
-    if (malloc_hook_active)
-        return my_malloc_hook(size, caller);
-    return __libc_malloc(size);
-}
+        return result;
+    }
+
+    void *
+    malloc(size_t size)
+    {
+        void *caller = __builtin_return_address(0);
+        if (malloc_hook_active)
+            return my_malloc_hook(size, caller);
+        return __libc_malloc(size);
+    }
+};
+// extern C

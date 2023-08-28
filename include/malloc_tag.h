@@ -19,5 +19,7 @@
 /* Prototypes for __malloc_hook, __free_hook */
 #include <malloc.h>
 
-void *
-malloc(size_t size);
+extern "C"
+{
+    void *malloc(size_t size);
+};
