@@ -21,7 +21,10 @@ A small library to add a tag / category to each memory allocation inside C/C++ p
 
 # Example output
 
-malloc-tag profiler can produce output in a machine-friendly JSON format, see e.g. [minimal example JSON output](examples/minimal/minimal_stats.json) or in SVG format thanks to [Graphviz DOT utility](https://graphviz.org/), see e.g. [minimal example SVG output](examples/minimal/minimal_stats.dot.svg)
+malloc-tag profiler can produce output in a machine-friendly JSON format, see e.g. [minimal example JSON output](examples/minimal/minimal_stats.json) or in SVG format thanks to [Graphviz DOT utility](https://graphviz.org/), see e.g. [minimal example SVG output](examples/minimal/minimal_stats.dot.svg):
+
+![minimal_example_svg](examples/minimal/minimal_stats.dot.svg?raw=true "Malloc-tag output for MINIMAL example")
+
 
 # Links
 
