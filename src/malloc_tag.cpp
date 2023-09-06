@@ -33,6 +33,8 @@
 #define MAX_TREE_LEVELS 4
 #define WEIGHT_MULTIPLIER 10000
 
+#define UNLIKELY(x) __builtin_expect((x), 0)
+
 //------------------------------------------------------------------------------
 // glibc original implementation
 //------------------------------------------------------------------------------
@@ -48,13 +50,13 @@ int g_malloc_hook_active = 1; // FIXME: this should probably be per-thread!
 // MallocTreeNode_t
 //------------------------------------------------------------------------------
 
-/// Node in the call tree structure.
+/// Node in the malloc tree structure.
+/// These nodes are created by the application using the MallocTagScope helper class
+/// in sensible parts of their code, to enable malloc tree profiling.
 ///
 /// MallocTreeNode_t nodes track both the memory they incur directly
-/// (nBytesDirect) but more importantly, the total memory allocated by
-/// themselves and any of their children (nBytes).  The name of a
-/// node (siteName) corresponds to the tag name of the final tag in
-/// the path.
+/// (m_nBytesDirect) but more importantly, the total memory allocated by
+/// themselves and any of their children (m_nBytes) and also its percentage weigth (m_nWeight).
 typedef struct MallocTreeNode_s {
     size_t m_nBytes; ///< Allocated bytes by this or descendant nodes.
     size_t m_nBytesDirect; ///< Allocated bytes (only for this node).
@@ -176,6 +178,7 @@ typedef struct MallocTree_s {
     fmpool_t(MallocTreeNode_t) * m_pNodePool = NULL;
     MallocTreeNode_t* m_pRootNode = NULL;
     MallocTreeNode_t* m_pCurrentNode = NULL;
+    unsigned int m_nPushNodeFailures = 0;
     bool m_bLastPushWasSuccessful = false;
     unsigned int m_nTreeNodesInUse = 0;
     unsigned int m_nMaxTreeDepth = 0;
@@ -203,7 +206,9 @@ typedef struct MallocTree_s {
 
     void push_new_node(const char* name)
     {
-        if (m_pCurrentNode->m_nTreeLevel == MAX_TREE_LEVELS) {
+        if (UNLIKELY(m_pCurrentNode->m_nTreeLevel == MAX_TREE_LEVELS)) {
+            // reached max depth level... cannot push anymore
+            m_nPushNodeFailures++;
             m_bLastPushWasSuccessful = false;
             return;
         }
@@ -213,26 +218,36 @@ typedef struct MallocTree_s {
             // this branch of the tree already exists, just move the cursor:
             m_pCurrentNode = n;
             m_bLastPushWasSuccessful = true;
-        } else {
-            // this branch needs to be created:
-            n = fmpool_get(MallocTreeNode_t, m_pNodePool);
-            if (n) {
-                m_nTreeNodesInUse++;
-                n->init(m_pCurrentNode);
-                n->set_sitename(name);
-                if (!m_pCurrentNode->link_new_children(n)) {
-                    // release node back to the pool
-                    fmpool_free(MallocTreeNode_t, n, m_pNodePool);
-                    return;
-                }
-
-                // new node ready, move the cursor:
-                m_pCurrentNode = n;
-                m_bLastPushWasSuccessful = true;
-                m_nMaxTreeDepth = std::max(m_nMaxTreeDepth, m_pCurrentNode->m_nTreeLevel);
-            }
-            // else: memory pool is full... FIXME: how to notify this???
+            return;
         }
+
+        // this branch of the tree needs to be created:
+        n = fmpool_get(MallocTreeNode_t, m_pNodePool);
+        if (UNLIKELY(!n)) {
+            // memory pool is full... memory profiling results will be INCOMPLETE and possibly MISLEADING:
+            m_nPushNodeFailures++;
+            m_bLastPushWasSuccessful = false;
+            return;
+        }
+
+        m_nTreeNodesInUse++; // successfully obtained a new node from the mempool
+        n->init(m_pCurrentNode);
+        n->set_sitename(name);
+        if (!m_pCurrentNode->link_new_children(n)) {
+            // failed to link current node: release node back to the pool
+            m_nTreeNodesInUse--;
+            fmpool_free(MallocTreeNode_t, n, m_pNodePool);
+
+            // and record this failure:
+            m_nPushNodeFailures++;
+            m_bLastPushWasSuccessful = false;
+            return;
+        }
+
+        // new node ready, move the cursor:
+        m_pCurrentNode = n;
+        m_bLastPushWasSuccessful = true;
+        m_nMaxTreeDepth = std::max(m_nMaxTreeDepth, m_pCurrentNode->m_nTreeLevel);
     }
 
     void pop_last_node()
@@ -243,6 +258,8 @@ typedef struct MallocTree_s {
                 m_pCurrentNode = n;
             // else: we are already at the tree root... cannot pop... this is a logical mistake... FIXME: assert?
         }
+        // else: the node pointer has not been moved by last push_new_node() so we don't need to really pop the node
+        // pointer
     }
 
     void collect_json_stats_recursively(std::string& out)
@@ -250,6 +267,7 @@ typedef struct MallocTree_s {
         out += "{";
         out += "\"nMaxTreeDepth\": " + std::to_string(m_nMaxTreeDepth) + ",";
         out += "\"nTreeNodesInUse\": " + std::to_string(m_nTreeNodesInUse) + ",";
+        out += "\"nPushNodeFailures\": " + std::to_string(m_nPushNodeFailures) + ",";
         m_pRootNode->collect_json_stats_recursively(out);
         out += "}";
     }
@@ -263,19 +281,9 @@ typedef struct MallocTree_s {
         // then we can compute node weigth across the whole tree:
         m_pRootNode->compute_node_weights_recursively(m_pRootNode->m_nBytes);
     }
-
 } MallocTree_t;
 
 MallocTree_t g_perthread_tree; // FIXME: must be per-thread
-
-void mtag_init_if_needed(void* caller)
-{
-    if (!g_perthread_tree.is_ready()) {
-        g_malloc_hook_active = 0; // deactivate hooks during initialization
-        g_perthread_tree.init(caller);
-        g_malloc_hook_active = 1; // reactivate hooks
-    }
-}
 
 //------------------------------------------------------------------------------
 // MallocTagScope
@@ -303,7 +311,11 @@ void* mtag_malloc_hook(size_t size, void* caller)
 {
     void* result = __libc_malloc(size);
 
-    mtag_init_if_needed(caller);
+    if (!g_perthread_tree.is_ready()) {
+        g_malloc_hook_active = 0; // deactivate hooks during initialization
+        g_perthread_tree.init(caller);
+        g_malloc_hook_active = 1; // reactivate hooks
+    }
     if (result)
         g_perthread_tree.m_pCurrentNode->track_malloc(size);
 
