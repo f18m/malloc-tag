@@ -29,11 +29,10 @@
 // glibc overrides
 //------------------------------------------------------------------------------
 
-extern "C"
-{
-    // the malloc()/free() interceptor defined by this library
-    void *malloc(size_t size);
-    void free(void *__ptr) __THROW;
+extern "C" {
+// the malloc()/free() interceptor defined by this library
+void* malloc(size_t size);
+void free(void* __ptr) __THROW;
 };
 
 //------------------------------------------------------------------------------
@@ -47,13 +46,12 @@ std::string malloctag_collect_stats_as_json();
 // write JSON stats into a file on disk;
 // if an empty string is passed, the full path will be taken from the environment variable
 // MTAG_STATS_OUTPUT_JSON_ENV
-bool malloctag_write_stats_as_json_file(const std::string &fullpath = "");
+bool malloctag_write_stats_as_json_file(const std::string& fullpath = "");
 
-class MallocTagScope
-{
+class MallocTagScope {
 public:
     // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
-    MallocTagScope(const char *tag_name);
+    MallocTagScope(const char* tag_name);
 
     // pop by 1 level the current per-thread cursor
     ~MallocTagScope();

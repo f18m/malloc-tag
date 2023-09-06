@@ -20,4 +20,5 @@ jobs:
       run: make all
     - name: check formatting
       run: make format_check
-
+    - name: run basic example
+      run: make example
