@@ -29,7 +29,13 @@ format_check:
 
 example: $(BINS)
 	@echo "Starting example application"
-	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) examples/minimal/minimal
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=/tmp/minimal_stats.json \
+		examples/minimal/minimal
+	@echo
+	@echo "JSON of output stats:"
+	@jq . /tmp/minimal_stats.json
+	@echo
 
 # just a synonim for "test":
 examples: test

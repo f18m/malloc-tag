@@ -20,6 +20,12 @@
 #include <string>
 
 //------------------------------------------------------------------------------
+// Constants
+//------------------------------------------------------------------------------
+
+#define MTAG_STATS_OUTPUT_JSON_ENV "MTAG_STATS_OUTPUT_JSON"
+
+//------------------------------------------------------------------------------
 // glibc overrides
 //------------------------------------------------------------------------------
 
@@ -34,9 +40,14 @@ extern "C"
 // malloc_tag public API
 //------------------------------------------------------------------------------
 
-// the main API to collect all results in a human-friendly format
+// the main API to collect all results in JSON format
 // NOTE: invoking this function will indeed trigger some memory allocation on its own (!!!)
-std::string malloc_collect_stats();
+std::string malloctag_collect_stats_as_json();
+
+// write JSON stats into a file on disk;
+// if an empty string is passed, the full path will be taken from the environment variable
+// MTAG_STATS_OUTPUT_JSON_ENV
+bool malloctag_write_stats_as_json_file(const std::string &fullpath = "");
 
 class MallocTagScope
 {

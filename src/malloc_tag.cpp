@@ -7,12 +7,14 @@
 #include <dlfcn.h>
 #include <cstring>
 #include "fmpool.h"
+#include <fstream>
+#include <sys/prctl.h>
 
 //------------------------------------------------------------------------------
 // Constants
 //------------------------------------------------------------------------------
 
-#define MAX_SITENAME_LEN 16
+#define MAX_SITENAME_LEN 16 // must be at least 16 bytes long due to use in prctl(PR_GET_NAME)
 #define MAX_CHILDREN_PER_NODE 4
 #define MAX_TREE_NODES 256
 #define MAX_TREE_LEVELS 4
@@ -74,6 +76,10 @@ typedef struct MallocTreeNode_s
 
         // FIXME: should we free the pointers inside "address_info"??
     }
+    void set_sitename_to_threadname()
+    {
+        prctl(PR_GET_NAME, &m_siteName[0], 0, 0);
+    }
     void set_sitename(const char *sitename)
     {
         strncpy(&m_siteName[0], sitename, std::min(strlen(sitename), (size_t)MAX_SITENAME_LEN));
@@ -101,12 +107,36 @@ typedef struct MallocTreeNode_s
         m_nAllocations++;
     }
 
-    void collect_stats_recursively(std::string &out)
+    void collect_json_stats_recursively(std::string &out)
     {
-        out += std::string(&m_siteName[0], strlen(&m_siteName[0]));
-        out += " -> ";
+        // each node is a JSON object
+        out += "\"" + std::string(&m_siteName[0], strlen(&m_siteName[0])) + "\":{";
+        out += "\"nBytes\": " + std::to_string(m_nBytes) + ",";
+        out += "\"nBytesDirect\": " + std::to_string(m_nBytesDirect) + ",";
+        out += "\"nAllocations\": " + std::to_string(m_nAllocations) + ",";
+        out += "\"childrenNodes\": { ";
         for (unsigned int i = 0; i < m_nChildrens; i++)
-            m_pChildren[i]->collect_stats_recursively(out);
+        {
+            m_pChildren[i]->collect_json_stats_recursively(out);
+            if (i < m_nChildrens - 1)
+                // there's another node to dump:
+                out += ",";
+        }
+        out += "}}"; // close childrenNodes + the whole node object
+    }
+
+    size_t compute_node_weights_recursively()
+    {
+        // postorder traversal of a tree:
+
+        // first of all, traverse all children subtrees:
+        size_t accumulated_bytes = 0;
+        for (unsigned int i = 0; i < m_nChildrens; i++)
+            accumulated_bytes += m_pChildren[i]->compute_node_weights_recursively();
+
+        // finally "visit" this node, updating the bytes count:
+        m_nBytes = accumulated_bytes + m_nBytesDirect;
+        return m_nBytes;
     }
 
 } MallocTreeNode_t;
@@ -133,7 +163,8 @@ typedef struct MallocTree_s
         // init the "current node" pointer to have the same name of the
         m_root_node = fmpool_get(MallocTreeNode_t, m_node_pool);
         m_root_node->init(NULL); // this is the tree root node
-        m_root_node->set_sitename_to_shlib_name_from_func_pointer(caller);
+        //m_root_node->set_sitename_to_shlib_name_from_func_pointer(caller);
+        m_root_node->set_sitename_to_threadname();
 
         m_current_node = m_root_node;
     }
@@ -187,6 +218,18 @@ typedef struct MallocTree_s
         }
     }
 
+    void collect_json_stats_recursively(std::string &out)
+    {
+        out += "{";
+        m_root_node->collect_json_stats_recursively(out);
+        out += "}";
+    }
+
+    void compute_node_weights_recursively()
+    {
+        m_root_node->compute_node_weights_recursively();
+    }
+
 } MallocTree_t;
 
 MallocTree_t g_perthread_tree; // FIXME: must be per-thread
@@ -229,7 +272,8 @@ mtag_malloc_hook(size_t size, void *caller)
     void *result = __libc_malloc(size);
 
     mtag_init_if_needed(caller);
-    g_perthread_tree.m_current_node->track_malloc(size);
+    if (result)
+        g_perthread_tree.m_current_node->track_malloc(size);
 
     // do logging
     g_malloc_hook_active = 0; // deactivate hooks for logging
@@ -249,20 +293,41 @@ void mtag_free_hook(void *__ptr)
     g_malloc_hook_active = 1; // reactivate hooks
 }
 
-std::string malloc_collect_stats()
+std::string malloctag_collect_stats_as_json()
 {
     g_malloc_hook_active = 0; // deactivate hooks for logging
 
+    // reserve enough space inside the output string:
     std::string ret;
-
     ret.reserve(4096);
-    ret = "MallocTags:";
 
-    // now traverse the tree:
-    g_perthread_tree.m_root_node->collect_stats_recursively(ret);
+    // now traverse the tree collecting stats:
+    g_perthread_tree.compute_node_weights_recursively();
+    g_perthread_tree.collect_json_stats_recursively(ret);
 
     g_malloc_hook_active = 1; // reactivate hooks
     return ret;
+}
+
+bool malloctag_write_stats_as_json_file(const std::string &fullpath)
+{
+    bool bwritten = false;
+
+    g_malloc_hook_active = 0; // deactivate hooks for logging
+
+    std::string fpath = fullpath;
+    if (fpath.empty() && getenv(MTAG_STATS_OUTPUT_JSON_ENV))
+        fpath = std::string(getenv(MTAG_STATS_OUTPUT_JSON_ENV));
+    std::ofstream json_stats(fpath);
+    if (json_stats.is_open())
+    {
+        json_stats << malloctag_collect_stats_as_json() << std::endl;
+        bwritten = true;
+        json_stats.close();
+    }
+
+    g_malloc_hook_active = 1; // reactivate hooks
+    return bwritten;
 }
 
 //------------------------------------------------------------------------------

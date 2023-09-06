@@ -35,7 +35,9 @@ int main()
     std::cout << "Hello world! Starting some dumb allocations to exercise the malloc_tag library" << std::endl;
 
     TopFunction();
-    std::cout << malloc_collect_stats() << std::endl;
+    //std::cout << malloc_collect_stats() << std::endl;
+    if (malloctag_write_stats_as_json_file()) // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
+        std::cout << "Wrote malloctag stats on file " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << std::endl;
 
     std::cout << "Bye!" << std::endl;
 
