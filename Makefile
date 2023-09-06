@@ -1,8 +1,8 @@
 # Very simple makefile to build the library and example code
 
 CC=g++
-CXXFLAGS_OPT= -fPIC -std=c++11 -Iinclude -O3 -pthread -Wno-attributes
-CXXFLAGS_DBG= -fPIC -std=c++11 -Iinclude -g -O0 -pthread -Wno-attributes
+CXXFLAGS_OPT= -fPIC -std=c++11 -Iinclude -O3 -pthread -Wno-attributes -Wno-unused-result
+CXXFLAGS_DBG= -fPIC -std=c++11 -Iinclude -g -O0 -pthread -Wno-attributes -Wno-unused-result
 
 DEPS = \
 	include/malloc_tag.h
@@ -47,6 +47,7 @@ benchmarks:
 clean:
 	find -name *.so -exec rm {} \;
 	find -name *.o -exec rm {} \;
+	rm $(BINS)
 
 .PHONY: all example examples clean
 
@@ -56,9 +57,11 @@ clean:
 %.o: %.cpp $(DEPS)
 	$(CC) $(CXXFLAGS_DBG) $(DEBUGFLAGS) -c -o $@ $< 
 
+# rule to COMPILE the malloc_tag code
 src/%: src/%.o
 	$(CC) -o $@ $^ -pthread
 
+# rule to LINK the malloc_tag library
 src/libmalloc_tag.so: $(DEPS) $(LIB_OBJ)
 	$(CC) $(LINKER_FLAGS) \
 		$(LIB_OBJ) \
@@ -73,5 +76,7 @@ examples/minimal/%: examples/minimal/%.o
 
 # rule to LINK example code
 examples/minimal/minimal: examples/minimal/minimal.o $(LIBS)
-	$(CC) -o $@ -ldl -Lsrc -lmalloc_tag examples/minimal/minimal.o $(CXXFLAGS)
+	$(CC) -o $@ \
+		examples/minimal/minimal.o \
+		-ldl -Lsrc -lmalloc_tag
 
