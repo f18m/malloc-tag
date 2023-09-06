@@ -36,8 +36,12 @@ int main()
 
     TopFunction();
     // std::cout << malloc_collect_stats() << std::endl;
-    if (malloctag_write_stats_as_json_file()) // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
+    if (malloctag_write_stats_on_disk(
+            MTAG_OUTPUT_FORMAT_JSON)) // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
         std::cout << "Wrote malloctag stats on file " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << std::endl;
+    if (malloctag_write_stats_on_disk(
+            MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT)) // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
+        std::cout << "Wrote malloctag stats on file " << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
 
     std::cout << "Bye!" << std::endl;
 

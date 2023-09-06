@@ -126,13 +126,29 @@ typedef struct MallocTreeNode_s {
         return 100.0f * (float)m_nWeight / (float)WEIGHT_MULTIPLIER;
     }
 
+    std::string get_weight_percentage_str() const
+    {
+        char ret[16];
+        // ensure only 2 digits of accuracy:
+        snprintf(ret, 15, "%.2f", get_weight_percentage());
+        return std::string(ret);
+    }
+
+    std::string get_node_name() const
+    {
+        // to make this tree node more compact, we don't store a std::string which might
+        // trigger unwanted memory allocations (to resize itself), rather we store a
+        // fixed-size array of chars:
+        return std::string(&m_siteName[0], strlen(&m_siteName[0]));
+    }
+
     void collect_json_stats_recursively(std::string& out)
     {
         // each node is a JSON object
-        out += "\"" + std::string(&m_siteName[0], strlen(&m_siteName[0])) + "\":{";
+        out += "\"" + get_node_name() + "\":{";
         out += "\"nBytes\": " + std::to_string(m_nBytes) + ",";
         out += "\"nBytesDirect\": " + std::to_string(m_nBytesDirect) + ",";
-        out += "\"nWeightPercentage\": " + std::to_string(get_weight_percentage()) + ",";
+        out += "\"nWeightPercentage\": " + get_weight_percentage_str() + ",";
         out += "\"nAllocations\": " + std::to_string(m_nAllocations) + ",";
         out += "\"nestedScopes\": { ";
         for (unsigned int i = 0; i < m_nChildrens; i++) {
@@ -142,6 +158,23 @@ typedef struct MallocTreeNode_s {
                 out += ",";
         }
         out += "}}"; // close childrenNodes + the whole node object
+    }
+
+    void collect_graphviz_dot_output(std::string& out)
+    {
+        std::string thisNodeName = get_node_name();
+
+        // write a description of this node:
+        out += thisNodeName + " [label=\"" + thisNodeName + "\\n" + get_weight_percentage_str() + "%\"]\n";
+
+        // write all the connections between this node and its children:
+        for (unsigned int i = 0; i < m_nChildrens; i++) {
+            out += thisNodeName + " -> " + m_pChildren[i]->get_node_name() + "\n";
+        }
+
+        // now recurse into each children:
+        for (unsigned int i = 0; i < m_nChildrens; i++)
+            m_pChildren[i]->collect_graphviz_dot_output(out);
     }
 
     size_t compute_bytes_totals_recursively() // returns total bytes accumulated by this node
@@ -204,7 +237,7 @@ typedef struct MallocTree_s {
 
     bool is_ready() { return m_pNodePool != NULL && m_pRootNode != NULL && m_pCurrentNode != NULL; }
 
-    void push_new_node(const char* name)
+    void push_new_node(const char* name) // must be malloc-free
     {
         if (UNLIKELY(m_pCurrentNode->m_nTreeLevel == MAX_TREE_LEVELS)) {
             // reached max depth level... cannot push anymore
@@ -250,7 +283,7 @@ typedef struct MallocTree_s {
         m_nMaxTreeDepth = std::max(m_nMaxTreeDepth, m_pCurrentNode->m_nTreeLevel);
     }
 
-    void pop_last_node()
+    void pop_last_node() // must be malloc-free
     {
         if (m_bLastPushWasSuccessful) {
             MallocTreeNode_t* n = m_pCurrentNode->m_pParent;
@@ -262,23 +295,36 @@ typedef struct MallocTree_s {
         // pointer
     }
 
-    void collect_json_stats_recursively(std::string& out)
+    void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format)
     {
-        out += "{";
-        out += "\"nMaxTreeDepth\": " + std::to_string(m_nMaxTreeDepth) + ",";
-        out += "\"nTreeNodesInUse\": " + std::to_string(m_nTreeNodesInUse) + ",";
-        out += "\"nPushNodeFailures\": " + std::to_string(m_nPushNodeFailures) + ",";
-        m_pRootNode->collect_json_stats_recursively(out);
-        out += "}";
+        switch (format) {
+        case MTAG_OUTPUT_FORMAT_JSON:
+            out += "{";
+            out += "\"nMaxTreeDepth\": " + std::to_string(m_nMaxTreeDepth) + ",";
+            out += "\"nTreeNodesInUse\": " + std::to_string(m_nTreeNodesInUse) + ",";
+            out += "\"nPushNodeFailures\": " + std::to_string(m_nPushNodeFailures) + ",";
+            m_pRootNode->collect_json_stats_recursively(out);
+            out += "}";
+            break;
+
+        case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
+            // see https://graphviz.org/doc/info/lang.html
+            out += "digraph MallocTree {\n";
+            m_pRootNode->collect_graphviz_dot_output(out);
+            out += "}";
+
+            break;
+        }
     }
 
     void compute_bytes_totals_recursively()
     {
+        // NOTE: order is important:
 
-        // NOTE: order is important: first compute "bytes total" across the whole tree
+        // STEP1: compute "bytes total" across the whole tree
         m_pRootNode->compute_bytes_totals_recursively();
 
-        // then we can compute node weigth across the whole tree:
+        // STEP2: compute node weigth across the whole tree:
         m_pRootNode->compute_node_weights_recursively(m_pRootNode->m_nBytes);
     }
 } MallocTree_t;
@@ -289,16 +335,18 @@ MallocTree_t g_perthread_tree; // FIXME: must be per-thread
 // MallocTagScope
 //------------------------------------------------------------------------------
 
-// advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
 MallocTagScope::MallocTagScope(const char* tag_name)
 {
+    // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
+    // VERY IMPORTANT: all code running in this function must be malloc-free
     if (g_perthread_tree.is_ready())
         g_perthread_tree.push_new_node(tag_name);
 }
 
-// pop by 1 level the current per-thread cursor
 MallocTagScope::~MallocTagScope()
 {
+    // pop by 1 level the current per-thread cursor
+    // VERY IMPORTANT: all code running in this function must be malloc-free
     if (g_perthread_tree.is_ready())
         g_perthread_tree.pop_last_node();
 }
@@ -311,7 +359,7 @@ void* mtag_malloc_hook(size_t size, void* caller)
 {
     void* result = __libc_malloc(size);
 
-    if (!g_perthread_tree.is_ready()) {
+    if (UNLIKELY(!g_perthread_tree.is_ready())) {
         g_malloc_hook_active = 0; // deactivate hooks during initialization
         g_perthread_tree.init(caller);
         g_malloc_hook_active = 1; // reactivate hooks
@@ -337,9 +385,13 @@ void mtag_free_hook(void* __ptr)
     g_malloc_hook_active = 1; // reactivate hooks
 }
 
-std::string malloctag_collect_stats_as_json()
+//------------------------------------------------------------------------------
+// mtag public API to collect results
+//------------------------------------------------------------------------------
+
+std::string malloctag_collect_stats(MallocTagOutputFormat_e format)
 {
-    g_malloc_hook_active = 0; // deactivate hooks for logging
+    g_malloc_hook_active = 0; // deactivate hooks for stat collection
 
     // reserve enough space inside the output string:
     std::string ret;
@@ -347,26 +399,38 @@ std::string malloctag_collect_stats_as_json()
 
     // now traverse the tree collecting stats:
     g_perthread_tree.compute_bytes_totals_recursively();
-    g_perthread_tree.collect_json_stats_recursively(ret);
+    g_perthread_tree.collect_stats_recursively(ret, format);
 
     g_malloc_hook_active = 1; // reactivate hooks
     return ret;
 }
 
-bool malloctag_write_stats_as_json_file(const std::string& fullpath)
+bool malloctag_write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath)
 {
     bool bwritten = false;
 
-    g_malloc_hook_active = 0; // deactivate hooks for logging
+    g_malloc_hook_active = 0; // deactivate hooks for stat collection
 
     std::string fpath = fullpath;
-    if (fpath.empty() && getenv(MTAG_STATS_OUTPUT_JSON_ENV))
-        fpath = std::string(getenv(MTAG_STATS_OUTPUT_JSON_ENV));
-    std::ofstream json_stats(fpath);
-    if (json_stats.is_open()) {
-        json_stats << malloctag_collect_stats_as_json() << std::endl;
+    if (fpath.empty()) {
+        // try to use an env var:
+        switch (format) {
+        case MTAG_OUTPUT_FORMAT_JSON:
+            if (getenv(MTAG_STATS_OUTPUT_JSON_ENV))
+                fpath = std::string(getenv(MTAG_STATS_OUTPUT_JSON_ENV));
+            break;
+
+        case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
+            if (getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV))
+                fpath = std::string(getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV));
+        }
+    }
+
+    std::ofstream stats_file(fpath);
+    if (stats_file.is_open()) {
+        stats_file << malloctag_collect_stats(format) << std::endl;
         bwritten = true;
-        json_stats.close();
+        stats_file.close();
     }
 
     g_malloc_hook_active = 1; // reactivate hooks

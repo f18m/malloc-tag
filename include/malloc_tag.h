@@ -24,6 +24,7 @@
 //------------------------------------------------------------------------------
 
 #define MTAG_STATS_OUTPUT_JSON_ENV "MTAG_STATS_OUTPUT_JSON"
+#define MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV "MTAG_STATS_OUTPUT_GRAPHVIZ_DOT"
 
 //------------------------------------------------------------------------------
 // glibc overrides
@@ -39,14 +40,19 @@ void free(void* __ptr) __THROW;
 // malloc_tag public API
 //------------------------------------------------------------------------------
 
+enum MallocTagOutputFormat_e {
+    MTAG_OUTPUT_FORMAT_JSON,
+    MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT,
+};
+
 // the main API to collect all results in JSON format
 // NOTE: invoking this function will indeed trigger some memory allocation on its own (!!!)
-std::string malloctag_collect_stats_as_json();
+std::string malloctag_collect_stats(MallocTagOutputFormat_e format);
 
 // write JSON stats into a file on disk;
 // if an empty string is passed, the full path will be taken from the environment variable
-// MTAG_STATS_OUTPUT_JSON_ENV
-bool malloctag_write_stats_as_json_file(const std::string& fullpath = "");
+// MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV
+bool malloctag_write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath = "");
 
 class MallocTagScope {
 public:
