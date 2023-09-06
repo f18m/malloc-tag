@@ -30,16 +30,17 @@ format_check:
 example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
-	MTAG_STATS_OUTPUT_JSON=/tmp/minimal_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=/tmp/minimal_stats.dot \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
 		examples/minimal/minimal
 	@echo
 	@echo "JSON of output stats:"
-	@jq . /tmp/minimal_stats.json
+	@jq . $(PWD)/examples/minimal/minimal_stats.json
 	@echo
 	@echo "Graphviz DOT output stats (copy-paste that into https://dreampuf.github.io/):"
-	@cat /tmp/minimal_stats.dot
+	@cat $(PWD)/examples/minimal/minimal_stats.dot
 	@echo
+	@dot -Tsvg -O $(PWD)/examples/minimal/minimal_stats.dot
 
 # just a synonim for "example":
 examples: example

@@ -19,6 +19,9 @@ A small library to add a tag / category to each memory allocation inside C/C++ p
 * per-thread tree of malloc categories
 * per-thread mutex to synchronize the "collector thread" (i.e. the thread using the main "malloc_collect_stats" API) and all other application threads
 
+# Example output
+
+malloc-tag profiler can produce output in a machine-friendly JSON format, see e.g. [minimal example JSON output](examples/minimal/minimal_stats.json) or in SVG format thanks to [Graphviz DOT utility](https://graphviz.org/), see e.g. [minimal example SVG output](examples/minimal/minimal_stats.dot.svg)
 
 # Links
 

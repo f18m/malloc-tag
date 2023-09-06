@@ -1,0 +1,11 @@
+digraph MallocTree {
+minimal [label="minimal\n100.00%"]
+minimal -> Top
+Top [label="Top\n0.68%"]
+Top -> A
+Top -> B
+A [label="A\n0.40%"]
+A -> B
+B [label="B\n0.26%"]
+B [label="B\n0.26%"]
+}
