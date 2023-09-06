@@ -1,0 +1,21 @@
+name: main CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # install deps
+    - uses: actions/checkout@v2
+    - name: install debian-packaged dependencies
+      run: sudo apt install -y jq
+
+    # build
+    - name: build malloc-tag
+      run: make all
