@@ -10,9 +10,14 @@
  *
  */
 
+//------------------------------------------------------------------------------
+// Includes
+//------------------------------------------------------------------------------
+
 #include "malloc_tag.h"
 #include "fmpool.h"
 #include <array>
+#include <cassert>
 #include <cstring>
 #include <dlfcn.h>
 #include <fstream>
@@ -26,6 +31,7 @@
 #define MAX_CHILDREN_PER_NODE 4
 #define MAX_TREE_NODES 256
 #define MAX_TREE_LEVELS 4
+#define WEIGHT_MULTIPLIER 10000
 
 //------------------------------------------------------------------------------
 // glibc original implementation
@@ -54,6 +60,7 @@ typedef struct MallocTreeNode_s {
     size_t m_nBytesDirect; ///< Allocated bytes (only for this node).
     size_t m_nAllocations; ///< The number of allocations for this node.
     unsigned int m_nTreeLevel; ///< How deep is located this node in the tree?
+    size_t m_nWeight; ///< Weight of this node expressed as WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
     std::array<char, MAX_SITENAME_LEN> m_siteName; ///< Site name, NUL terminated
     std::array<MallocTreeNode_s*, MAX_CHILDREN_PER_NODE> m_pChildren; ///< Children nodes.
     unsigned int m_nChildrens;
@@ -86,14 +93,16 @@ typedef struct MallocTreeNode_s {
     {
         strncpy(&m_siteName[0], sitename, std::min(strlen(sitename), (size_t)MAX_SITENAME_LEN));
     }
-    void link_new_children(MallocTreeNode_s* new_child)
+    bool link_new_children(MallocTreeNode_s* new_child)
     {
         if (m_nChildrens < MAX_CHILDREN_PER_NODE) {
             m_pChildren[m_nChildrens++] = new_child;
+            return true;
         }
+        return false;
     }
 
-    MallocTreeNode_s* get_child_by_name(const char* name)
+    MallocTreeNode_s* get_child_by_name(const char* name) const
     {
         size_t nchars = std::min(strlen(name), (size_t)MAX_SITENAME_LEN);
         for (unsigned int i = 0; i < m_nChildrens; i++)
@@ -108,14 +117,22 @@ typedef struct MallocTreeNode_s {
         m_nAllocations++;
     }
 
+    float get_weight_percentage() const
+    {
+        // to make this tree node more compact, we don't store a floating point directly;
+        // rather we store a percentage in [0..1] range multiplied by WEIGHT_MULTIPLIER
+        return 100.0f * (float)m_nWeight / (float)WEIGHT_MULTIPLIER;
+    }
+
     void collect_json_stats_recursively(std::string& out)
     {
         // each node is a JSON object
         out += "\"" + std::string(&m_siteName[0], strlen(&m_siteName[0])) + "\":{";
         out += "\"nBytes\": " + std::to_string(m_nBytes) + ",";
         out += "\"nBytesDirect\": " + std::to_string(m_nBytesDirect) + ",";
+        out += "\"nWeightPercentage\": " + std::to_string(get_weight_percentage()) + ",";
         out += "\"nAllocations\": " + std::to_string(m_nAllocations) + ",";
-        out += "\"childrenNodes\": { ";
+        out += "\"nestedScopes\": { ";
         for (unsigned int i = 0; i < m_nChildrens; i++) {
             m_pChildren[i]->collect_json_stats_recursively(out);
             if (i < m_nChildrens - 1)
@@ -125,18 +142,25 @@ typedef struct MallocTreeNode_s {
         out += "}}"; // close childrenNodes + the whole node object
     }
 
-    size_t compute_node_weights_recursively()
+    size_t compute_bytes_totals_recursively() // returns total bytes accumulated by this node
     {
         // postorder traversal of a tree:
 
         // first of all, traverse all children subtrees:
         size_t accumulated_bytes = 0;
         for (unsigned int i = 0; i < m_nChildrens; i++)
-            accumulated_bytes += m_pChildren[i]->compute_node_weights_recursively();
+            accumulated_bytes += m_pChildren[i]->compute_bytes_totals_recursively();
 
         // finally "visit" this node, updating the bytes count:
         m_nBytes = accumulated_bytes + m_nBytesDirect;
         return m_nBytes;
+    }
+
+    void compute_node_weights_recursively(size_t rootNodeTotalBytes)
+    {
+        m_nWeight = WEIGHT_MULTIPLIER * m_nBytes / rootNodeTotalBytes;
+        for (unsigned int i = 0; i < m_nChildrens; i++)
+            m_pChildren[i]->compute_node_weights_recursively(rootNodeTotalBytes);
     }
 
 } MallocTreeNode_t;
@@ -149,50 +173,63 @@ FMPOOL_INIT(MallocTreeNode_t)
 // MallocTree_t
 //------------------------------------------------------------------------------
 typedef struct MallocTree_s {
-    fmpool_t(MallocTreeNode_t) * m_node_pool = NULL;
-    MallocTreeNode_t* m_root_node = NULL;
-    MallocTreeNode_t* m_current_node = NULL;
-    bool m_last_push_successful = false;
+    fmpool_t(MallocTreeNode_t) * m_pNodePool = NULL;
+    MallocTreeNode_t* m_pRootNode = NULL;
+    MallocTreeNode_t* m_pCurrentNode = NULL;
+    bool m_bLastPushWasSuccessful = false;
+    unsigned int m_nTreeNodesInUse = 0;
+    unsigned int m_nMaxTreeDepth = 0;
 
     void init(void* caller) // triggers some MEMORY ALLOCATION
     {
+        assert(m_pNodePool == nullptr);
+
         // initialize the memory pool of tree nodes
-        m_node_pool = fmpool_create(MallocTreeNode_t, MAX_TREE_NODES);
+        m_pNodePool = fmpool_create(MallocTreeNode_t, MAX_TREE_NODES);
 
         // init the "current node" pointer to have the same name of the
-        m_root_node = fmpool_get(MallocTreeNode_t, m_node_pool);
-        m_root_node->init(NULL); // this is the tree root node
-        // m_root_node->set_sitename_to_shlib_name_from_func_pointer(caller);
-        m_root_node->set_sitename_to_threadname();
+        m_pRootNode = fmpool_get(MallocTreeNode_t, m_pNodePool);
+        assert(m_pRootNode);
+        m_nTreeNodesInUse++;
+        m_pRootNode->init(NULL); // this is the tree root node
+        // m_pRootNode->set_sitename_to_shlib_name_from_func_pointer(caller);
+        m_pRootNode->set_sitename_to_threadname();
+        m_nMaxTreeDepth = 0;
 
-        m_current_node = m_root_node;
+        m_pCurrentNode = m_pRootNode;
     }
 
-    bool is_ready() { return m_node_pool != NULL && m_root_node != NULL && m_current_node != NULL; }
+    bool is_ready() { return m_pNodePool != NULL && m_pRootNode != NULL && m_pCurrentNode != NULL; }
 
     void push_new_node(const char* name)
     {
-        if (m_current_node->m_nTreeLevel == MAX_TREE_LEVELS) {
-            m_last_push_successful = false;
+        if (m_pCurrentNode->m_nTreeLevel == MAX_TREE_LEVELS) {
+            m_bLastPushWasSuccessful = false;
             return;
         }
 
-        MallocTreeNode_t* n = m_current_node->get_child_by_name(name);
+        MallocTreeNode_t* n = m_pCurrentNode->get_child_by_name(name);
         if (n) {
             // this branch of the tree already exists, just move the cursor:
-            m_current_node = n;
-            m_last_push_successful = true;
+            m_pCurrentNode = n;
+            m_bLastPushWasSuccessful = true;
         } else {
             // this branch needs to be created:
-            n = fmpool_get(MallocTreeNode_t, m_node_pool);
+            n = fmpool_get(MallocTreeNode_t, m_pNodePool);
             if (n) {
-                n->init(m_current_node);
+                m_nTreeNodesInUse++;
+                n->init(m_pCurrentNode);
                 n->set_sitename(name);
-                m_current_node->link_new_children(n);
+                if (!m_pCurrentNode->link_new_children(n)) {
+                    // release node back to the pool
+                    fmpool_free(MallocTreeNode_t, n, m_pNodePool);
+                    return;
+                }
 
                 // new node ready, move the cursor:
-                m_current_node = n;
-                m_last_push_successful = true;
+                m_pCurrentNode = n;
+                m_bLastPushWasSuccessful = true;
+                m_nMaxTreeDepth = std::max(m_nMaxTreeDepth, m_pCurrentNode->m_nTreeLevel);
             }
             // else: memory pool is full... FIXME: how to notify this???
         }
@@ -200,10 +237,10 @@ typedef struct MallocTree_s {
 
     void pop_last_node()
     {
-        if (m_last_push_successful) {
-            MallocTreeNode_t* n = m_current_node->m_pParent;
+        if (m_bLastPushWasSuccessful) {
+            MallocTreeNode_t* n = m_pCurrentNode->m_pParent;
             if (n)
-                m_current_node = n;
+                m_pCurrentNode = n;
             // else: we are already at the tree root... cannot pop... this is a logical mistake... FIXME: assert?
         }
     }
@@ -211,11 +248,21 @@ typedef struct MallocTree_s {
     void collect_json_stats_recursively(std::string& out)
     {
         out += "{";
-        m_root_node->collect_json_stats_recursively(out);
+        out += "\"nMaxTreeDepth\": " + std::to_string(m_nMaxTreeDepth) + ",";
+        out += "\"nTreeNodesInUse\": " + std::to_string(m_nTreeNodesInUse) + ",";
+        m_pRootNode->collect_json_stats_recursively(out);
         out += "}";
     }
 
-    void compute_node_weights_recursively() { m_root_node->compute_node_weights_recursively(); }
+    void compute_bytes_totals_recursively()
+    {
+
+        // NOTE: order is important: first compute "bytes total" across the whole tree
+        m_pRootNode->compute_bytes_totals_recursively();
+
+        // then we can compute node weigth across the whole tree:
+        m_pRootNode->compute_node_weights_recursively(m_pRootNode->m_nBytes);
+    }
 
 } MallocTree_t;
 
@@ -258,7 +305,7 @@ void* mtag_malloc_hook(size_t size, void* caller)
 
     mtag_init_if_needed(caller);
     if (result)
-        g_perthread_tree.m_current_node->track_malloc(size);
+        g_perthread_tree.m_pCurrentNode->track_malloc(size);
 
     // do logging
     g_malloc_hook_active = 0; // deactivate hooks for logging
@@ -287,7 +334,7 @@ std::string malloctag_collect_stats_as_json()
     ret.reserve(4096);
 
     // now traverse the tree collecting stats:
-    g_perthread_tree.compute_node_weights_recursively();
+    g_perthread_tree.compute_bytes_totals_recursively();
     g_perthread_tree.collect_json_stats_recursively(ret);
 
     g_malloc_hook_active = 1; // reactivate hooks
