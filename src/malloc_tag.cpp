@@ -64,8 +64,8 @@ typedef struct MallocTreeNode_s {
     size_t m_nWeight; ///< Weight of this node expressed as WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
     std::array<char, MAX_SITENAME_LEN> m_siteName; ///< Site name, NUL terminated
     std::array<MallocTreeNode_s*, MAX_CHILDREN_PER_NODE> m_pChildren; ///< Children nodes.
-    unsigned int m_nChildrens;
-    MallocTreeNode_s* m_pParent;
+    unsigned int m_nChildrens; ///< Number of valid children pointers in m_pChildren[]
+    MallocTreeNode_s* m_pParent; ///< Pointer to parent node; NULL if this is the root node
 
     void init(MallocTreeNode_s* parent)
     {
@@ -164,7 +164,10 @@ typedef struct MallocTreeNode_s {
         std::string thisNodeName = get_node_name();
 
         // write a description of this node:
-        out += thisNodeName + " [label=\"" + thisNodeName + "\\n" + get_weight_percentage_str() + "%\"]\n";
+        out += thisNodeName + " [label=\"" + thisNodeName + "\\n" + get_weight_percentage_str() + "%";
+        if (m_pParent == NULL)
+            out += "\\n" + std::to_string(m_nBytes) + "B";
+        out += "\"]\n";
 
         // write all the connections between this node and its children:
         for (unsigned int i = 0; i < m_nChildrens; i++) {

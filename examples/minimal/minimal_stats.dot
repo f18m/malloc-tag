@@ -1,5 +1,5 @@
 digraph MallocTree {
-minimal [label="minimal\n100.00%"]
+minimal [label="minimal\n100.00%\n1529B"]
 minimal -> TopFunc
 TopFunc [label="TopFunc\n33.02%"]
 TopFunc -> FuncA
