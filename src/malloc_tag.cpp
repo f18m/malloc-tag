@@ -28,10 +28,8 @@
 //------------------------------------------------------------------------------
 
 #define MAX_SITENAME_LEN 16 // must be at least 16 bytes long due to use in prctl(PR_GET_NAME)
-#define MAX_CHILDREN_PER_NODE 4
-#define MAX_TREE_NODES 256
-#define MAX_TREE_LEVELS 4
 #define WEIGHT_MULTIPLIER 10000
+#define MAX_CHILDREN_PER_NODE 16
 
 #define UNLIKELY(x) __builtin_expect((x), 0)
 
@@ -44,6 +42,7 @@ extern "C" {
 void* __libc_malloc(size_t size);
 void __libc_free(void*);
 int g_malloc_hook_active = 1; // FIXME: this should probably be per-thread!
+size_t g_bytes_allocated_before_init = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -211,17 +210,26 @@ typedef struct MallocTree_s {
     fmpool_t(MallocTreeNode_t) * m_pNodePool = NULL;
     MallocTreeNode_t* m_pRootNode = NULL;
     MallocTreeNode_t* m_pCurrentNode = NULL;
+
+    // last push status:
     unsigned int m_nPushNodeFailures = 0;
     bool m_bLastPushWasSuccessful = false;
-    unsigned int m_nTreeNodesInUse = 0;
-    unsigned int m_nMaxTreeDepth = 0;
 
-    void init(void* caller) // triggers some MEMORY ALLOCATION
+    // tree status:
+    unsigned int m_nTreeNodesInUse = 0;
+    unsigned int m_nTreeLevels = 0;
+
+    // tree limits:
+    unsigned int m_nMaxTreeLevels = MTAG_DEFAULT_MAX_TREE_LEVELS;
+
+    bool init(size_t max_tree_nodes, size_t max_tree_levels) // triggers some MEMORY ALLOCATION
     {
         assert(m_pNodePool == nullptr);
 
         // initialize the memory pool of tree nodes
-        m_pNodePool = fmpool_create(MallocTreeNode_t, MAX_TREE_NODES);
+        m_pNodePool = fmpool_create(MallocTreeNode_t, max_tree_nodes);
+        if (!m_pNodePool)
+            return false;
 
         // init the "current node" pointer to have the same name of the
         m_pRootNode = fmpool_get(MallocTreeNode_t, m_pNodePool);
@@ -230,16 +238,20 @@ typedef struct MallocTree_s {
         m_pRootNode->init(NULL); // this is the tree root node
         // m_pRootNode->set_sitename_to_shlib_name_from_func_pointer(caller);
         m_pRootNode->set_sitename_to_threadname();
-        m_nMaxTreeDepth = 0;
+
+        m_nTreeLevels = 0;
+        m_nMaxTreeLevels = max_tree_levels;
 
         m_pCurrentNode = m_pRootNode;
+
+        return true;
     }
 
     bool is_ready() { return m_pNodePool != NULL && m_pRootNode != NULL && m_pCurrentNode != NULL; }
 
     void push_new_node(const char* name) // must be malloc-free
     {
-        if (UNLIKELY(m_pCurrentNode->m_nTreeLevel == MAX_TREE_LEVELS)) {
+        if (UNLIKELY(m_pCurrentNode->m_nTreeLevel == m_nMaxTreeLevels)) {
             // reached max depth level... cannot push anymore
             m_nPushNodeFailures++;
             m_bLastPushWasSuccessful = false;
@@ -280,7 +292,7 @@ typedef struct MallocTree_s {
         // new node ready, move the cursor:
         m_pCurrentNode = n;
         m_bLastPushWasSuccessful = true;
-        m_nMaxTreeDepth = std::max(m_nMaxTreeDepth, m_pCurrentNode->m_nTreeLevel);
+        m_nTreeLevels = std::max(m_nTreeLevels, m_pCurrentNode->m_nTreeLevel);
     }
 
     void pop_last_node() // must be malloc-free
@@ -295,14 +307,18 @@ typedef struct MallocTree_s {
         // pointer
     }
 
+    size_t get_memory_usage() const { return fmpool_mem_usage(MallocTreeNode_t, m_pNodePool); }
+
     void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format)
     {
         switch (format) {
         case MTAG_OUTPUT_FORMAT_JSON:
             out += "{";
-            out += "\"nMaxTreeDepth\": " + std::to_string(m_nMaxTreeDepth) + ",";
+            out += "\"nTreeLevels\": " + std::to_string(m_nTreeLevels) + ",";
             out += "\"nTreeNodesInUse\": " + std::to_string(m_nTreeNodesInUse) + ",";
             out += "\"nPushNodeFailures\": " + std::to_string(m_nPushNodeFailures) + ",";
+            out += "\"nMallocTagSelfUsageBytes\": " + std::to_string(get_memory_usage()) + ",";
+            out += "\"nBytesAllocBeforeInit\": " + std::to_string(g_bytes_allocated_before_init) + ",";
             m_pRootNode->collect_json_stats_recursively(out);
             out += "}";
             break;
@@ -355,22 +371,25 @@ MallocTagScope::~MallocTagScope()
 // mtag hooks
 //------------------------------------------------------------------------------
 
+#define DEBUG_HOOKS 0
+
 void* mtag_malloc_hook(size_t size, void* caller)
 {
     void* result = __libc_malloc(size);
 
-    if (UNLIKELY(!g_perthread_tree.is_ready())) {
-        g_malloc_hook_active = 0; // deactivate hooks during initialization
-        g_perthread_tree.init(caller);
-        g_malloc_hook_active = 1; // reactivate hooks
+    if (result) {
+        if (g_perthread_tree.is_ready())
+            g_perthread_tree.m_pCurrentNode->track_malloc(size);
+        else
+            g_bytes_allocated_before_init += size;
     }
-    if (result)
-        g_perthread_tree.m_pCurrentNode->track_malloc(size);
 
+#if DEBUG_HOOKS
     // do logging
     g_malloc_hook_active = 0; // deactivate hooks for logging
-    // printf("MYMALLOCHOOK %zu\n", size);
+    printf("mtag_malloc_hook %zuB\n", size);
     g_malloc_hook_active = 1; // reactivate hooks
+#endif
 
     return result;
 }
@@ -379,17 +398,31 @@ void mtag_free_hook(void* __ptr)
 {
     __libc_free(__ptr);
 
+#if DEBUG_HOOKS
     // do logging
     g_malloc_hook_active = 0; // deactivate hooks for logging
-    // printf("MYFREEHOOK %p\n", __ptr);
+    printf("mtag_free_hook %p\n", __ptr);
     g_malloc_hook_active = 1; // reactivate hooks
+#endif
 }
 
 //------------------------------------------------------------------------------
-// mtag public API to collect results
+// MallocTagEngine
 //------------------------------------------------------------------------------
 
-std::string malloctag_collect_stats(MallocTagOutputFormat_e format)
+bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
+{
+    if (UNLIKELY(g_perthread_tree.is_ready()))
+        return true; // invoking twice?
+
+    g_malloc_hook_active = 0; // deactivate hooks during initialization
+    bool result = g_perthread_tree.init(max_tree_nodes, max_tree_levels);
+    g_malloc_hook_active = 1; // reactivate hooks
+
+    return result;
+}
+
+std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
 {
     g_malloc_hook_active = 0; // deactivate hooks for stat collection
 
@@ -405,7 +438,7 @@ std::string malloctag_collect_stats(MallocTagOutputFormat_e format)
     return ret;
 }
 
-bool malloctag_write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath)
+bool MallocTagEngine::write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath)
 {
     bool bwritten = false;
 
@@ -428,7 +461,7 @@ bool malloctag_write_stats_on_disk(MallocTagOutputFormat_e format, const std::st
 
     std::ofstream stats_file(fpath);
     if (stats_file.is_open()) {
-        stats_file << malloctag_collect_stats(format) << std::endl;
+        stats_file << collect_stats(format) << std::endl;
         bwritten = true;
         stats_file.close();
     }

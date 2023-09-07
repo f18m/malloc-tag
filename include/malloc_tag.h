@@ -26,6 +26,9 @@
 #define MTAG_STATS_OUTPUT_JSON_ENV "MTAG_STATS_OUTPUT_JSON"
 #define MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV "MTAG_STATS_OUTPUT_GRAPHVIZ_DOT"
 
+#define MTAG_DEFAULT_MAX_TREE_NODES 256
+#define MTAG_DEFAULT_MAX_TREE_LEVELS 4
+
 //------------------------------------------------------------------------------
 // glibc overrides
 //------------------------------------------------------------------------------
@@ -45,14 +48,28 @@ enum MallocTagOutputFormat_e {
     MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT,
 };
 
-// the main API to collect all results in JSON format
-// NOTE: invoking this function will indeed trigger some memory allocation on its own (!!!)
-std::string malloctag_collect_stats(MallocTagOutputFormat_e format);
+class MallocTagEngine {
+public:
+    MallocTagEngine() { }
 
-// write JSON stats into a file on disk;
-// if an empty string is passed, the full path will be taken from the environment variable
-// MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV
-bool malloctag_write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath = "");
+    // The main API to initialize malloc-tag.
+    // Call this function from the main thread, possibly as first thing inside the "main()" function
+    // and before your software starts launching threads.
+    static bool init(size_t max_tree_nodes = MTAG_DEFAULT_MAX_TREE_NODES, // fn
+        size_t max_tree_levels = MTAG_DEFAULT_MAX_TREE_LEVELS);
+
+    // Get the singleton instance.
+    // static MallocTagEngine* get() { return m_pInstance; }
+
+    // The main API to collect all results in JSON format
+    // NOTE: invoking this function will indeed trigger some memory allocation on its own (!!!)
+    static std::string collect_stats(MallocTagOutputFormat_e format);
+
+    // Write memory profiler stats into a file on disk;
+    // if an empty string is passed, the full path will be taken from the environment variable
+    // MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV, depending on the "format" argument.
+    static bool write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath = "");
+};
 
 class MallocTagScope {
 public:

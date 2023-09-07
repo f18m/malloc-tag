@@ -7,7 +7,7 @@ void FuncB();
 
 void TopFunction()
 {
-    MallocTagScope noname("Top"); // call-site "Top"
+    MallocTagScope noname("TopFunc"); // call-site "Top"
 
     FuncA();
     malloc(5); // allocation done directly by this TopFunction()
@@ -16,7 +16,7 @@ void TopFunction()
 
 void FuncA()
 {
-    MallocTagScope noname("A"); // call-site "A"
+    MallocTagScope noname("FuncA"); // call-site "A"
 
     malloc(100);
     FuncB();
@@ -24,7 +24,7 @@ void FuncA()
 
 void FuncB()
 {
-    MallocTagScope noname("B"); // call-site "B"
+    MallocTagScope noname("FuncB"); // call-site "B"
 
     // malloc(100);
     new uint8_t[200];
@@ -32,15 +32,20 @@ void FuncB()
 
 int main()
 {
-    std::cout << "Hello world! Starting some dumb allocations to exercise the malloc_tag library" << std::endl;
+    // as soon as main() is entered, start malloc tag engine:
+    MallocTagEngine::init();
 
+    // run some dummy memory allocations
+    std::cout << "Hello world!" << std::endl;
+    std::cout << "Starting some dumb allocations to exercise the malloc_tag library" << std::endl;
     TopFunction();
-    // std::cout << malloc_collect_stats() << std::endl;
-    if (malloctag_write_stats_on_disk(
-            MTAG_OUTPUT_FORMAT_JSON)) // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
+
+    // dump stats in both JSON and graphviz formats
+    if (MallocTagEngine::write_stats_on_disk(MTAG_OUTPUT_FORMAT_JSON))
+        // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
         std::cout << "Wrote malloctag stats on file " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << std::endl;
-    if (malloctag_write_stats_on_disk(
-            MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT)) // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
+    if (MallocTagEngine::write_stats_on_disk(MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT))
+        // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
         std::cout << "Wrote malloctag stats on file " << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
 
     std::cout << "Bye!" << std::endl;
