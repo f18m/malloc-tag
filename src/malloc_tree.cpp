@@ -28,7 +28,7 @@ bool MallocTree::init(size_t max_tree_nodes, size_t max_tree_levels) // triggers
     // m_pRootNode->set_sitename_to_shlib_name_from_func_pointer(caller);
     m_pRootNode->set_sitename_to_threadname();
 
-    m_nTreeLevels = 0;
+    m_nTreeLevels = m_pRootNode->get_tree_level();
     m_nMaxTreeNodes = max_tree_nodes;
     m_nMaxTreeLevels = max_tree_levels;
 

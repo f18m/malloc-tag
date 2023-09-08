@@ -32,13 +32,13 @@
 #include "private/malloc_tree_registry.h"
 
 //------------------------------------------------------------------------------
-// Constants
+// Macros
 //------------------------------------------------------------------------------
 
 #define UNLIKELY(x) __builtin_expect((x), 0)
 
 //------------------------------------------------------------------------------
-// glibc original implementation
+// External functions
 //------------------------------------------------------------------------------
 
 extern "C" {
@@ -47,12 +47,21 @@ void* __libc_malloc(size_t size);
 void __libc_free(void*);
 };
 
-// malloctag globals:
+//------------------------------------------------------------------------------
+// Globals
+//------------------------------------------------------------------------------
+
+// main enable/disable flag:
 thread_local bool g_perthread_malloc_hook_active = true;
-std::atomic<size_t> g_bytes_allocated_before_init; // this accounts for ALL mallocs done by ALL threads before init
+
+// this accounts for ALL mallocs done by ALL threads before MallocTagEngine::init()
+std::atomic<size_t> g_bytes_allocated_before_init;
 
 // the main global per-thread malloc tree:
 thread_local MallocTree g_perthread_tree;
+
+// the global registry for all threads; this is NOT thread-specific
+MallocTreeRegistry g_registry;
 
 //------------------------------------------------------------------------------
 // Utils
@@ -70,9 +79,6 @@ public:
 private:
     bool m_prev_state = false;
 };
-
-// the global registry for all threads; this is NOT thread-specific
-MallocTreeRegistry g_registry;
 
 //------------------------------------------------------------------------------
 // MallocTagScope
@@ -103,16 +109,19 @@ MallocTagScope::~MallocTagScope()
 bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
 {
     if (UNLIKELY(g_perthread_tree.is_ready()))
-        return true; // invoking twice?
+        return true; // invoking twice? not a failure but suspicious
 
     bool result;
     {
         HookDisabler doNotAccountSelfMemoryInCurrentScope;
+
+        // init the main-thread tree:
         result = g_perthread_tree.init(max_tree_nodes, max_tree_levels);
 
         // register the "first tree" in the registry:
         // this will "unblock" the creation of malloc trees for all other threads, see malloc() logic
-        g_registry.register_tree(&g_perthread_tree);
+        if (result)
+            g_registry.register_tree(&g_perthread_tree);
     }
 
     return result;
@@ -243,12 +252,12 @@ void* malloc(size_t size)
                 // It means the tree for the main-thread is ready.
                 // Let's check if the tree of _this_ thread has been initialized or not:
                 if (UNLIKELY(!g_perthread_tree.is_ready())) {
-                    HookDisabler doNotAccountSelfMemoryInCurrentScope;
+                    HookDisabler avoidInfiniteRecursion;
                     if (g_perthread_tree.init(g_registry.get_main_thread_tree()))
                         g_registry.register_tree(&g_perthread_tree);
                     // else: tree could not be initialized... probably we're out of memory... give up
                 }
-                // else: this thread has its tree already ready... nothing to do
+                // else: this thread has its tree already available... nothing to do
 
                 if (g_perthread_tree.is_ready())
                     g_perthread_tree.track_malloc_in_current_scope(size);
@@ -267,6 +276,7 @@ void* malloc(size_t size)
         }
 #endif
     }
+    // else: hooks disabled: just behave as standard glibc malloc()
 
     return result;
 }

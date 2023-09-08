@@ -29,8 +29,9 @@ void MallocTreeNode::set_sitename_to_threadname()
     // so let's append the thread-ID (TID)
     int offset = strlen(&m_siteName[0]);
     if (offset > MTAG_MAX_SITENAME_LEN - 6)
-        offset = MTAG_MAX_SITENAME_LEN - 6; // truncate... 6 digits should be enough
-    snprintf(&m_siteName[offset], 6, "%d", syscall(SYS_gettid));
+        offset = MTAG_MAX_SITENAME_LEN - 6; // truncate... 6 digits should be enough for the TID
+    long int tid = syscall(SYS_gettid);
+    snprintf(&m_siteName[offset], MTAG_MAX_SITENAME_LEN - offset, "%ld", tid);
 }
 void MallocTreeNode::set_sitename(const char* sitename)
 {

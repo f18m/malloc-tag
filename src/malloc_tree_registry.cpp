@@ -20,6 +20,7 @@ bool MallocTreeRegistry::register_tree(MallocTree* ptree)
 
     // NOTE: whatever we store in the index 0 is considered to be the "main thread tree"
     //       and all other threads will inherit from that tree a few properties
+    assert(ptree->is_ready()); // it's a logical mistake to try to register a non-ready tree
     m_pMallocTreeRegistry[reservedIdx] = ptree;
     return true;
 }

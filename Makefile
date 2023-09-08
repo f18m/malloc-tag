@@ -30,7 +30,12 @@ LIB_VER = 1
 # Targets
 
 all: $(BINS) $(LIBS)
-	@echo "Run examples/minimal/minimal for a short tutorial (read comments in the source code!)"
+	@echo 
+	@echo "Build succeeded!"
+	@echo 
+	@echo "Run:"
+	@echo "   make minimal_example"
+	@echo "for a short tutorial (read comments in the source code!)"
 
 format_check:
 	# if you have clang-format >= 10.0.0, this will work:
