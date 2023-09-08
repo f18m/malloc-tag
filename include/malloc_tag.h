@@ -55,11 +55,9 @@ public:
     // The main API to initialize malloc-tag.
     // Call this function from the main thread, possibly as first thing inside the "main()" function
     // and before your software starts launching threads.
-    static bool init(size_t max_tree_nodes = MTAG_DEFAULT_MAX_TREE_NODES, // fn
+    static bool init( // fn
+        size_t max_tree_nodes = MTAG_DEFAULT_MAX_TREE_NODES, // fn
         size_t max_tree_levels = MTAG_DEFAULT_MAX_TREE_LEVELS);
-
-    // Get the singleton instance.
-    // static MallocTagEngine* get() { return m_pInstance; }
 
     // The main API to collect all results in JSON format
     // NOTE: invoking this function will indeed trigger some memory allocation on its own (!!!)

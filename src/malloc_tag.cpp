@@ -41,7 +41,7 @@ extern "C" {
 // these __libc_* functions are the actual glibc implementation:
 void* __libc_malloc(size_t size);
 void __libc_free(void*);
-int g_malloc_hook_active = 1; // FIXME: this should probably be per-thread!
+thread_local bool g_perthread_malloc_hook_active = true;
 size_t g_bytes_allocated_before_init = 0;
 };
 
@@ -49,10 +49,26 @@ size_t g_bytes_allocated_before_init = 0;
 // Utils
 //------------------------------------------------------------------------------
 
-void append_graphviz_node(std::string& out, const std::string& nodeName, const std::string& label)
-{
-    out += nodeName + " [label=\"" + label + "\"]\n";
-}
+class GraphVizUtils {
+public:
+    static void append_graphviz_node(std::string& out, const std::string& nodeName, const std::string& label)
+    {
+        out += nodeName + " [label=\"" + label + "\"]\n";
+    }
+};
+
+class HookDisabler {
+public:
+    HookDisabler()
+    {
+        m_prev_state = g_perthread_malloc_hook_active;
+        g_perthread_malloc_hook_active = false;
+    }
+    ~HookDisabler() { g_perthread_malloc_hook_active = m_prev_state; }
+
+private:
+    bool m_prev_state = false;
+};
 
 //------------------------------------------------------------------------------
 // MallocTreeNode_t
@@ -176,7 +192,7 @@ typedef struct MallocTreeNode_s {
         std::string thisNodeLabel = thisNodeName + "\\n" + get_weight_percentage_str() + "%";
         if (m_pParent == NULL)
             thisNodeLabel += "\\n" + std::to_string(m_nBytes) + "B";
-        append_graphviz_node(out, thisNodeName, thisNodeLabel);
+        GraphVizUtils::append_graphviz_node(out, thisNodeName, thisNodeLabel);
 
         // write all the connections between this node and its children:
         for (unsigned int i = 0; i < m_nChildrens; i++) {
@@ -341,9 +357,9 @@ typedef struct MallocTree_s {
             m_pRootNode->collect_graphviz_dot_output(out);
 
             // add a few nodes "external" to the tree:
-            append_graphviz_node(out, "__before_init_node__",
+            GraphVizUtils::append_graphviz_node(out, "__before_init_node__",
                 "Memory Allocated\\nBefore MallocTag Init\\n" + std::to_string(g_bytes_allocated_before_init) + "B");
-            append_graphviz_node(out, "__malloctag_self_memory__",
+            GraphVizUtils::append_graphviz_node(out, "__malloctag_self_memory__",
                 "Memory Allocated\\nBy MallocTag itself\\n" + std::to_string(get_memory_usage()) + "B");
             out += "}";
 
@@ -363,7 +379,7 @@ typedef struct MallocTree_s {
     }
 } MallocTree_t;
 
-MallocTree_t g_perthread_tree; // FIXME: must be per-thread
+thread_local MallocTree_t g_perthread_tree;
 
 //------------------------------------------------------------------------------
 // MallocTagScope
@@ -404,9 +420,10 @@ void* mtag_malloc_hook(size_t size, void* caller)
 
 #if DEBUG_HOOKS
     // do logging
-    g_malloc_hook_active = 0; // deactivate hooks for logging
-    printf("mtag_malloc_hook %zuB\n", size);
-    g_malloc_hook_active = 1; // reactivate hooks
+    {
+        HookDisabler avoidInfiniteRecursion;
+        printf("mtag_malloc_hook %zuB\n", size);
+    }
 #endif
 
     return result;
@@ -418,9 +435,10 @@ void mtag_free_hook(void* __ptr)
 
 #if DEBUG_HOOKS
     // do logging
-    g_malloc_hook_active = 0; // deactivate hooks for logging
-    printf("mtag_free_hook %p\n", __ptr);
-    g_malloc_hook_active = 1; // reactivate hooks
+    {
+        HookDisabler avoidInfiniteRecursion;
+        printf("mtag_free_hook %p\n", __ptr);
+    }
 #endif
 }
 
@@ -433,16 +451,18 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
     if (UNLIKELY(g_perthread_tree.is_ready()))
         return true; // invoking twice?
 
-    g_malloc_hook_active = 0; // deactivate hooks during initialization
-    bool result = g_perthread_tree.init(max_tree_nodes, max_tree_levels);
-    g_malloc_hook_active = 1; // reactivate hooks
+    bool result;
+    {
+        HookDisabler doNotAccountSelfMemoryInCurrentScope;
+        result = g_perthread_tree.init(max_tree_nodes, max_tree_levels);
+    }
 
     return result;
 }
 
 std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
 {
-    g_malloc_hook_active = 0; // deactivate hooks for stat collection
+    HookDisabler doNotAccountCollectStatMemoryUsage;
 
     // reserve enough space inside the output string:
     std::string ret;
@@ -452,15 +472,13 @@ std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
     g_perthread_tree.compute_bytes_totals_recursively();
     g_perthread_tree.collect_stats_recursively(ret, format);
 
-    g_malloc_hook_active = 1; // reactivate hooks
     return ret;
 }
 
 bool MallocTagEngine::write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath)
 {
     bool bwritten = false;
-
-    g_malloc_hook_active = 0; // deactivate hooks for stat collection
+    HookDisabler doNotAccountCollectStatMemoryUsage;
 
     std::string fpath = fullpath;
     if (fpath.empty()) {
@@ -484,7 +502,6 @@ bool MallocTagEngine::write_stats_on_disk(MallocTagOutputFormat_e format, const 
         stats_file.close();
     }
 
-    g_malloc_hook_active = 1; // reactivate hooks
     return bwritten;
 }
 
@@ -496,7 +513,7 @@ extern "C" {
 void* malloc(size_t size)
 {
     void* caller = __builtin_return_address(0);
-    if (g_malloc_hook_active)
+    if (g_perthread_malloc_hook_active)
         return mtag_malloc_hook(size, caller);
     else
         return __libc_malloc(size);
@@ -504,7 +521,7 @@ void* malloc(size_t size)
 
 void free(void* __ptr) __THROW
 {
-    if (g_malloc_hook_active)
+    if (g_perthread_malloc_hook_active)
         mtag_free_hook(__ptr);
     else
         __libc_free(__ptr);

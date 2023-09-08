@@ -1,13 +1,13 @@
 digraph MallocTree {
-minimal [label="minimal\n100.00%\n1529B"]
+minimal [label="minimal\n100.00%\n3041B"]
 minimal -> TopFunc
-TopFunc [label="TopFunc\n33.02%"]
+TopFunc [label="TopFunc\n16.60%"]
 TopFunc -> FuncA
 TopFunc -> FuncB
-FuncA [label="FuncA\n19.62%"]
+FuncA [label="FuncA\n9.86%"]
 FuncA -> FuncB
-FuncB [label="FuncB\n13.08%"]
-FuncB [label="FuncB\n13.08%"]
+FuncB [label="FuncB\n6.57%"]
+FuncB [label="FuncB\n6.57%"]
 __before_init_node__ [label="Memory Allocated\nBefore MallocTag Init\n72704B"]
 __malloctag_self_memory__ [label="Memory Allocated\nBy MallocTag itself\n51224B"]
 }

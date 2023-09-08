@@ -1,5 +1,6 @@
 #include "malloc_tag.h"
 #include <iostream>
+#include <string.h>
 #include <unistd.h> // for linux
 
 void FuncA();
@@ -30,6 +31,34 @@ void FuncB()
     new uint8_t[200];
 }
 
+int parseLine(char* line)
+{
+    // This assumes that a digit will be found and the line ends in " Kb".
+    int i = strlen(line);
+    const char* p = line;
+    while (*p < '0' || *p > '9')
+        p++;
+    line[i - 3] = '\0';
+    i = atoi(p);
+    return i;
+}
+
+int getValue() // Note: this value is in KB!
+{
+    FILE* file = fopen("/proc/self/status", "r");
+    int result = -1;
+    char line[128];
+
+    while (fgets(line, 128, file) != NULL) {
+        if (strncmp(line, "VmSize:", 7) == 0) {
+            result = parseLine(line);
+            break;
+        }
+    }
+    fclose(file);
+    return result;
+}
+
 int main()
 {
     // as soon as main() is entered, start malloc tag engine:
@@ -39,6 +68,7 @@ int main()
     std::cout << "Hello world!" << std::endl;
     std::cout << "Starting some dumb allocations to exercise the malloc_tag library" << std::endl;
     TopFunction();
+    std::cout << "VmRSS: " << getValue() << "B" << std::endl;
 
     // dump stats in both JSON and graphviz formats
     if (MallocTagEngine::write_stats_on_disk(MTAG_OUTPUT_FORMAT_JSON))
