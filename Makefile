@@ -5,9 +5,15 @@ CXXFLAGS_OPT= -fPIC -std=c++11 -Iinclude -O3 -pthread -Wno-attributes -Wno-unuse
 CXXFLAGS_DBG= -fPIC -std=c++11 -Iinclude -g -O0 -pthread -Wno-attributes -Wno-unused-result
 
 LIB_HDR = \
-	include/malloc_tag.h
+	include/malloc_tag.h \
+	include/private/malloc_tree_node.h \
+	include/private/malloc_tree_registry.h \
+	include/private/malloc_tree.h
 LIB_SRC = \
-	src/malloc_tag.cpp
+	src/malloc_tag.cpp \
+	src/malloc_tree.cpp \
+	src/malloc_tree_registry.cpp \
+	src/malloc_tree_node.cpp
 LIBS = \
 	src/libmalloc_tag.so
 BINS = \

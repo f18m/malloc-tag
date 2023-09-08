@@ -1,0 +1,128 @@
+/*
+ * malloc_tree.cpp
+ *
+ * Author: fmontorsi
+ * Created: Aug 2023
+ * License: Apache license
+ *
+ */
+
+#include "private/malloc_tree.h"
+
+#define UNLIKELY(x) __builtin_expect((x), 0)
+
+bool MallocTree_s::init(size_t max_tree_nodes, size_t max_tree_levels) // triggers some MEMORY ALLOCATION
+{
+    assert(m_pNodePool == nullptr);
+
+    // initialize the memory pool of tree nodes
+    m_pNodePool = fmpool_create(MallocTreeNode_t, max_tree_nodes);
+    if (!m_pNodePool)
+        return false;
+
+    // init the "current node" pointer to have the same name of the
+    m_pRootNode = fmpool_get(MallocTreeNode_t, m_pNodePool);
+    assert(m_pRootNode);
+    m_nTreeNodesInUse++;
+    m_pRootNode->init(NULL); // this is the tree root node
+    // m_pRootNode->set_sitename_to_shlib_name_from_func_pointer(caller);
+    m_pRootNode->set_sitename_to_threadname();
+
+    m_nTreeLevels = 0;
+    m_nMaxTreeNodes = max_tree_nodes;
+    m_nMaxTreeLevels = max_tree_levels;
+
+    m_pCurrentNode = m_pRootNode;
+
+    return true;
+}
+
+void MallocTree_s::push_new_node(const char* name) // must be malloc-free
+{
+    if (UNLIKELY(m_pCurrentNode->m_nTreeLevel == m_nMaxTreeLevels)) {
+        // reached max depth level... cannot push anymore
+        m_nPushNodeFailures++;
+        m_bLastPushWasSuccessful = false;
+        return;
+    }
+
+    MallocTreeNode_t* n = m_pCurrentNode->get_child_by_name(name);
+    if (n) {
+        // this branch of the tree already exists, just move the cursor:
+        m_pCurrentNode = n;
+        m_bLastPushWasSuccessful = true;
+        return;
+    }
+
+    // this branch of the tree needs to be created:
+    n = fmpool_get(MallocTreeNode_t, m_pNodePool);
+    if (UNLIKELY(!n)) {
+        // memory pool is full... memory profiling results will be INCOMPLETE and possibly MISLEADING:
+        m_nPushNodeFailures++;
+        m_bLastPushWasSuccessful = false;
+        return;
+    }
+
+    m_nTreeNodesInUse++; // successfully obtained a new node from the mempool
+    n->init(m_pCurrentNode);
+    n->set_sitename(name);
+    if (!m_pCurrentNode->link_new_children(n)) {
+        // failed to link current node: release node back to the pool
+        m_nTreeNodesInUse--;
+        fmpool_free(MallocTreeNode_t, n, m_pNodePool);
+
+        // and record this failure:
+        m_nPushNodeFailures++;
+        m_bLastPushWasSuccessful = false;
+        return;
+    }
+
+    // new node ready, move the cursor:
+    m_pCurrentNode = n;
+    m_bLastPushWasSuccessful = true;
+    m_nTreeLevels = std::max(m_nTreeLevels, m_pCurrentNode->m_nTreeLevel);
+}
+
+void MallocTree_s::pop_last_node() // must be malloc-free
+{
+    if (m_bLastPushWasSuccessful) {
+        MallocTreeNode_t* n = m_pCurrentNode->m_pParent;
+        assert(n); // if n == NULL it means m_pCurrentNode is pointing to the tree root... cannot pop... this is a
+                   // logical mistake...
+        m_pCurrentNode = n;
+    }
+    // else: the node pointer has not been moved by last push_new_node() so we don't need to really pop the node
+    // pointer
+}
+
+void MallocTree_s::collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format)
+{
+    switch (format) {
+    case MTAG_OUTPUT_FORMAT_JSON:
+        out += "\"tree_for_thread_" + m_pRootNode->get_node_name() + "\": {";
+        out += "\"nTreeLevels\": " + std::to_string(m_nTreeLevels) + ",";
+        out += "\"nTreeNodesInUse\": " + std::to_string(m_nTreeNodesInUse) + ",";
+        out += "\"nMaxTreeNodes\": " + std::to_string(m_nMaxTreeNodes) + ",";
+        out += "\"nPushNodeFailures\": " + std::to_string(m_nPushNodeFailures) + ",";
+        m_pRootNode->collect_json_stats_recursively(out);
+        out += "}";
+        break;
+
+    case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
+        // there is no much room in Graphviz DOT to include some extra info related to the whole tree
+        // like the ones we put in the JSON output
+        m_pRootNode->collect_graphviz_dot_output(out);
+        break;
+    }
+}
+
+void MallocTree_s::compute_bytes_totals_recursively()
+{
+    // NOTE: order is important:
+
+    // STEP1: compute "bytes total" across the whole tree
+    m_pRootNode->compute_bytes_totals_recursively();
+
+    // STEP2: compute node weigth across the whole tree:
+    m_pRootNode->compute_node_weights_recursively(m_pRootNode->m_nBytes);
+}
