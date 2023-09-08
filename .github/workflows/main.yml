@@ -37,9 +37,17 @@ jobs:
         
     # now run examples
     - name: run basic example
-      run: make minimal_example
+      run: |
+        # Allow core dumps
+        ulimit -c unlimited
+        # run the example
+        make minimal_example
     - name: run multithread example
-      run: make multithread_example
+      run: |
+        # Allow core dumps
+        ulimit -c unlimited
+        # run the example
+        make multithread_example
 
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}  # Run only if something went wrong
