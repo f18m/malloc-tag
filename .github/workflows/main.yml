@@ -12,7 +12,7 @@ jobs:
 
     steps:
     # install deps
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: install debian-packaged dependencies
       run: sudo apt install -y jq clang-format graphviz
 
@@ -20,7 +20,29 @@ jobs:
       run: make all
     - name: check formatting
       run: make format_check
+
+
+    # IMPORTANT: steps taken from https://github.com/itamarst/gha-upload-cores
+    # Upload the binary, which we will need to debug the core
+    - uses: actions/upload-artifact@v3
+      with:
+        name: executable
+        path: ./examples/multithread/multithread
+    - name: Set cores to get stored in /cores
+      run: |
+        sudo mkdir /cores
+        sudo chmod 777 /cores
+        # Core filenames will be of the form executable.pid.timestamp:
+        sudo bash -c 'echo "/cores/%e.%p.%t" > /proc/sys/kernel/core_pattern'
+        
+    # now run examples
     - name: run basic example
       run: make minimal_example
     - name: run multithread example
       run: make multithread_example
+
+    - uses: actions/upload-artifact@v3
+      if: ${{ failure() }}  # Run only if something went wrong
+      with:
+        name: cores
+        path: /cores
