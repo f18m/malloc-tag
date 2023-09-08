@@ -23,13 +23,15 @@
 #include <dlfcn.h>
 #include <fstream>
 #include <sys/prctl.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 //------------------------------------------------------------------------------
 // Constants
 //------------------------------------------------------------------------------
 
 #define MAX_THREADS 128
-#define MAX_SITENAME_LEN 16 // must be at least 16 bytes long due to use in prctl(PR_GET_NAME)
+#define MAX_SITENAME_LEN 20 // must be at least 16 bytes long due to use in prctl(PR_GET_NAME)
 #define WEIGHT_MULTIPLIER 10000
 #define MAX_CHILDREN_PER_NODE 16
 
@@ -131,7 +133,18 @@ typedef struct MallocTreeNode_s {
 
         // FIXME: should we free the pointers inside "address_info"??
     }
-    void set_sitename_to_threadname() { prctl(PR_GET_NAME, &m_siteName[0], 0, 0); }
+    void set_sitename_to_threadname()
+    {
+        // get thread name:
+        prctl(PR_GET_NAME, &m_siteName[0], 0, 0);
+
+        // however that could not be unique (it depends if the software makes use of prctl() or pthread_setname_np())
+        // so let's append the thread-ID (TID)
+        int offset = strlen(&m_siteName[0]);
+        if (offset > MAX_SITENAME_LEN - 6)
+            offset = MAX_SITENAME_LEN - 6; // truncate... 6 digits should be enough
+        snprintf(&m_siteName[offset], 6, "%d", syscall(SYS_gettid));
+    }
     void set_sitename(const char* sitename)
     {
         strncpy(&m_siteName[0], sitename, std::min(strlen(sitename), (size_t)MAX_SITENAME_LEN));
@@ -366,35 +379,29 @@ typedef struct MallocTree_s {
         // pointer
     }
 
-    size_t get_memory_usage() const { return fmpool_mem_usage(MallocTreeNode_t, m_pNodePool); }
+    size_t get_memory_usage_in_bytes() const
+    {
+        // we ignore other very compact fields used by a MallocTree_t:
+        return fmpool_mem_usage(MallocTreeNode_t, m_pNodePool);
+    }
 
     void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format)
     {
         switch (format) {
         case MTAG_OUTPUT_FORMAT_JSON:
-            out += "{";
+            out += "\"tree_for_thread_" + m_pRootNode->get_node_name() + "\": {";
             out += "\"nTreeLevels\": " + std::to_string(m_nTreeLevels) + ",";
             out += "\"nTreeNodesInUse\": " + std::to_string(m_nTreeNodesInUse) + ",";
+            out += "\"nMaxTreeNodes\": " + std::to_string(m_nMaxTreeNodes) + ",";
             out += "\"nPushNodeFailures\": " + std::to_string(m_nPushNodeFailures) + ",";
-            out += "\"nMallocTagSelfUsageBytes\": " + std::to_string(get_memory_usage()) + ",";
-            out += "\"nBytesAllocBeforeInit\": " + std::to_string(g_bytes_allocated_before_init) + ",";
             m_pRootNode->collect_json_stats_recursively(out);
             out += "}";
             break;
 
         case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
-            // see https://graphviz.org/doc/info/lang.html
-            out += "digraph MallocTree {\n";
+            // there is no much room in Graphviz DOT to include some extra info related to the whole tree
+            // like the ones we put in the JSON output
             m_pRootNode->collect_graphviz_dot_output(out);
-
-            // add a few nodes "external" to the tree:
-            GraphVizUtils::append_graphviz_node(out, "__before_init_node__",
-                "Memory Allocated\\nBefore MallocTag Init\\n"
-                    + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
-            GraphVizUtils::append_graphviz_node(out, "__malloctag_self_memory__",
-                "Memory Allocated\\nBy MallocTag itself\\n" + GraphVizUtils::pretty_print_bytes(get_memory_usage()));
-            out += "}";
-
             break;
         }
     }
@@ -461,19 +468,56 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
     return result;
 }
 
+size_t malloc_get_total_memusage()
+{
+    // this code is thread-safe because trees can only get registered, never removed:
+    size_t num_trees = g_global_registry_size.load();
+
+    size_t total_bytes = 0;
+    for (size_t i = 0; i < num_trees; i++)
+        total_bytes += g_global_registry_malloc_trees[i]->get_memory_usage_in_bytes();
+
+    return total_bytes;
+}
+
 std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
 {
     HookDisabler doNotAccountCollectStatMemoryUsage;
 
     // reserve enough space inside the output string:
-    std::string ret;
-    ret.reserve(4096);
+    std::string stats_str;
+    stats_str.reserve(4096);
 
     // now traverse the tree collecting stats:
     g_perthread_tree.compute_bytes_totals_recursively();
-    g_perthread_tree.collect_stats_recursively(ret, format);
 
-    return ret;
+    switch (format) {
+    case MTAG_OUTPUT_FORMAT_JSON:
+        stats_str += "{";
+        stats_str += "\"nBytesAllocBeforeInit\": " + std::to_string(g_bytes_allocated_before_init) + ",";
+        stats_str += "\"nMallocTagSelfUsageBytes\": " + std::to_string(malloc_get_total_memusage()) + ",";
+        g_perthread_tree.collect_stats_recursively(stats_str, format);
+        stats_str += "}";
+        break;
+
+    case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
+        // see https://graphviz.org/doc/info/lang.html
+        stats_str += "digraph MallocTree {\n";
+        g_perthread_tree.collect_stats_recursively(stats_str, format);
+
+        // add a few nodes "external" to the tree:
+        GraphVizUtils::append_graphviz_node(stats_str, "__before_init_node__",
+            "Memory Allocated\\nBefore MallocTag Init\\n"
+                + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
+        GraphVizUtils::append_graphviz_node(stats_str, "__malloctag_self_memory__",
+            "Memory Allocated\\nBy MallocTag itself\\n"
+                + GraphVizUtils::pretty_print_bytes(malloc_get_total_memusage()));
+        stats_str += "}";
+
+        break;
+    }
+
+    return stats_str;
 }
 
 bool MallocTagEngine::write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath)
@@ -560,12 +604,25 @@ void* malloc(size_t size)
                 // MallocTagEngine::init() has been invoked, good.
                 // It means the tree for the main-thread is ready.
                 // Let's check if the tree of _this_ thread has been initialized or not:
-                if (UNLIKELY(!g_perthread_tree.is_ready()))
-                    g_perthread_tree.init(g_global_registry_malloc_trees[0]);
-                g_perthread_tree.m_pCurrentNode->track_malloc(size);
+                if (UNLIKELY(!g_perthread_tree.is_ready())) {
+                    HookDisabler doNotAccountSelfMemoryInCurrentScope;
+                    if (g_perthread_tree.init(g_global_registry_malloc_trees[0])) {
+                        // register this new tree in the registry:
+                        size_t reservedIdx = g_global_registry_size.fetch_add(1);
+                        g_global_registry_malloc_trees[reservedIdx] = &g_perthread_tree;
+                    }
+                    // else: tree could not be initialized... probably we're out of memory... give up
+                }
+                // else: this thread has its tree already ready... nothing to do
+
+                if (g_perthread_tree.is_ready())
+                    g_perthread_tree.m_pCurrentNode->track_malloc(size);
+
             } else
+                // MallocTagEngine::init() has never been invoked... wait for that to happen
                 g_bytes_allocated_before_init += size;
         }
+        // else: this software is out of memory... nothing to track
 
 #if DEBUG_HOOKS
         // do logging
