@@ -55,6 +55,19 @@ public:
     {
         out += nodeName + " [label=\"" + label + "\"]\n";
     }
+
+    static std::string pretty_print_bytes(size_t bytes)
+    {
+        // NOTE: we convert to kilo/mega/giga (multiplier=1000) not to kibi/mebi/gibi (multiplier=1024) bytes !!!
+        if (bytes < 1000ul)
+            return std::to_string(bytes) + "B";
+        else if (bytes < 1000000ul)
+            return std::to_string(bytes / 1000) + "kB";
+        else if (bytes < 1000000000ul)
+            return std::to_string(bytes / 1000000ul) + "MB";
+        else
+            return std::to_string(bytes / 1000000000ul) + "GB";
+    }
 };
 
 class HookDisabler {
@@ -189,9 +202,13 @@ typedef struct MallocTreeNode_s {
         std::string thisNodeName = get_node_name();
 
         // write a description of this node:
-        std::string thisNodeLabel = thisNodeName + "\\n" + get_weight_percentage_str() + "%";
+        std::string thisNodeLabel;
         if (m_pParent == NULL)
-            thisNodeLabel += "\\n" + std::to_string(m_nBytes) + "B";
+            // for root node, provide a more verbose label
+            thisNodeLabel = "thread=" + thisNodeName + "\\n" + get_weight_percentage_str() + "%" + "\\n"
+                + GraphVizUtils::pretty_print_bytes(m_nBytes);
+        else
+            thisNodeLabel = thisNodeName + "\\n" + get_weight_percentage_str() + "%";
         GraphVizUtils::append_graphviz_node(out, thisNodeName, thisNodeLabel);
 
         // write all the connections between this node and its children:
@@ -220,6 +237,7 @@ typedef struct MallocTreeNode_s {
 
     void compute_node_weights_recursively(size_t rootNodeTotalBytes)
     {
+        // weighr is defined as
         m_nWeight = WEIGHT_MULTIPLIER * m_nBytes / rootNodeTotalBytes;
         for (unsigned int i = 0; i < m_nChildrens; i++)
             m_pChildren[i]->compute_node_weights_recursively(rootNodeTotalBytes);
@@ -327,9 +345,9 @@ typedef struct MallocTree_s {
     {
         if (m_bLastPushWasSuccessful) {
             MallocTreeNode_t* n = m_pCurrentNode->m_pParent;
-            if (n)
-                m_pCurrentNode = n;
-            // else: we are already at the tree root... cannot pop... this is a logical mistake... FIXME: assert?
+            assert(n); // if n == NULL it means m_pCurrentNode is pointing to the tree root... cannot pop... this is a
+                       // logical mistake...
+            m_pCurrentNode = n;
         }
         // else: the node pointer has not been moved by last push_new_node() so we don't need to really pop the node
         // pointer
@@ -358,9 +376,10 @@ typedef struct MallocTree_s {
 
             // add a few nodes "external" to the tree:
             GraphVizUtils::append_graphviz_node(out, "__before_init_node__",
-                "Memory Allocated\\nBefore MallocTag Init\\n" + std::to_string(g_bytes_allocated_before_init) + "B");
+                "Memory Allocated\\nBefore MallocTag Init\\n"
+                    + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
             GraphVizUtils::append_graphviz_node(out, "__malloctag_self_memory__",
-                "Memory Allocated\\nBy MallocTag itself\\n" + std::to_string(get_memory_usage()) + "B");
+                "Memory Allocated\\nBy MallocTag itself\\n" + GraphVizUtils::pretty_print_bytes(get_memory_usage()));
             out += "}";
 
             break;
