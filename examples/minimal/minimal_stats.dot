@@ -8,4 +8,6 @@ FuncA [label="FuncA\n19.62%"]
 FuncA -> FuncB
 FuncB [label="FuncB\n13.08%"]
 FuncB [label="FuncB\n13.08%"]
+__before_init_node__ [label="Memory Allocated\nBefore MallocTag Init\n72704B"]
+__malloctag_self_memory__ [label="Memory Allocated\nBy MallocTag itself\n51224B"]
 }

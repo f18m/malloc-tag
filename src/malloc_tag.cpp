@@ -46,6 +46,15 @@ size_t g_bytes_allocated_before_init = 0;
 };
 
 //------------------------------------------------------------------------------
+// Utils
+//------------------------------------------------------------------------------
+
+void append_graphviz_node(std::string& out, const std::string& nodeName, const std::string& label)
+{
+    out += nodeName + " [label=\"" + label + "\"]\n";
+}
+
+//------------------------------------------------------------------------------
 // MallocTreeNode_t
 //------------------------------------------------------------------------------
 
@@ -164,10 +173,10 @@ typedef struct MallocTreeNode_s {
         std::string thisNodeName = get_node_name();
 
         // write a description of this node:
-        out += thisNodeName + " [label=\"" + thisNodeName + "\\n" + get_weight_percentage_str() + "%";
+        std::string thisNodeLabel = thisNodeName + "\\n" + get_weight_percentage_str() + "%";
         if (m_pParent == NULL)
-            out += "\\n" + std::to_string(m_nBytes) + "B";
-        out += "\"]\n";
+            thisNodeLabel += "\\n" + std::to_string(m_nBytes) + "B";
+        append_graphviz_node(out, thisNodeName, thisNodeLabel);
 
         // write all the connections between this node and its children:
         for (unsigned int i = 0; i < m_nChildrens; i++) {
@@ -330,6 +339,12 @@ typedef struct MallocTree_s {
             // see https://graphviz.org/doc/info/lang.html
             out += "digraph MallocTree {\n";
             m_pRootNode->collect_graphviz_dot_output(out);
+
+            // add a few nodes "external" to the tree:
+            append_graphviz_node(out, "__before_init_node__",
+                "Memory Allocated\\nBefore MallocTag Init\\n" + std::to_string(g_bytes_allocated_before_init) + "B");
+            append_graphviz_node(out, "__malloctag_self_memory__",
+                "Memory Allocated\\nBy MallocTag itself\\n" + std::to_string(get_memory_usage()) + "B");
             out += "}";
 
             break;
