@@ -1,6 +1,6 @@
 digraph MallocTree {
-minimal34615 [label="thread=minimal34615\n100.00%\n3kB"]
-minimal34615 -> TopFunc
+minimal34825 [label="thread=minimal34825\n100.00%\n3kB"]
+minimal34825 -> TopFunc
 TopFunc [label="TopFunc\n16.60%"]
 TopFunc -> FuncA
 TopFunc -> FuncB

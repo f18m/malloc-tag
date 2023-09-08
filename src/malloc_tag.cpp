@@ -91,15 +91,15 @@ private:
 
 //------------------------------------------------------------------------------
 // MallocTreeNode_t
+// A single node in the malloc tree structure.
+// These nodes are created by the application using the MallocTagScope helper class
+// in sensible parts of their code, to enable malloc tree profiling.
+//
+// MallocTreeNode_t nodes track both the memory they incur directly
+// (m_nBytesDirect) but more importantly, the total memory allocated by
+// themselves and any of their children (m_nBytes) and also its percentage weigth (m_nWeight).
 //------------------------------------------------------------------------------
 
-/// Node in the malloc tree structure.
-/// These nodes are created by the application using the MallocTagScope helper class
-/// in sensible parts of their code, to enable malloc tree profiling.
-///
-/// MallocTreeNode_t nodes track both the memory they incur directly
-/// (m_nBytesDirect) but more importantly, the total memory allocated by
-/// themselves and any of their children (m_nBytes) and also its percentage weigth (m_nWeight).
 typedef struct MallocTreeNode_s {
     size_t m_nBytes; ///< Allocated bytes by this or descendant nodes.
     size_t m_nBytesDirect; ///< Allocated bytes (only for this node).
@@ -262,12 +262,19 @@ typedef struct MallocTreeNode_s {
 
 } MallocTreeNode_t;
 
-// a memory pool of MallocTreeNode_t allows us to AVOID memory allocation during the program execution, after
-// the initial memory pool initialization
+// define a specialized type for the memory pool of MallocTreeNode_t
+// Such kind of mempool allows us to AVOID memory allocation during the program execution,
+// just during malloctag engine intialization
 FMPOOL_INIT(MallocTreeNode_t)
 
 //------------------------------------------------------------------------------
 // MallocTree_t
+// A tree composed by MallocTreeNode_t data structures, with push() and pop()
+// methods garantueed to be malloc-free and O(1).
+// Also provides accessor functions to traverse the tree recursively to get
+// the memory profiler stats.
+// This class is not thread-safe, so there should be one MallocTree_t for each
+// thread existing in the target application.
 //------------------------------------------------------------------------------
 typedef struct MallocTree_s {
     fmpool_t(MallocTreeNode_t) * m_pNodePool = NULL;
@@ -418,10 +425,65 @@ typedef struct MallocTree_s {
     }
 } MallocTree_t;
 
-// more globals related:
+// the main global per-thread malloc tree:
 thread_local MallocTree_t g_perthread_tree;
-MallocTree_t* g_global_registry_malloc_trees[MAX_THREADS];
-std::atomic_uint g_global_registry_size;
+
+//------------------------------------------------------------------------------
+// MallocTreeRegistry
+// A handler of many MallocTree_t instances, one for each application thread.
+// This class is thread-safe and is a singleton.
+//------------------------------------------------------------------------------
+
+class MallocTreeRegistry {
+public:
+    bool register_tree(MallocTree_t* ptree)
+    {
+        // thread-safe code
+        size_t reservedIdx = m_nMallocTrees.fetch_add(1);
+        if (reservedIdx >= MAX_THREADS) {
+            // we have reached the max number of trees/threads for this application!
+            return false;
+        }
+
+        // NOTE: whatever we store in the index 0 is considered to be the "main thread tree"
+        //       and all other threads will inherit from that tree a few properties
+        m_pMallocTreeRegistry[reservedIdx] = ptree;
+        return true;
+    }
+
+    size_t get_total_memusage()
+    {
+        // this code is thread-safe because trees can only get registered, never removed:
+        size_t num_trees = m_nMallocTrees.load();
+
+        size_t total_bytes = 0;
+        for (size_t i = 0; i < num_trees; i++)
+            total_bytes += m_pMallocTreeRegistry[i]->get_memory_usage_in_bytes();
+
+        // NOTE: only trees that have been init()ialized contribute to memory usage.
+        //       if there is an application thread that somehow is never invoking malloc(),
+        //       then its MallocTree will never be init() and it will never be registered...
+        //       that's fine because its memory consumption will be roughly zero
+
+        return total_bytes;
+    }
+
+    bool has_main_thread_tree() { return m_nMallocTrees > 0; }
+
+    MallocTree_t* get_main_thread_tree()
+    {
+        if (m_nMallocTrees == 0)
+            return NULL;
+        return m_pMallocTreeRegistry[0];
+    }
+
+private:
+    MallocTree_t* m_pMallocTreeRegistry[MAX_THREADS];
+    std::atomic_uint m_nMallocTrees;
+};
+
+// the global registry for all threads; this is NOT thread-specific
+MallocTreeRegistry g_registry;
 
 //------------------------------------------------------------------------------
 // MallocTagScope
@@ -461,23 +523,10 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
 
         // register the "first tree" in the registry:
         // this will "unblock" the creation of malloc trees for all other threads, see malloc() logic
-        size_t reservedIdx = g_global_registry_size.fetch_add(1);
-        g_global_registry_malloc_trees[reservedIdx] = &g_perthread_tree;
+        g_registry.register_tree(&g_perthread_tree);
     }
 
     return result;
-}
-
-size_t malloc_get_total_memusage()
-{
-    // this code is thread-safe because trees can only get registered, never removed:
-    size_t num_trees = g_global_registry_size.load();
-
-    size_t total_bytes = 0;
-    for (size_t i = 0; i < num_trees; i++)
-        total_bytes += g_global_registry_malloc_trees[i]->get_memory_usage_in_bytes();
-
-    return total_bytes;
 }
 
 std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
@@ -495,7 +544,7 @@ std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
     case MTAG_OUTPUT_FORMAT_JSON:
         stats_str += "{";
         stats_str += "\"nBytesAllocBeforeInit\": " + std::to_string(g_bytes_allocated_before_init) + ",";
-        stats_str += "\"nMallocTagSelfUsageBytes\": " + std::to_string(malloc_get_total_memusage()) + ",";
+        stats_str += "\"nMallocTagSelfUsageBytes\": " + std::to_string(g_registry.get_total_memusage()) + ",";
         g_perthread_tree.collect_stats_recursively(stats_str, format);
         stats_str += "}";
         break;
@@ -511,7 +560,7 @@ std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
                 + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
         GraphVizUtils::append_graphviz_node(stats_str, "__malloctag_self_memory__",
             "Memory Allocated\\nBy MallocTag itself\\n"
-                + GraphVizUtils::pretty_print_bytes(malloc_get_total_memusage()));
+                + GraphVizUtils::pretty_print_bytes(g_registry.get_total_memusage()));
         stats_str += "}";
 
         break;
@@ -600,17 +649,14 @@ void* malloc(size_t size)
     void* result = __libc_malloc(size);
     if (g_perthread_malloc_hook_active) {
         if (result) {
-            if (g_global_registry_size > 0) {
+            if (g_registry.has_main_thread_tree()) {
                 // MallocTagEngine::init() has been invoked, good.
                 // It means the tree for the main-thread is ready.
                 // Let's check if the tree of _this_ thread has been initialized or not:
                 if (UNLIKELY(!g_perthread_tree.is_ready())) {
                     HookDisabler doNotAccountSelfMemoryInCurrentScope;
-                    if (g_perthread_tree.init(g_global_registry_malloc_trees[0])) {
-                        // register this new tree in the registry:
-                        size_t reservedIdx = g_global_registry_size.fetch_add(1);
-                        g_global_registry_malloc_trees[reservedIdx] = &g_perthread_tree;
-                    }
+                    if (g_perthread_tree.init(g_registry.get_main_thread_tree()))
+                        g_registry.register_tree(&g_perthread_tree);
                     // else: tree could not be initialized... probably we're out of memory... give up
                 }
                 // else: this thread has its tree already ready... nothing to do
