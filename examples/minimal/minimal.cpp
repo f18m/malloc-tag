@@ -17,7 +17,7 @@ void FuncB();
 
 void TopFunction()
 {
-    MallocTagScope noname("TopFunc"); // call-site "Top"
+    MallocTagScope noname("TopFunc"); // please account all mem allocs under the "TopFunc" name from this point onward
 
     FuncA();
     malloc(5); // allocation done directly by this TopFunction()
@@ -26,7 +26,7 @@ void TopFunction()
 
 void FuncA()
 {
-    MallocTagScope noname("FuncA"); // call-site "A"
+    MallocTagScope noname("FuncA"); // please account all mem allocs under the "FuncA" name from this point onward
 
     malloc(100);
     FuncB();
@@ -34,7 +34,7 @@ void FuncA()
 
 void FuncB()
 {
-    MallocTagScope noname("FuncB"); // call-site "B"
+    MallocTagScope noname("FuncB"); // please account all mem allocs under the "FuncB" name from this point onward
 
     // malloc(100);
     new uint8_t[200];

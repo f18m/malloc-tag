@@ -1,13 +1,5 @@
 digraph MallocTree {
-multithread [label="thread=multithread\n100.00%\n3kB"]
-multithread -> TopFunc
-TopFunc [label="TopFunc\n16.60%"]
-TopFunc -> FuncA
-TopFunc -> FuncB
-FuncA [label="FuncA\n9.86%"]
-FuncA -> FuncB
-FuncB [label="FuncB\n6.57%"]
-FuncB [label="FuncB\n6.57%"]
+multithread [label="thread=multithread\n100.00%\n2kB"]
 __before_init_node__ [label="Memory Allocated\nBefore MallocTag Init\n72kB"]
 __malloctag_self_memory__ [label="Memory Allocated\nBy MallocTag itself\n51kB"]
 }

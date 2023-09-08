@@ -106,7 +106,7 @@ examples/$(1)/%: examples/$(1)/%.o
 examples/$(1)/$(1): examples/$(1)/$(1).o $(LIBS)
 	$(CC) -o examples/$(1)/$(1) \
 		examples/$(1)/$(1).o \
-		-ldl -Lsrc -lmalloc_tag
+		-ldl -Lsrc -lmalloc_tag -pthread
 
 endef
 

@@ -8,14 +8,23 @@
 #include "malloc_tag.h"
 #include <iostream>
 #include <string.h>
+#include <sys/prctl.h>
+#include <thread>
 #include <unistd.h> // for linux
+#include <vector>
+
+#define NUM_THREADS 3
 
 void FuncA();
 void FuncB();
 
-void TopFunction()
+void TopFunction(int thread_id)
 {
-    MallocTagScope noname("TopFunc"); // call-site "Top"
+    std::string tName = std::string("exampleThr/") + std::to_string(thread_id);
+    prctl(PR_SET_NAME, tName.c_str());
+
+    std::cout << ("Hello world from " + tName + "\n") << std::flush;
+    MallocTagScope noname("TopFunc");
 
     FuncA();
     malloc(5); // allocation done directly by this TopFunction()
@@ -24,7 +33,7 @@ void TopFunction()
 
 void FuncA()
 {
-    MallocTagScope noname("FuncA"); // call-site "A"
+    MallocTagScope noname("FuncA");
 
     malloc(100);
     FuncB();
@@ -32,7 +41,7 @@ void FuncA()
 
 void FuncB()
 {
-    MallocTagScope noname("FuncB"); // call-site "B"
+    MallocTagScope noname("FuncB");
 
     // malloc(100);
     new uint8_t[200];
@@ -40,13 +49,20 @@ void FuncB()
 
 int main()
 {
-    // as soon as main() is entered, start malloc tag engine:
+    // as soon as main() is entered AND BEFORE LAUNCHING THREADS, start malloc tag engine:
     MallocTagEngine::init();
 
-    // run some dummy memory allocations
+    // launch dummy threads
     std::cout << "Hello world!" << std::endl;
-    std::cout << "Starting some dumb allocations to exercise the malloc_tag library" << std::endl;
-    TopFunction();
+    std::cout << "Now launching " << NUM_THREADS << " threads" << std::endl;
+    std::vector<std::thread> threads;
+    for (int i = 0; i < NUM_THREADS; i++) {
+        threads.push_back(std::thread(TopFunction, i));
+    }
+    for (auto& th : threads) {
+        th.join();
+    }
+
     std::cout << "VmRSS: " << MallocTagEngine::get_linux_rss_mem_usage_in_bytes() << "B" << std::endl;
 
     // dump stats in both JSON and graphviz formats

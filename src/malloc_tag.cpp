@@ -17,6 +17,7 @@
 #include "malloc_tag.h"
 #include "fmpool.h"
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <cstring>
 #include <dlfcn.h>
@@ -27,6 +28,7 @@
 // Constants
 //------------------------------------------------------------------------------
 
+#define MAX_THREADS 128
 #define MAX_SITENAME_LEN 16 // must be at least 16 bytes long due to use in prctl(PR_GET_NAME)
 #define WEIGHT_MULTIPLIER 10000
 #define MAX_CHILDREN_PER_NODE 16
@@ -41,8 +43,10 @@ extern "C" {
 // these __libc_* functions are the actual glibc implementation:
 void* __libc_malloc(size_t size);
 void __libc_free(void*);
+
+// malloctag globals that need to be declared at top:
 thread_local bool g_perthread_malloc_hook_active = true;
-size_t g_bytes_allocated_before_init = 0;
+std::atomic<size_t> g_bytes_allocated_before_init; // this accounts for ALL mallocs done by ALL threads before init
 };
 
 //------------------------------------------------------------------------------
@@ -266,6 +270,7 @@ typedef struct MallocTree_s {
     unsigned int m_nTreeLevels = 0;
 
     // tree limits:
+    unsigned int m_nMaxTreeNodes = MTAG_DEFAULT_MAX_TREE_NODES;
     unsigned int m_nMaxTreeLevels = MTAG_DEFAULT_MAX_TREE_LEVELS;
 
     bool init(size_t max_tree_nodes, size_t max_tree_levels) // triggers some MEMORY ALLOCATION
@@ -286,11 +291,19 @@ typedef struct MallocTree_s {
         m_pRootNode->set_sitename_to_threadname();
 
         m_nTreeLevels = 0;
+        m_nMaxTreeNodes = max_tree_nodes;
         m_nMaxTreeLevels = max_tree_levels;
 
         m_pCurrentNode = m_pRootNode;
 
         return true;
+    }
+
+    bool init(MallocTree_s* main_thread_tree)
+    {
+        // all secondary threads will create identical trees
+        // (this might change if I see the memory usage of malloctag is too high)
+        return init(main_thread_tree->m_nMaxTreeNodes, main_thread_tree->m_nMaxTreeLevels);
     }
 
     bool is_ready() { return m_pNodePool != NULL && m_pRootNode != NULL && m_pCurrentNode != NULL; }
@@ -398,7 +411,10 @@ typedef struct MallocTree_s {
     }
 } MallocTree_t;
 
+// more globals related:
 thread_local MallocTree_t g_perthread_tree;
+MallocTree_t* g_global_registry_malloc_trees[MAX_THREADS];
+std::atomic_uint g_global_registry_size;
 
 //------------------------------------------------------------------------------
 // MallocTagScope
@@ -408,57 +424,18 @@ MallocTagScope::MallocTagScope(const char* tag_name)
 {
     // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
     // VERY IMPORTANT: all code running in this function must be malloc-free
-    if (g_perthread_tree.is_ready())
-        g_perthread_tree.push_new_node(tag_name);
+    // if (g_perthread_tree.is_ready())
+    assert(g_perthread_tree.is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
+    g_perthread_tree.push_new_node(tag_name);
 }
 
 MallocTagScope::~MallocTagScope()
 {
     // pop by 1 level the current per-thread cursor
     // VERY IMPORTANT: all code running in this function must be malloc-free
-    if (g_perthread_tree.is_ready())
-        g_perthread_tree.pop_last_node();
-}
-
-//------------------------------------------------------------------------------
-// mtag hooks
-//------------------------------------------------------------------------------
-
-#define DEBUG_HOOKS 0
-
-void* mtag_malloc_hook(size_t size, void* caller)
-{
-    void* result = __libc_malloc(size);
-
-    if (result) {
-        if (g_perthread_tree.is_ready())
-            g_perthread_tree.m_pCurrentNode->track_malloc(size);
-        else
-            g_bytes_allocated_before_init += size;
-    }
-
-#if DEBUG_HOOKS
-    // do logging
-    {
-        HookDisabler avoidInfiniteRecursion;
-        printf("mtag_malloc_hook %zuB\n", size);
-    }
-#endif
-
-    return result;
-}
-
-void mtag_free_hook(void* __ptr)
-{
-    __libc_free(__ptr);
-
-#if DEBUG_HOOKS
-    // do logging
-    {
-        HookDisabler avoidInfiniteRecursion;
-        printf("mtag_free_hook %p\n", __ptr);
-    }
-#endif
+    // if (g_perthread_tree.is_ready())
+    assert(g_perthread_tree.is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
+    g_perthread_tree.pop_last_node();
 }
 
 //------------------------------------------------------------------------------
@@ -474,6 +451,11 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
     {
         HookDisabler doNotAccountSelfMemoryInCurrentScope;
         result = g_perthread_tree.init(max_tree_nodes, max_tree_levels);
+
+        // register the "first tree" in the registry:
+        // this will "unblock" the creation of malloc trees for all other threads, see malloc() logic
+        size_t reservedIdx = g_global_registry_size.fetch_add(1);
+        g_global_registry_malloc_trees[reservedIdx] = &g_perthread_tree;
     }
 
     return result;
@@ -532,13 +514,14 @@ int parseLine(char* line)
     while (*p < '0' || *p > '9')
         p++;
     line[i - 3] = '\0';
-    i = atoi(p);
-    return i;
+    return atoi(p); // it will be zero on error
 }
 
 size_t MallocTagEngine::get_linux_rss_mem_usage_in_bytes()
 {
     FILE* file = fopen("/proc/self/status", "r");
+    if (!file)
+        return 0;
     int result = -1;
     char line[128];
 
@@ -561,22 +544,52 @@ size_t MallocTagEngine::get_linux_rss_mem_usage_in_bytes()
 // glibc overrides OF GLIBC basic malloc/new/free/delete functions:
 //------------------------------------------------------------------------------
 
+// set to 1 to debug if the actual application malloc()/free() are properly hooked or not
+#define DEBUG_HOOKS 0
+
 extern "C" {
 void* malloc(size_t size)
 {
     void* caller = __builtin_return_address(0);
-    if (g_perthread_malloc_hook_active)
-        return mtag_malloc_hook(size, caller);
-    else
-        return __libc_malloc(size);
+
+    // always use the libc implementation to actually satisfy the malloc:
+    void* result = __libc_malloc(size);
+    if (g_perthread_malloc_hook_active) {
+        if (result) {
+            if (g_global_registry_size > 0) {
+                // MallocTagEngine::init() has been invoked, good.
+                // It means the tree for the main-thread is ready.
+                // Let's check if the tree of _this_ thread has been initialized or not:
+                if (UNLIKELY(!g_perthread_tree.is_ready()))
+                    g_perthread_tree.init(g_global_registry_malloc_trees[0]);
+                g_perthread_tree.m_pCurrentNode->track_malloc(size);
+            } else
+                g_bytes_allocated_before_init += size;
+        }
+
+#if DEBUG_HOOKS
+        // do logging
+        {
+            HookDisabler avoidInfiniteRecursion;
+            printf("mtag_malloc_hook %zuB\n", size);
+        }
+#endif
+    }
+
+    return result;
 }
 
 void free(void* __ptr) __THROW
 {
-    if (g_perthread_malloc_hook_active)
-        mtag_free_hook(__ptr);
-    else
-        __libc_free(__ptr);
+    // always use the libc implementation to actually free memory:
+    __libc_free(__ptr);
+
+#if DEBUG_HOOKS
+    if (g_perthread_malloc_hook_active) // do logging
+    {
+        HookDisabler avoidInfiniteRecursion;
+        printf("mtag_free_hook %p\n", __ptr);
+    }
+#endif
 }
-};
-// extern C
+}; // extern C
