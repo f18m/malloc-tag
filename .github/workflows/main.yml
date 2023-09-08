@@ -26,8 +26,11 @@ jobs:
     # Upload the binary, which we will need to debug the core
     - uses: actions/upload-artifact@v3
       with:
-        name: executable
-        path: ./examples/multithread/multithread
+        name: executables
+        path: |
+          ./examples/multithread/multithread
+          ./examples/minimal/minimal
+          ./src/libmalloc_tag.so*
     - name: Set cores to get stored in /cores
       run: |
         sudo mkdir /cores
