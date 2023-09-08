@@ -67,6 +67,18 @@ public:
     // if an empty string is passed, the full path will be taken from the environment variable
     // MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV, depending on the "format" argument.
     static bool write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath = "");
+
+    // Get the RSS memory reported by Linux for this process.
+    // This is Linux-specific utility.
+    // This utility function has nothing to do with malloctag but it can be used to get the
+    // OS-view of memory usage and see if it roughly matches with malloctag-reported results.
+    // The total memory allocations intercepted by malloctag will never match exactly the VIRT/RSS memory
+    // reported by Linux for a number of reasons:
+    //  * malloctag is not aware about the internal-allocator (e.g. glibc ptmalloc) overhead and
+    //    logic to acquire memory from the OS
+    //  * some memory allocations might happen via alternative methods compared to malloc()/new,
+    //    e.g. invoking directly mmap() or sbrk() syscalls
+    static size_t get_linux_rss_mem_usage_in_bytes();
 };
 
 class MallocTagScope {

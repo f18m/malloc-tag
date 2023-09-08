@@ -11,8 +11,11 @@ LIB_SRC = \
 LIBS = \
 	src/libmalloc_tag.so
 BINS = \
-	examples/minimal/minimal
-
+	examples/minimal/minimal \
+	examples/multithread/multithread
+EXAMPLE_LIST = \
+	minimal \
+	multithread
 
 LIB_OBJ = $(subst .cpp,.o,$(LIB_SRC))
 LIB_VER = 1
@@ -27,7 +30,7 @@ format_check:
 	# if you have clang-format >= 10.0.0, this will work:
 	@clang-format --dry-run --Werror $(LIB_HDR) $(LIB_SRC)
 
-example: $(BINS)
+minimal_example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
@@ -42,9 +45,26 @@ example: $(BINS)
 	@echo
 	@dot -Tsvg -O $(PWD)/examples/minimal/minimal_stats.dot
 
-# just a synonim for "example":
-examples: example
+ multithread_example: $(BINS)
+	@echo "Starting example application"
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
+		examples/multithread/multithread
+	@echo
+	@echo "JSON of output stats:"
+	@jq . $(PWD)/examples/multithread/multithread_stats.json
+	@echo
+	@echo "Graphviz DOT output stats (copy-paste that into https://dreampuf.github.io/):"
+	@cat $(PWD)/examples/multithread/multithread_stats.dot
+	@echo
+	@dot -Tsvg -O $(PWD)/examples/multithread/multithread_stats.dot
 
+
+# build and run all examples at once
+examples: \
+	minimal_example \
+	multithread_example
 
 benchmarks: 
 	@echo TODO
@@ -75,13 +95,21 @@ src/libmalloc_tag.so: $(LIB_HDR) $(LIB_OBJ)
 		-o $@
 	cd src && ln -sf libmalloc_tag.so libmalloc_tag.so.$(LIB_VER) 
 
+
+define example_build_targets
+
 # rule to COMPILE example code
-examples/minimal/%: examples/minimal/%.o
+examples/$(1)/%: examples/$(1)/%.o
 	$(CC) -o $@ $^ -pthread 
 
 # rule to LINK example code
-examples/minimal/minimal: examples/minimal/minimal.o $(LIBS)
-	$(CC) -o $@ \
-		examples/minimal/minimal.o \
+examples/$(1)/$(1): examples/$(1)/$(1).o $(LIBS)
+	$(CC) -o examples/$(1)/$(1) \
+		examples/$(1)/$(1).o \
 		-ldl -Lsrc -lmalloc_tag
+
+endef
+
+$(foreach ex, $(EXAMPLE_LIST), $(eval $(call example_build_targets,$(ex))))
+
 

@@ -1,10 +1,8 @@
 /*
-    malloc-tag MINIMAL example
+    malloc-tag MULTITHREAD example
 
-    This is a basic example showing how to
-    * initialize the malloctag engine using MallocTagEngine::init()
-    * create malloc scopes using MallocTagScope
-    * produce memory allocation stats using MallocTagEngine::write_stats_on_disk()
+    This is an example to show/test malloctag used against a multithreaded
+    application using the popular pthread library
 */
 
 #include "malloc_tag.h"

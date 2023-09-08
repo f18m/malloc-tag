@@ -21,4 +21,6 @@ jobs:
     - name: check formatting
       run: make format_check
     - name: run basic example
-      run: make example
+      run: make minimal_example
+    - name: run multithread example
+      run: make multithread_example

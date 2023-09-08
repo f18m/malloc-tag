@@ -524,6 +524,39 @@ bool MallocTagEngine::write_stats_on_disk(MallocTagOutputFormat_e format, const 
     return bwritten;
 }
 
+int parseLine(char* line)
+{
+    // This assumes that a digit will be found and the line ends in " Kb".
+    int i = strlen(line);
+    const char* p = line;
+    while (*p < '0' || *p > '9')
+        p++;
+    line[i - 3] = '\0';
+    i = atoi(p);
+    return i;
+}
+
+size_t MallocTagEngine::get_linux_rss_mem_usage_in_bytes()
+{
+    FILE* file = fopen("/proc/self/status", "r");
+    int result = -1;
+    char line[128];
+
+    while (fgets(line, 128, file) != NULL) {
+        if (strncmp(line, "VmSize:", 7) == 0) {
+            result = parseLine(line);
+            break;
+        }
+    }
+    fclose(file);
+
+    // the value we got is reported by linux in kB, so convert them:
+    if (result > 0)
+        result *= 1000;
+
+    return result;
+}
+
 //------------------------------------------------------------------------------
 // glibc overrides OF GLIBC basic malloc/new/free/delete functions:
 //------------------------------------------------------------------------------
