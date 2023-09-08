@@ -1,5 +1,80 @@
-digraph MallocTree {
-multithread3593076 [label="thread=multithread3593076\n100.00%\n2kB"]
-__before_init_node__ [label="Memory Allocated\nBefore MallocTag Init\n72kB"]
-__malloctag_self_memory__ [label="Memory Allocated\nBy MallocTag itself\n213kB"]
+digraph MallocTree0 {
+"multithread3600438" [label="thread=multithread3600438\n100.00%\n2kB"]
+}
+
+digraph MallocTree1 {
+"exampleThr/03600439" [label="thread=exampleThr/03600439\n100.00%\n536B"]
+"exampleThr/03600439" -> "TopFunc"
+"TopFunc" [label="TopFunc\n94.21%"]
+"TopFunc" -> "FuncA"
+"TopFunc" -> "FuncB"
+"FuncA" [label="FuncA\n55.97%"]
+"FuncA" -> "FuncB"
+"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="FuncB\n37.31%"]
+}
+
+digraph MallocTree2 {
+"exampleThr/13600440" [label="thread=exampleThr/13600440\n100.00%\n536B"]
+"exampleThr/13600440" -> "TopFunc"
+"TopFunc" [label="TopFunc\n94.21%"]
+"TopFunc" -> "FuncA"
+"TopFunc" -> "FuncB"
+"FuncA" [label="FuncA\n55.97%"]
+"FuncA" -> "FuncB"
+"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="FuncB\n37.31%"]
+}
+
+digraph MallocTree3 {
+"exampleThr/23600441" [label="thread=exampleThr/23600441\n100.00%\n536B"]
+"exampleThr/23600441" -> "TopFunc"
+"TopFunc" [label="TopFunc\n94.21%"]
+"TopFunc" -> "FuncA"
+"TopFunc" -> "FuncB"
+"FuncA" [label="FuncA\n55.97%"]
+"FuncA" -> "FuncB"
+"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="FuncB\n37.31%"]
+}
+
+digraph MallocTree4 {
+"exampleThr/43600443" [label="thread=exampleThr/43600443\n100.00%\n536B"]
+"exampleThr/43600443" -> "TopFunc"
+"TopFunc" [label="TopFunc\n94.21%"]
+"TopFunc" -> "FuncA"
+"TopFunc" -> "FuncB"
+"FuncA" [label="FuncA\n55.97%"]
+"FuncA" -> "FuncB"
+"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="FuncB\n37.31%"]
+}
+
+digraph MallocTree5 {
+"exampleThr/33600442" [label="thread=exampleThr/33600442\n100.00%\n536B"]
+"exampleThr/33600442" -> "TopFunc"
+"TopFunc" [label="TopFunc\n94.21%"]
+"TopFunc" -> "FuncA"
+"TopFunc" -> "FuncB"
+"FuncA" [label="FuncA\n55.97%"]
+"FuncA" -> "FuncB"
+"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="FuncB\n37.31%"]
+}
+
+digraph MallocTree6 {
+"exampleThr/53600444" [label="thread=exampleThr/53600444\n100.00%\n536B"]
+"exampleThr/53600444" -> "TopFunc"
+"TopFunc" [label="TopFunc\n94.21%"]
+"TopFunc" -> "FuncA"
+"TopFunc" -> "FuncB"
+"FuncA" [label="FuncA\n55.97%"]
+"FuncA" -> "FuncB"
+"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="FuncB\n37.31%"]
+}
+
+digraph MallocTree_globals {
+"__before_init_node__" [label="Memory Allocated\nBefore MallocTag Init\n72kB"]
+"__malloctag_self_memory__" [label="Memory Allocated\nBy MallocTag itself\n372kB"]
 }

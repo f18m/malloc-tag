@@ -20,6 +20,7 @@
 #include <cstring>
 #include <dlfcn.h>
 #include <fstream>
+#include <mutex>
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -30,8 +31,8 @@
 // methods garantueed to be malloc-free and O(1).
 // Also provides accessor functions to traverse the tree recursively to get
 // the memory profiler stats.
-// This class is not thread-safe, so there should be one MallocTree for each
-// thread existing in the target application.
+// This class is not thread-safe except for few methods so there should be one
+// MallocTree for each thread existing in the target application.
 //------------------------------------------------------------------------------
 class MallocTree {
 public:
@@ -57,10 +58,11 @@ public:
 
     //------------------------------------------------------------------------------
     // Memory profiling APIs
+    // These functions are thread-safe because it's generally another thread that
+    // will be accessing these functions
     //------------------------------------------------------------------------------
 
     void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format);
-    void compute_bytes_totals_recursively();
 
     //------------------------------------------------------------------------------
     // Getters
@@ -79,8 +81,8 @@ public:
 
 private:
     fmpool_t(MallocTreeNode) * m_pNodePool = NULL;
-    MallocTreeNode* m_pRootNode = NULL;
-    MallocTreeNode* m_pCurrentNode = NULL;
+    MallocTreeNode* m_pRootNode = NULL; // created by the init()
+    MallocTreeNode* m_pCurrentNode = NULL; // pointer to the current malloc scope inside the tree
 
     // last push status:
     unsigned int m_nPushNodeFailures = 0;
@@ -93,4 +95,7 @@ private:
     // tree limits:
     unsigned int m_nMaxTreeNodes = MTAG_DEFAULT_MAX_TREE_NODES;
     unsigned int m_nMaxTreeLevels = MTAG_DEFAULT_MAX_TREE_LEVELS;
+
+    // to be locked every time the tree structure is read or modified (e.g. visiting nodes with recursive functions):
+    std::mutex m_lockTreeStructure;
 };

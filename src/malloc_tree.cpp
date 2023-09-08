@@ -46,6 +46,10 @@ void MallocTree::push_new_node(const char* name) // must be malloc-free
         return;
     }
 
+    // from this point onward, we need to be able to read the tree structure (our children)
+    // and change the current-node pointer, so grab the lock:
+    std::lock_guard<std::mutex> guard(m_lockTreeStructure);
+
     MallocTreeNode* n = m_pCurrentNode->get_child_by_name(name);
     if (n) {
         // this branch of the tree already exists, just move the cursor:
@@ -86,6 +90,7 @@ void MallocTree::push_new_node(const char* name) // must be malloc-free
 void MallocTree::pop_last_node() // must be malloc-free
 {
     if (m_bLastPushWasSuccessful) {
+        std::lock_guard<std::mutex> guard(m_lockTreeStructure);
         MallocTreeNode* n = m_pCurrentNode->get_parent();
         assert(n); // if n == NULL it means m_pCurrentNode is pointing to the tree root... cannot pop... this is a
                    // logical mistake...
@@ -97,6 +102,20 @@ void MallocTree::pop_last_node() // must be malloc-free
 
 void MallocTree::collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format)
 {
+    // during the following tree traversal, we need the tree structure to be consistent across threads:
+    std::lock_guard<std::mutex> guard(m_lockTreeStructure);
+
+    // NOTE: order is important:
+
+    // STEP1: compute "bytes total" across the whole tree
+    m_pRootNode->compute_bytes_totals_recursively();
+
+    // STEP2: compute node weigth across the whole tree:
+    m_pRootNode->compute_node_weights_recursively(m_pRootNode->get_total_bytes());
+
+    // now, till we hold the lock which garantuees that the total bytes / node weights just computed are still accurate,
+    // do a last recursive walk to encode all stats in JSON/Graphviz/etc format:
+
     switch (format) {
     case MTAG_OUTPUT_FORMAT_JSON:
         out += "\"tree_for_thread_" + m_pRootNode->get_node_name() + "\": {";
@@ -114,15 +133,4 @@ void MallocTree::collect_stats_recursively(std::string& out, MallocTagOutputForm
         m_pRootNode->collect_graphviz_dot_output_recursively(out);
         break;
     }
-}
-
-void MallocTree::compute_bytes_totals_recursively()
-{
-    // NOTE: order is important:
-
-    // STEP1: compute "bytes total" across the whole tree
-    m_pRootNode->compute_bytes_totals_recursively();
-
-    // STEP2: compute node weigth across the whole tree:
-    m_pRootNode->compute_node_weights_recursively(m_pRootNode->get_total_bytes());
 }

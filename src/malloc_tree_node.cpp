@@ -88,11 +88,11 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
             + GraphVizUtils::pretty_print_bytes(m_nBytes);
     else
         thisNodeLabel = thisNodeName + "\\n" + get_weight_percentage_str() + "%";
-    GraphVizUtils::append_graphviz_node(out, thisNodeName, thisNodeLabel);
+    GraphVizUtils::append_node(out, thisNodeName, thisNodeLabel);
 
     // write all the connections between this node and its children:
     for (unsigned int i = 0; i < m_nChildrens; i++) {
-        out += thisNodeName + " -> " + m_pChildren[i]->get_node_name() + "\n";
+        GraphVizUtils::append_edge(out, thisNodeName, m_pChildren[i]->get_node_name());
     }
 
     // now recurse into each children:
@@ -103,21 +103,22 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
 size_t MallocTreeNode::compute_bytes_totals_recursively() // returns total bytes accumulated by this node
 {
     // postorder traversal of a tree:
-
     // first of all, traverse all children subtrees:
     size_t accumulated_bytes = 0;
     for (unsigned int i = 0; i < m_nChildrens; i++)
         accumulated_bytes += m_pChildren[i]->compute_bytes_totals_recursively();
 
-    // finally "visit" this node, updating the bytes count:
+    // finally "visit" this node, updating the bytes count, using all children contributions:
     m_nBytes = accumulated_bytes + m_nBytesDirect;
     return m_nBytes;
 }
 
 void MallocTreeNode::compute_node_weights_recursively(size_t rootNodeTotalBytes)
 {
-    // weighr is defined as
+    // weight is defined as:
     m_nWeight = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytes / rootNodeTotalBytes;
+
+    // recurse:
     for (unsigned int i = 0; i < m_nChildrens; i++)
         m_pChildren[i]->compute_node_weights_recursively(rootNodeTotalBytes);
 }

@@ -145,34 +145,7 @@ std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
     std::string stats_str;
     stats_str.reserve(4096);
 
-    // now traverse the tree collecting stats:
-    g_perthread_tree->compute_bytes_totals_recursively();
-
-    switch (format) {
-    case MTAG_OUTPUT_FORMAT_JSON:
-        stats_str += "{";
-        stats_str += "\"nBytesAllocBeforeInit\": " + std::to_string(g_bytes_allocated_before_init) + ",";
-        stats_str += "\"nMallocTagSelfUsageBytes\": " + std::to_string(g_registry.get_total_memusage()) + ",";
-        g_perthread_tree->collect_stats_recursively(stats_str, format);
-        stats_str += "}";
-        break;
-
-    case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
-        // see https://graphviz.org/doc/info/lang.html
-        stats_str += "digraph MallocTree {\n";
-        g_perthread_tree->collect_stats_recursively(stats_str, format);
-
-        // add a few nodes "external" to the tree:
-        GraphVizUtils::append_graphviz_node(stats_str, "__before_init_node__",
-            "Memory Allocated\\nBefore MallocTag Init\\n"
-                + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
-        GraphVizUtils::append_graphviz_node(stats_str, "__malloctag_self_memory__",
-            "Memory Allocated\\nBy MallocTag itself\\n"
-                + GraphVizUtils::pretty_print_bytes(g_registry.get_total_memusage()));
-        stats_str += "}";
-
-        break;
-    }
+    g_registry.collect_stats(stats_str, format);
 
     return stats_str;
 }

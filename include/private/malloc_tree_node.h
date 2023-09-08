@@ -35,9 +35,15 @@
 
 class GraphVizUtils {
 public:
-    static void append_graphviz_node(std::string& out, const std::string& nodeName, const std::string& label)
+    static void append_node(std::string& out, const std::string& nodeName, const std::string& label)
     {
-        out += nodeName + " [label=\"" + label + "\"]\n";
+
+        out += "\"" + nodeName + "\" [label=\"" + label + "\"]\n";
+    }
+
+    static void append_edge(std::string& out, const std::string& nodeName1, const std::string& nodeName2)
+    {
+        out += "\"" + nodeName1 + "\" -> \"" + nodeName2 + "\"\n";
     }
 
     static std::string pretty_print_bytes(size_t bytes)

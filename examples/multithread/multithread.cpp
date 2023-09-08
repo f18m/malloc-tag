@@ -59,9 +59,22 @@ int main()
     for (int i = 0; i < NUM_THREADS; i++) {
         threads.push_back(std::thread(TopFunction, i));
     }
+
+    // wait till all threads are terminated:
     for (auto& th : threads) {
         th.join();
     }
+    threads.clear();
+
+    // launch more dummy threads
+    for (int i = NUM_THREADS; i < NUM_THREADS * 2; i++) {
+        threads.push_back(std::thread(TopFunction, i));
+    }
+    // wait till all threads are terminated:
+    for (auto& th : threads) {
+        th.join();
+    }
+    threads.clear();
 
     std::cout << "VmRSS: " << MallocTagEngine::get_linux_rss_mem_usage_in_bytes() << "B" << std::endl;
 
