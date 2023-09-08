@@ -52,7 +52,7 @@ thread_local bool g_perthread_malloc_hook_active = true;
 std::atomic<size_t> g_bytes_allocated_before_init; // this accounts for ALL mallocs done by ALL threads before init
 
 // the main global per-thread malloc tree:
-thread_local MallocTree_t g_perthread_tree;
+thread_local MallocTree g_perthread_tree;
 
 //------------------------------------------------------------------------------
 // Utils
@@ -251,7 +251,7 @@ void* malloc(size_t size)
                 // else: this thread has its tree already ready... nothing to do
 
                 if (g_perthread_tree.is_ready())
-                    g_perthread_tree.m_pCurrentNode->track_malloc(size);
+                    g_perthread_tree.track_malloc_in_current_scope(size);
 
             } else
                 // MallocTagEngine::init() has never been invoked... wait for that to happen

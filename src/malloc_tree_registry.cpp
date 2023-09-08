@@ -9,7 +9,7 @@
 
 #include "private/malloc_tree_registry.h"
 
-bool MallocTreeRegistry::register_tree(MallocTree_t* ptree)
+bool MallocTreeRegistry::register_tree(MallocTree* ptree)
 {
     // thread-safe code
     size_t reservedIdx = m_nMallocTrees.fetch_add(1);

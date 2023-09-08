@@ -28,18 +28,18 @@
 
 //------------------------------------------------------------------------------
 // MallocTreeRegistry
-// A handler of many MallocTree_t instances, one for each application thread.
+// A handler of many MallocTree instances, one for each application thread.
 // This class is thread-safe and is a singleton.
 //------------------------------------------------------------------------------
 
 class MallocTreeRegistry {
 public:
-    bool register_tree(MallocTree_t* ptree);
+    bool register_tree(MallocTree* ptree);
     size_t get_total_memusage();
 
     bool has_main_thread_tree() { return m_nMallocTrees > 0; }
 
-    MallocTree_t* get_main_thread_tree()
+    MallocTree* get_main_thread_tree()
     {
         if (m_nMallocTrees == 0)
             return NULL;
@@ -47,6 +47,6 @@ public:
     }
 
 private:
-    MallocTree_t* m_pMallocTreeRegistry[MAX_THREADS];
+    MallocTree* m_pMallocTreeRegistry[MAX_THREADS];
     std::atomic_uint m_nMallocTrees;
 };

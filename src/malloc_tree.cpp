@@ -11,7 +11,7 @@
 
 #define UNLIKELY(x) __builtin_expect((x), 0)
 
-bool MallocTree_s::init(size_t max_tree_nodes, size_t max_tree_levels) // triggers some MEMORY ALLOCATION
+bool MallocTree::init(size_t max_tree_nodes, size_t max_tree_levels) // triggers some MEMORY ALLOCATION
 {
     assert(m_pNodePool == nullptr);
 
@@ -37,7 +37,7 @@ bool MallocTree_s::init(size_t max_tree_nodes, size_t max_tree_levels) // trigge
     return true;
 }
 
-void MallocTree_s::push_new_node(const char* name) // must be malloc-free
+void MallocTree::push_new_node(const char* name) // must be malloc-free
 {
     if (UNLIKELY(m_pCurrentNode->get_tree_level() == m_nMaxTreeLevels)) {
         // reached max depth level... cannot push anymore
@@ -83,7 +83,7 @@ void MallocTree_s::push_new_node(const char* name) // must be malloc-free
     m_nTreeLevels = std::max(m_nTreeLevels, m_pCurrentNode->get_tree_level());
 }
 
-void MallocTree_s::pop_last_node() // must be malloc-free
+void MallocTree::pop_last_node() // must be malloc-free
 {
     if (m_bLastPushWasSuccessful) {
         MallocTreeNode* n = m_pCurrentNode->get_parent();
@@ -95,7 +95,7 @@ void MallocTree_s::pop_last_node() // must be malloc-free
     // pointer
 }
 
-void MallocTree_s::collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format)
+void MallocTree::collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format)
 {
     switch (format) {
     case MTAG_OUTPUT_FORMAT_JSON:
@@ -116,7 +116,7 @@ void MallocTree_s::collect_stats_recursively(std::string& out, MallocTagOutputFo
     }
 }
 
-void MallocTree_s::compute_bytes_totals_recursively()
+void MallocTree::compute_bytes_totals_recursively()
 {
     // NOTE: order is important:
 
