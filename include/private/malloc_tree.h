@@ -72,7 +72,9 @@ public:
     {
         // we ignore other very compact fields used by a MallocTree... the mempool of nodes
         // is by far the biggest memory usage:
-        return fmpool_mem_usage(MallocTreeNode, m_pNodePool);
+        if (m_pNodePool)
+            return fmpool_mem_usage(MallocTreeNode, m_pNodePool);
+        return 0;
     }
 
 private:
