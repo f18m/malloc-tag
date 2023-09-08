@@ -16,12 +16,12 @@ bool MallocTree_s::init(size_t max_tree_nodes, size_t max_tree_levels) // trigge
     assert(m_pNodePool == nullptr);
 
     // initialize the memory pool of tree nodes
-    m_pNodePool = fmpool_create(MallocTreeNode_t, max_tree_nodes);
+    m_pNodePool = fmpool_create(MallocTreeNode, max_tree_nodes);
     if (!m_pNodePool)
         return false;
 
     // init the "current node" pointer to have the same name of the
-    m_pRootNode = fmpool_get(MallocTreeNode_t, m_pNodePool);
+    m_pRootNode = fmpool_get(MallocTreeNode, m_pNodePool);
     assert(m_pRootNode);
     m_nTreeNodesInUse++;
     m_pRootNode->init(NULL); // this is the tree root node
@@ -39,14 +39,14 @@ bool MallocTree_s::init(size_t max_tree_nodes, size_t max_tree_levels) // trigge
 
 void MallocTree_s::push_new_node(const char* name) // must be malloc-free
 {
-    if (UNLIKELY(m_pCurrentNode->m_nTreeLevel == m_nMaxTreeLevels)) {
+    if (UNLIKELY(m_pCurrentNode->get_tree_level() == m_nMaxTreeLevels)) {
         // reached max depth level... cannot push anymore
         m_nPushNodeFailures++;
         m_bLastPushWasSuccessful = false;
         return;
     }
 
-    MallocTreeNode_t* n = m_pCurrentNode->get_child_by_name(name);
+    MallocTreeNode* n = m_pCurrentNode->get_child_by_name(name);
     if (n) {
         // this branch of the tree already exists, just move the cursor:
         m_pCurrentNode = n;
@@ -55,7 +55,7 @@ void MallocTree_s::push_new_node(const char* name) // must be malloc-free
     }
 
     // this branch of the tree needs to be created:
-    n = fmpool_get(MallocTreeNode_t, m_pNodePool);
+    n = fmpool_get(MallocTreeNode, m_pNodePool);
     if (UNLIKELY(!n)) {
         // memory pool is full... memory profiling results will be INCOMPLETE and possibly MISLEADING:
         m_nPushNodeFailures++;
@@ -69,7 +69,7 @@ void MallocTree_s::push_new_node(const char* name) // must be malloc-free
     if (!m_pCurrentNode->link_new_children(n)) {
         // failed to link current node: release node back to the pool
         m_nTreeNodesInUse--;
-        fmpool_free(MallocTreeNode_t, n, m_pNodePool);
+        fmpool_free(MallocTreeNode, n, m_pNodePool);
 
         // and record this failure:
         m_nPushNodeFailures++;
@@ -80,13 +80,13 @@ void MallocTree_s::push_new_node(const char* name) // must be malloc-free
     // new node ready, move the cursor:
     m_pCurrentNode = n;
     m_bLastPushWasSuccessful = true;
-    m_nTreeLevels = std::max(m_nTreeLevels, m_pCurrentNode->m_nTreeLevel);
+    m_nTreeLevels = std::max(m_nTreeLevels, m_pCurrentNode->get_tree_level());
 }
 
 void MallocTree_s::pop_last_node() // must be malloc-free
 {
     if (m_bLastPushWasSuccessful) {
-        MallocTreeNode_t* n = m_pCurrentNode->m_pParent;
+        MallocTreeNode* n = m_pCurrentNode->get_parent();
         assert(n); // if n == NULL it means m_pCurrentNode is pointing to the tree root... cannot pop... this is a
                    // logical mistake...
         m_pCurrentNode = n;
@@ -124,5 +124,5 @@ void MallocTree_s::compute_bytes_totals_recursively()
     m_pRootNode->compute_bytes_totals_recursively();
 
     // STEP2: compute node weigth across the whole tree:
-    m_pRootNode->compute_node_weights_recursively(m_pRootNode->m_nBytes);
+    m_pRootNode->compute_node_weights_recursively(m_pRootNode->get_total_bytes());
 }

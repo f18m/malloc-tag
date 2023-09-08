@@ -26,7 +26,7 @@
 
 //------------------------------------------------------------------------------
 // MallocTree_t
-// A tree composed by MallocTreeNode_t data structures, with push() and pop()
+// A tree composed by MallocTreeNode data structures, with push() and pop()
 // methods garantueed to be malloc-free and O(1).
 // Also provides accessor functions to traverse the tree recursively to get
 // the memory profiler stats.
@@ -34,9 +34,9 @@
 // thread existing in the target application.
 //------------------------------------------------------------------------------
 typedef struct MallocTree_s {
-    fmpool_t(MallocTreeNode_t) * m_pNodePool = NULL;
-    MallocTreeNode_t* m_pRootNode = NULL;
-    MallocTreeNode_t* m_pCurrentNode = NULL;
+    fmpool_t(MallocTreeNode) * m_pNodePool = NULL;
+    MallocTreeNode* m_pRootNode = NULL;
+    MallocTreeNode* m_pCurrentNode = NULL;
 
     // last push status:
     unsigned int m_nPushNodeFailures = 0;
@@ -67,7 +67,7 @@ typedef struct MallocTree_s {
     size_t get_memory_usage_in_bytes() const
     {
         // we ignore other very compact fields used by a MallocTree_t:
-        return fmpool_mem_usage(MallocTreeNode_t, m_pNodePool);
+        return fmpool_mem_usage(MallocTreeNode, m_pNodePool);
     }
 
     void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format);

@@ -9,7 +9,7 @@
 
 #include "private/malloc_tree_node.h"
 
-void MallocTreeNode_s::set_sitename_to_shlib_name_from_func_pointer(void* funcpointer)
+void MallocTreeNode::set_sitename_to_shlib_name_from_func_pointer(void* funcpointer)
 {
     Dl_info address_info;
     if (dladdr(funcpointer, &address_info) == 0 || address_info.dli_fname == nullptr) {
@@ -20,7 +20,7 @@ void MallocTreeNode_s::set_sitename_to_shlib_name_from_func_pointer(void* funcpo
 
     // FIXME: should we free the pointers inside "address_info"??
 }
-void MallocTreeNode_s::set_sitename_to_threadname()
+void MallocTreeNode::set_sitename_to_threadname()
 {
     // get thread name:
     prctl(PR_GET_NAME, &m_siteName[0], 0, 0);
@@ -32,11 +32,11 @@ void MallocTreeNode_s::set_sitename_to_threadname()
         offset = MTAG_MAX_SITENAME_LEN - 6; // truncate... 6 digits should be enough
     snprintf(&m_siteName[offset], 6, "%d", syscall(SYS_gettid));
 }
-void MallocTreeNode_s::set_sitename(const char* sitename)
+void MallocTreeNode::set_sitename(const char* sitename)
 {
     strncpy(&m_siteName[0], sitename, std::min(strlen(sitename), (size_t)MTAG_MAX_SITENAME_LEN));
 }
-bool MallocTreeNode_s::link_new_children(MallocTreeNode_s* new_child)
+bool MallocTreeNode::link_new_children(MallocTreeNode* new_child)
 {
     if (m_nChildrens < MTAG_MAX_CHILDREN_PER_NODE) {
         m_pChildren[m_nChildrens++] = new_child;
@@ -45,7 +45,7 @@ bool MallocTreeNode_s::link_new_children(MallocTreeNode_s* new_child)
     return false;
 }
 
-MallocTreeNode_s* MallocTreeNode_s::get_child_by_name(const char* name) const
+MallocTreeNode* MallocTreeNode::get_child_by_name(const char* name) const
 {
     size_t nchars = std::min(strlen(name), (size_t)MTAG_MAX_SITENAME_LEN);
     for (unsigned int i = 0; i < m_nChildrens; i++)
@@ -54,7 +54,7 @@ MallocTreeNode_s* MallocTreeNode_s::get_child_by_name(const char* name) const
     return NULL;
 }
 
-void MallocTreeNode_s::collect_json_stats_recursively(std::string& out)
+void MallocTreeNode::collect_json_stats_recursively(std::string& out)
 {
     // each node is a JSON object
     out += "\"" + get_node_name() + "\":{";
@@ -72,7 +72,7 @@ void MallocTreeNode_s::collect_json_stats_recursively(std::string& out)
     out += "}}"; // close childrenNodes + the whole node object
 }
 
-void MallocTreeNode_s::collect_graphviz_dot_output(std::string& out)
+void MallocTreeNode::collect_graphviz_dot_output(std::string& out)
 {
     std::string thisNodeName = get_node_name();
 
@@ -96,7 +96,7 @@ void MallocTreeNode_s::collect_graphviz_dot_output(std::string& out)
         m_pChildren[i]->collect_graphviz_dot_output(out);
 }
 
-size_t MallocTreeNode_s::compute_bytes_totals_recursively() // returns total bytes accumulated by this node
+size_t MallocTreeNode::compute_bytes_totals_recursively() // returns total bytes accumulated by this node
 {
     // postorder traversal of a tree:
 
@@ -110,7 +110,7 @@ size_t MallocTreeNode_s::compute_bytes_totals_recursively() // returns total byt
     return m_nBytes;
 }
 
-void MallocTreeNode_s::compute_node_weights_recursively(size_t rootNodeTotalBytes)
+void MallocTreeNode::compute_node_weights_recursively(size_t rootNodeTotalBytes)
 {
     // weighr is defined as
     m_nWeight = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytes / rootNodeTotalBytes;
