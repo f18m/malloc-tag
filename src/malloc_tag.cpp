@@ -88,7 +88,6 @@ MallocTagScope::MallocTagScope(const char* tag_name)
 {
     // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
     // VERY IMPORTANT: all code running in this function must be malloc-free
-    // if (g_perthread_tree.is_ready())
     assert(g_perthread_tree.is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
     g_perthread_tree.push_new_node(tag_name);
 }
@@ -97,7 +96,6 @@ MallocTagScope::~MallocTagScope()
 {
     // pop by 1 level the current per-thread cursor
     // VERY IMPORTANT: all code running in this function must be malloc-free
-    // if (g_perthread_tree.is_ready())
     assert(g_perthread_tree.is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
     g_perthread_tree.pop_last_node();
 }

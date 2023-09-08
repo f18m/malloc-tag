@@ -20,6 +20,7 @@ void MallocTreeNode::set_sitename_to_shlib_name_from_func_pointer(void* funcpoin
 
     // FIXME: should we free the pointers inside "address_info"??
 }
+
 void MallocTreeNode::set_sitename_to_threadname()
 {
     // get thread name:
@@ -33,10 +34,12 @@ void MallocTreeNode::set_sitename_to_threadname()
     long int tid = syscall(SYS_gettid);
     snprintf(&m_siteName[offset], MTAG_MAX_SITENAME_LEN - offset, "%ld", tid);
 }
+
 void MallocTreeNode::set_sitename(const char* sitename)
 {
     strncpy(&m_siteName[0], sitename, std::min(strlen(sitename), (size_t)MTAG_MAX_SITENAME_LEN));
 }
+
 bool MallocTreeNode::link_new_children(MallocTreeNode* new_child)
 {
     if (m_nChildrens < MTAG_MAX_CHILDREN_PER_NODE) {
@@ -73,7 +76,7 @@ void MallocTreeNode::collect_json_stats_recursively(std::string& out)
     out += "}}"; // close childrenNodes + the whole node object
 }
 
-void MallocTreeNode::collect_graphviz_dot_output(std::string& out)
+void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
 {
     std::string thisNodeName = get_node_name();
 
@@ -94,7 +97,7 @@ void MallocTreeNode::collect_graphviz_dot_output(std::string& out)
 
     // now recurse into each children:
     for (unsigned int i = 0; i < m_nChildrens; i++)
-        m_pChildren[i]->collect_graphviz_dot_output(out);
+        m_pChildren[i]->collect_graphviz_dot_output_recursively(out);
 }
 
 size_t MallocTreeNode::compute_bytes_totals_recursively() // returns total bytes accumulated by this node

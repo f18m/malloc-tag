@@ -34,23 +34,6 @@
 // thread existing in the target application.
 //------------------------------------------------------------------------------
 class MallocTree {
-private:
-    fmpool_t(MallocTreeNode) * m_pNodePool = NULL;
-    MallocTreeNode* m_pRootNode = NULL;
-    MallocTreeNode* m_pCurrentNode = NULL;
-
-    // last push status:
-    unsigned int m_nPushNodeFailures = 0;
-    bool m_bLastPushWasSuccessful = false;
-
-    // tree status:
-    unsigned int m_nTreeNodesInUse = 0;
-    unsigned int m_nTreeLevels = 0;
-
-    // tree limits:
-    unsigned int m_nMaxTreeNodes = MTAG_DEFAULT_MAX_TREE_NODES;
-    unsigned int m_nMaxTreeLevels = MTAG_DEFAULT_MAX_TREE_LEVELS;
-
 public:
     //------------------------------------------------------------------------------
     // Init API
@@ -59,7 +42,7 @@ public:
     bool init(size_t max_tree_nodes, size_t max_tree_levels); // triggers some MEMORY ALLOCATION
     bool init(MallocTree* main_thread_tree)
     {
-        // all secondary threads will create identical trees
+        // all secondary threads will create trees identical to the main-thread tree
         // (this might change if I see the memory usage of malloctag is too high)
         return init(main_thread_tree->m_nMaxTreeNodes, main_thread_tree->m_nMaxTreeLevels);
     }
@@ -87,7 +70,25 @@ public:
 
     size_t get_memory_usage_in_bytes() const
     {
-        // we ignore other very compact fields used by a MallocTree_t:
+        // we ignore other very compact fields used by a MallocTree... the mempool of nodes
+        // is by far the biggest memory usage:
         return fmpool_mem_usage(MallocTreeNode, m_pNodePool);
     }
+
+private:
+    fmpool_t(MallocTreeNode) * m_pNodePool = NULL;
+    MallocTreeNode* m_pRootNode = NULL;
+    MallocTreeNode* m_pCurrentNode = NULL;
+
+    // last push status:
+    unsigned int m_nPushNodeFailures = 0;
+    bool m_bLastPushWasSuccessful = false;
+
+    // tree status:
+    unsigned int m_nTreeNodesInUse = 0;
+    unsigned int m_nTreeLevels = 0;
+
+    // tree limits:
+    unsigned int m_nMaxTreeNodes = MTAG_DEFAULT_MAX_TREE_NODES;
+    unsigned int m_nMaxTreeLevels = MTAG_DEFAULT_MAX_TREE_LEVELS;
 };

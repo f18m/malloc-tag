@@ -111,7 +111,7 @@ void MallocTree::collect_stats_recursively(std::string& out, MallocTagOutputForm
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
         // there is no much room in Graphviz DOT to include some extra info related to the whole tree
         // like the ones we put in the JSON output
-        m_pRootNode->collect_graphviz_dot_output(out);
+        m_pRootNode->collect_graphviz_dot_output_recursively(out);
         break;
     }
 }

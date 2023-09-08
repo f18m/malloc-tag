@@ -66,18 +66,11 @@ public:
 //------------------------------------------------------------------------------
 
 class MallocTreeNode {
-private:
-    size_t m_nBytes; ///< Allocated bytes by this or descendant nodes.
-    size_t m_nBytesDirect; ///< Allocated bytes (only for this node).
-    size_t m_nAllocations; ///< The number of allocations for this node.
-    unsigned int m_nTreeLevel; ///< How deep is located this node in the tree?
-    size_t m_nWeight; ///< Weight of this node expressed as MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
-    std::array<char, MTAG_MAX_SITENAME_LEN> m_siteName; ///< Site name, NUL terminated
-    std::array<MallocTreeNode*, MTAG_MAX_CHILDREN_PER_NODE> m_pChildren; ///< Children nodes.
-    unsigned int m_nChildrens; ///< Number of valid children pointers in m_pChildren[]
-    MallocTreeNode* m_pParent; ///< Pointer to parent node; NULL if this is the root node
-
 public:
+    //------------------------------------------------------------------------------
+    // Node creation API
+    //------------------------------------------------------------------------------
+
     void init(MallocTreeNode* parent)
     {
         m_nBytes = 0;
@@ -88,10 +81,6 @@ public:
         m_nChildrens = 0;
         m_pParent = parent;
     }
-
-    //------------------------------------------------------------------------------
-    // Node creation API
-    //------------------------------------------------------------------------------
 
     void set_sitename_to_shlib_name_from_func_pointer(void* funcpointer);
     void set_sitename_to_threadname();
@@ -109,7 +98,7 @@ public:
     }
 
     void collect_json_stats_recursively(std::string& out);
-    void collect_graphviz_dot_output(std::string& out);
+    void collect_graphviz_dot_output_recursively(std::string& out);
 
     size_t compute_bytes_totals_recursively();
     void compute_node_weights_recursively(size_t rootNodeTotalBytes);
@@ -149,6 +138,17 @@ public:
         // fixed-size array of chars:
         return std::string(&m_siteName[0], strlen(&m_siteName[0]));
     }
+
+private:
+    size_t m_nBytes; ///< Allocated bytes by this or descendant nodes.
+    size_t m_nBytesDirect; ///< Allocated bytes (only for this node).
+    size_t m_nAllocations; ///< The number of allocations for this node.
+    unsigned int m_nTreeLevel; ///< How deep is located this node in the tree?
+    size_t m_nWeight; ///< Weight of this node expressed as MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
+    std::array<char, MTAG_MAX_SITENAME_LEN> m_siteName; ///< Site name, NUL terminated
+    std::array<MallocTreeNode*, MTAG_MAX_CHILDREN_PER_NODE> m_pChildren; ///< Children nodes.
+    unsigned int m_nChildrens; ///< Number of valid children pointers in m_pChildren[]
+    MallocTreeNode* m_pParent; ///< Pointer to parent node; NULL if this is the root node
 };
 
 // define a specialized type for the memory pool of MallocTreeNode_t
