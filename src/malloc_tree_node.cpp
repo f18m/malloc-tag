@@ -81,9 +81,15 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
     // for each node provide an overall view of
     // - total memory usage accounted for this node (both in bytes and as percentage)
     // - self memory usage (both in bytes and as percentage)
-    std::string weight = "total=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " ("
-        + get_weight_percentage_str() + "%)\\nself=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelf) + " ("
-        + get_weight_self_percentage_str() + "%)";
+    std::string weight;
+    if (m_nBytesTotal != m_nBytesSelf)
+        weight = "total=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " (" + get_weight_percentage_str()
+            + "%)\\nself=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelf) + " (" + get_weight_self_percentage_str()
+            + "%)";
+    else
+        // shorten the label:
+        weight = "total=self=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " (" + get_weight_percentage_str()
+            + "%)";
 
     // write a description of this node:
     std::string thisNodeLabel, thisNodeShape;

@@ -1,6 +1,6 @@
-digraph MallocTree_TID3665833 {
+digraph MallocTree_TID3666447 {
 node [colorscheme=reds9 style=filled]
-"minimal" [label="thread=minimal\nTID=3665833\ntotal=4kB (100.00%)\nself=2kB (54.36%)" shape=box fillcolor=5]
+"minimal" [label="thread=minimal\nTID=3666447\ntotal=4kB (100.00%)\nself=2kB (54.36%)" shape=box fillcolor=5]
 "minimal" -> "TopFunc"
 "TopFunc" [label="scope=TopFunc\ntotal=2kB (45.63%)\nself=5B (0.10%)" fillcolor=1]
 "TopFunc" -> "FuncA"
@@ -8,9 +8,9 @@ node [colorscheme=reds9 style=filled]
 "TopFunc" -> "FuncC"
 "FuncA" [label="scope=FuncA\ntotal=600B (12.86%)\nself=100B (2.14%)" fillcolor=1]
 "FuncA" -> "FuncB"
-"FuncB" [label="scope=FuncB\ntotal=500B (10.71%)\nself=500B (10.71%)" fillcolor=3]
-"FuncB" [label="scope=FuncB\ntotal=500B (10.71%)\nself=500B (10.71%)" fillcolor=3]
-"FuncC" [label="scope=FuncC\ntotal=1kB (21.95%)\nself=1kB (21.95%)" fillcolor=4]
+"FuncB" [label="scope=FuncB\ntotal=self=500B (10.71%)" fillcolor=3]
+"FuncB" [label="scope=FuncB\ntotal=self=500B (10.71%)" fillcolor=3]
+"FuncC" [label="scope=FuncC\ntotal=self=1kB (21.95%)" fillcolor=4]
 }
 
 digraph MallocTree_globals {
