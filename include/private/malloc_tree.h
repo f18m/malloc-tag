@@ -62,7 +62,7 @@ public:
     // will be accessing these functions
     //------------------------------------------------------------------------------
 
-    void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format);
+    void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format, const std::string& output_options);
 
     //------------------------------------------------------------------------------
     // Getters

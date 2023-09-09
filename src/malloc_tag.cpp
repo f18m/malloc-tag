@@ -137,7 +137,7 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
     return g_perthread_tree != nullptr;
 }
 
-std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
+std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format, const std::string& output_options)
 {
     HookDisabler doNotAccountCollectStatMemoryUsage;
 
@@ -145,15 +145,15 @@ std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format)
     std::string stats_str;
     stats_str.reserve(4096);
 
-    g_registry.collect_stats(stats_str, format);
+    g_registry.collect_stats(stats_str, format, output_options);
 
     return stats_str;
 }
 
-bool MallocTagEngine::write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath)
+bool __internal_write_stats_on_disk(
+    MallocTagOutputFormat_e format, const std::string& fullpath, const std::string& output_options)
 {
     bool bwritten = false;
-    HookDisabler doNotAccountCollectStatMemoryUsage;
 
     std::string fpath = fullpath;
     if (fpath.empty()) {
@@ -172,9 +172,28 @@ bool MallocTagEngine::write_stats_on_disk(MallocTagOutputFormat_e format, const 
 
     std::ofstream stats_file(fpath);
     if (stats_file.is_open()) {
-        stats_file << collect_stats(format) << std::endl;
+        stats_file << MallocTagEngine::collect_stats(format, output_options) << std::endl;
         bwritten = true;
         stats_file.close();
+    }
+
+    return bwritten;
+}
+
+bool MallocTagEngine::write_stats_on_disk(
+    MallocTagOutputFormat_e format, const std::string& fullpath, const std::string& output_options)
+{
+    HookDisabler doNotAccountCollectStatMemoryUsage;
+
+    bool bwritten = false;
+    switch (format) {
+    case MTAG_OUTPUT_FORMAT_ALL:
+        bwritten = __internal_write_stats_on_disk(MTAG_OUTPUT_FORMAT_JSON, fullpath, output_options);
+        bwritten &= __internal_write_stats_on_disk(MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT, fullpath, output_options);
+        break;
+
+    default:
+        bwritten = __internal_write_stats_on_disk(format, fullpath, output_options);
     }
 
     return bwritten;

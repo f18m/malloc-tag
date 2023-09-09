@@ -71,7 +71,8 @@ size_t MallocTreeRegistry::get_total_memusage()
 
 extern std::atomic<size_t> g_bytes_allocated_before_init;
 
-void MallocTreeRegistry::collect_stats(std::string& stats_str, MallocTagOutputFormat_e format)
+void MallocTreeRegistry::collect_stats(
+    std::string& stats_str, MallocTagOutputFormat_e format, const std::string& output_options)
 {
     // this code is thread-safe because trees can only get registered, never removed:
     size_t num_trees = m_nMallocTrees.load();
@@ -83,7 +84,7 @@ void MallocTreeRegistry::collect_stats(std::string& stats_str, MallocTagOutputFo
         stats_str += "\"nBytesMallocTagSelfUsage\": " + std::to_string(get_total_memusage()) + ",";
 
         for (size_t i = 0; i < num_trees; i++) {
-            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format);
+            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
             if (i != num_trees - 1)
                 stats_str += ",";
         }
@@ -92,10 +93,17 @@ void MallocTreeRegistry::collect_stats(std::string& stats_str, MallocTagOutputFo
 
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
         // see https://graphviz.org/doc/info/lang.html
+        if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
+            // create a single unique graph for ALL threads/trees, named "MallocTree"
+            stats_str += "digraph MallocTree {\n";
+            stats_str += "node [colorscheme=reds9 style=filled]\n"; // apply a colorscheme to all nodes
+        }
         for (size_t i = 0; i < num_trees; i++) {
-            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format);
+            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
             stats_str += "\n";
         }
+        if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
+            stats_str += "}\n"; // close the MallocTree
 
         // add a few nodes "external" to the tree:
         stats_str += "digraph MallocTree_globals {\n";

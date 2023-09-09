@@ -100,7 +100,8 @@ void MallocTree::pop_last_node() // must be malloc-free
     // pointer
 }
 
-void MallocTree::collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format)
+void MallocTree::collect_stats_recursively(
+    std::string& out, MallocTagOutputFormat_e format, const std::string& output_options)
 {
     // during the following tree traversal, we need the tree structure to be consistent across threads:
     std::lock_guard<std::mutex> guard(m_lockTreeStructure);
@@ -129,11 +130,16 @@ void MallocTree::collect_stats_recursively(std::string& out, MallocTagOutputForm
 
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
         // there is no much room in Graphviz DOT to include some extra info related to the whole tree
-        // like the ones we put in the JSON output
-        out += "digraph MallocTree_TID" + std::to_string(m_pRootNode->get_tid()) + " {\n";
-        out += "node [colorscheme=reds9 style=filled]\n"; // apply a colorscheme to all nodes
+        // like the ones we put in the JSON output... so we leave out info like
+        // m_nTreeNodesInUse/m_nMaxTreeNodes/m_nPushNodeFailures/etc
+        if (output_options != MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
+            // create one tree for each thread:
+            out += "digraph MallocTree_TID" + std::to_string(m_pRootNode->get_tid()) + " {\n";
+            out += "node [colorscheme=reds9 style=filled]\n"; // apply a colorscheme to all nodes
+        }
         m_pRootNode->collect_graphviz_dot_output_recursively(out);
-        out += "}\n";
+        if (output_options != MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
+            out += "}\n"; // close this tree
         break;
     }
 }

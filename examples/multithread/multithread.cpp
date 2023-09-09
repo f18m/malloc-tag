@@ -7,16 +7,16 @@
 
 #include "malloc_tag.h"
 #include <iostream>
+#include <map>
 #include <string.h>
 #include <sys/prctl.h>
 #include <thread>
-#include <unistd.h> // for linux
 #include <vector>
 
 #define NUM_THREADS 3
 
-void FuncA();
-void FuncB();
+void FuncA(int thread_id);
+void FuncB(int thread_id);
 
 void TopFunction(int thread_id)
 {
@@ -26,25 +26,27 @@ void TopFunction(int thread_id)
     std::cout << ("Hello world from " + tName + "\n") << std::flush;
     MallocTagScope noname("TopFunc");
 
-    FuncA();
+    FuncA(thread_id);
     malloc(5); // allocation done directly by this TopFunction()
-    FuncB();
+    FuncB(thread_id);
 }
 
-void FuncA()
+void FuncA(int thread_id)
 {
     MallocTagScope noname("FuncA");
 
-    malloc(100);
-    FuncB();
+    // each thread allocates a slightly different memory, to make the example more "realistic"
+    malloc(100 + thread_id * 1024);
+    FuncB(thread_id);
 }
 
-void FuncB()
+void FuncB(int thread_id)
 {
     MallocTagScope noname("FuncB");
 
-    // malloc(100);
-    new uint8_t[200];
+    std::map<std::string, uint64_t> mytestmap;
+    for (unsigned int i = 0; i < 1000 + thread_id * 1000; i++)
+        mytestmap["onemorekey" + std::to_string(i)] = i;
 }
 
 int main()
@@ -79,12 +81,9 @@ int main()
     std::cout << "VmRSS: " << MallocTagEngine::get_linux_rss_mem_usage_in_bytes() << "B" << std::endl;
 
     // dump stats in both JSON and graphviz formats
-    if (MallocTagEngine::write_stats_on_disk(MTAG_OUTPUT_FORMAT_JSON))
-        // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
-        std::cout << "Wrote malloctag stats on file " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << std::endl;
-    if (MallocTagEngine::write_stats_on_disk(MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT))
-        // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
-        std::cout << "Wrote malloctag stats on file " << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
+    if (MallocTagEngine::write_stats_on_disk())
+        std::cout << "Wrote malloctag stats on disk as " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << " and "
+                  << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
 
     std::cout << "Bye!" << std::endl;
 

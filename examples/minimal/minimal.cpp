@@ -62,12 +62,9 @@ int main()
     std::cout << "VmRSS: " << MallocTagEngine::get_linux_rss_mem_usage_in_bytes() << "B" << std::endl;
 
     // dump stats in both JSON and graphviz formats
-    if (MallocTagEngine::write_stats_on_disk(MTAG_OUTPUT_FORMAT_JSON))
-        // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
-        std::cout << "Wrote malloctag stats on file " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << std::endl;
-    if (MallocTagEngine::write_stats_on_disk(MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT))
-        // output file is defined by env var MTAG_STATS_OUTPUT_JSON_ENV
-        std::cout << "Wrote malloctag stats on file " << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
+    if (MallocTagEngine::write_stats_on_disk())
+        std::cout << "Wrote malloctag stats on disk as " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << " and "
+                  << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
 
     std::cout << "Bye!" << std::endl;
 

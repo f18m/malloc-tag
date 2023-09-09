@@ -91,6 +91,8 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
         weight = "total=self=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " (" + get_weight_percentage_str()
             + "%)";
 
+    weight += "\\nnum_alloc=" + std::to_string(m_nAllocations);
+
     // write a description of this node:
     std::string thisNodeLabel, thisNodeShape;
     if (m_pParent == NULL) {

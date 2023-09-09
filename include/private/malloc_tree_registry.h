@@ -51,7 +51,7 @@ public:
         return m_pMallocTreeRegistry[0];
     }
 
-    void collect_stats(std::string& stats_str, MallocTagOutputFormat_e format);
+    void collect_stats(std::string& stats_str, MallocTagOutputFormat_e format, const std::string& output_options);
 
 private:
     // the registry is the OWNER of m_nMallocTrees whose pointers get stored in m_pMallocTreeRegistry[]

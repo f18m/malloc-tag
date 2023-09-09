@@ -29,6 +29,8 @@
 #define MTAG_DEFAULT_MAX_TREE_NODES 256
 #define MTAG_DEFAULT_MAX_TREE_LEVELS 4
 
+#define MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE "uniquetree"
+
 //------------------------------------------------------------------------------
 // glibc overrides
 //------------------------------------------------------------------------------
@@ -46,6 +48,8 @@ void free(void* __ptr) __THROW;
 enum MallocTagOutputFormat_e {
     MTAG_OUTPUT_FORMAT_JSON,
     MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT,
+
+    MTAG_OUTPUT_FORMAT_ALL
 };
 
 class MallocTagEngine {
@@ -61,12 +65,14 @@ public:
 
     // The main API to collect all results in JSON format
     // NOTE: invoking this function will indeed trigger some memory allocation on its own (!!!)
-    static std::string collect_stats(MallocTagOutputFormat_e format);
+    static std::string collect_stats(
+        MallocTagOutputFormat_e format, const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
 
     // Write memory profiler stats into a file on disk;
     // if an empty string is passed, the full path will be taken from the environment variable
     // MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV, depending on the "format" argument.
-    static bool write_stats_on_disk(MallocTagOutputFormat_e format, const std::string& fullpath = "");
+    static bool write_stats_on_disk(MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL,
+        const std::string& fullpath = "", const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
 
     // Get the RSS memory reported by Linux for this process.
     // This is Linux-specific utility.

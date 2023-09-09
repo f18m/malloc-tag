@@ -1,16 +1,16 @@
-digraph MallocTree_TID3666447 {
+digraph MallocTree_TID3667376 {
 node [colorscheme=reds9 style=filled]
-"minimal" [label="thread=minimal\nTID=3666447\ntotal=4kB (100.00%)\nself=2kB (54.36%)" shape=box fillcolor=5]
+"minimal" [label="thread=minimal\nTID=3667376\ntotal=4kB (100.00%)\nself=2kB (54.36%)\nnum_alloc=3" shape=box fillcolor=5]
 "minimal" -> "TopFunc"
-"TopFunc" [label="scope=TopFunc\ntotal=2kB (45.63%)\nself=5B (0.10%)" fillcolor=1]
+"TopFunc" [label="scope=TopFunc\ntotal=2kB (45.63%)\nself=5B (0.10%)\nnum_alloc=1" fillcolor=1]
 "TopFunc" -> "FuncA"
 "TopFunc" -> "FuncB"
 "TopFunc" -> "FuncC"
-"FuncA" [label="scope=FuncA\ntotal=600B (12.86%)\nself=100B (2.14%)" fillcolor=1]
+"FuncA" [label="scope=FuncA\ntotal=600B (12.86%)\nself=100B (2.14%)\nnum_alloc=1" fillcolor=1]
 "FuncA" -> "FuncB"
-"FuncB" [label="scope=FuncB\ntotal=self=500B (10.71%)" fillcolor=3]
-"FuncB" [label="scope=FuncB\ntotal=self=500B (10.71%)" fillcolor=3]
-"FuncC" [label="scope=FuncC\ntotal=self=1kB (21.95%)" fillcolor=4]
+"FuncB" [label="scope=FuncB\ntotal=self=500B (10.71%)\nnum_alloc=1" fillcolor=3]
+"FuncB" [label="scope=FuncB\ntotal=self=500B (10.71%)\nnum_alloc=1" fillcolor=3]
+"FuncC" [label="scope=FuncC\ntotal=self=1kB (21.95%)\nnum_alloc=1" fillcolor=4]
 }
 
 digraph MallocTree_globals {
