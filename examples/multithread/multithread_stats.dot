@@ -1,80 +1,87 @@
-digraph MallocTree0 {
-"multithread3600438" [label="thread=multithread3600438\n100.00%\n2kB"]
+digraph MallocTree_TID3665929 {
+node [colorscheme=reds9 style=filled]
+"multithread" [label="thread=multithread\nTID=3665929\ntotal=2kB (100.00%)\nself=2kB (100.00%)" shape=box fillcolor=7]
 }
 
-digraph MallocTree1 {
-"exampleThr/03600439" [label="thread=exampleThr/03600439\n100.00%\n536B"]
-"exampleThr/03600439" -> "TopFunc"
-"TopFunc" [label="TopFunc\n94.21%"]
+digraph MallocTree_TID3665930 {
+node [colorscheme=reds9 style=filled]
+"exampleThr/0" [label="thread=exampleThr/0\nTID=3665930\ntotal=536B (100.00%)\nself=31B (5.78%)" shape=box fillcolor=2]
+"exampleThr/0" -> "TopFunc"
+"TopFunc" [label="scope=TopFunc\ntotal=505B (94.21%)\nself=5B (0.93%)" fillcolor=1]
 "TopFunc" -> "FuncA"
 "TopFunc" -> "FuncB"
-"FuncA" [label="FuncA\n55.97%"]
+"FuncA" [label="scope=FuncA\ntotal=300B (55.97%)\nself=100B (18.65%)" fillcolor=3]
 "FuncA" -> "FuncB"
-"FuncB" [label="FuncB\n37.31%"]
-"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
 }
 
-digraph MallocTree2 {
-"exampleThr/13600440" [label="thread=exampleThr/13600440\n100.00%\n536B"]
-"exampleThr/13600440" -> "TopFunc"
-"TopFunc" [label="TopFunc\n94.21%"]
+digraph MallocTree_TID3665931 {
+node [colorscheme=reds9 style=filled]
+"exampleThr/1" [label="thread=exampleThr/1\nTID=3665931\ntotal=536B (100.00%)\nself=31B (5.78%)" shape=box fillcolor=2]
+"exampleThr/1" -> "TopFunc"
+"TopFunc" [label="scope=TopFunc\ntotal=505B (94.21%)\nself=5B (0.93%)" fillcolor=1]
 "TopFunc" -> "FuncA"
 "TopFunc" -> "FuncB"
-"FuncA" [label="FuncA\n55.97%"]
+"FuncA" [label="scope=FuncA\ntotal=300B (55.97%)\nself=100B (18.65%)" fillcolor=3]
 "FuncA" -> "FuncB"
-"FuncB" [label="FuncB\n37.31%"]
-"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
 }
 
-digraph MallocTree3 {
-"exampleThr/23600441" [label="thread=exampleThr/23600441\n100.00%\n536B"]
-"exampleThr/23600441" -> "TopFunc"
-"TopFunc" [label="TopFunc\n94.21%"]
+digraph MallocTree_TID3665932 {
+node [colorscheme=reds9 style=filled]
+"exampleThr/2" [label="thread=exampleThr/2\nTID=3665932\ntotal=536B (100.00%)\nself=31B (5.78%)" shape=box fillcolor=2]
+"exampleThr/2" -> "TopFunc"
+"TopFunc" [label="scope=TopFunc\ntotal=505B (94.21%)\nself=5B (0.93%)" fillcolor=1]
 "TopFunc" -> "FuncA"
 "TopFunc" -> "FuncB"
-"FuncA" [label="FuncA\n55.97%"]
+"FuncA" [label="scope=FuncA\ntotal=300B (55.97%)\nself=100B (18.65%)" fillcolor=3]
 "FuncA" -> "FuncB"
-"FuncB" [label="FuncB\n37.31%"]
-"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
 }
 
-digraph MallocTree4 {
-"exampleThr/43600443" [label="thread=exampleThr/43600443\n100.00%\n536B"]
-"exampleThr/43600443" -> "TopFunc"
-"TopFunc" [label="TopFunc\n94.21%"]
+digraph MallocTree_TID3665933 {
+node [colorscheme=reds9 style=filled]
+"exampleThr/3" [label="thread=exampleThr/3\nTID=3665933\ntotal=536B (100.00%)\nself=31B (5.78%)" shape=box fillcolor=2]
+"exampleThr/3" -> "TopFunc"
+"TopFunc" [label="scope=TopFunc\ntotal=505B (94.21%)\nself=5B (0.93%)" fillcolor=1]
 "TopFunc" -> "FuncA"
 "TopFunc" -> "FuncB"
-"FuncA" [label="FuncA\n55.97%"]
+"FuncA" [label="scope=FuncA\ntotal=300B (55.97%)\nself=100B (18.65%)" fillcolor=3]
 "FuncA" -> "FuncB"
-"FuncB" [label="FuncB\n37.31%"]
-"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
 }
 
-digraph MallocTree5 {
-"exampleThr/33600442" [label="thread=exampleThr/33600442\n100.00%\n536B"]
-"exampleThr/33600442" -> "TopFunc"
-"TopFunc" [label="TopFunc\n94.21%"]
+digraph MallocTree_TID3665934 {
+node [colorscheme=reds9 style=filled]
+"exampleThr/4" [label="thread=exampleThr/4\nTID=3665934\ntotal=536B (100.00%)\nself=31B (5.78%)" shape=box fillcolor=2]
+"exampleThr/4" -> "TopFunc"
+"TopFunc" [label="scope=TopFunc\ntotal=505B (94.21%)\nself=5B (0.93%)" fillcolor=1]
 "TopFunc" -> "FuncA"
 "TopFunc" -> "FuncB"
-"FuncA" [label="FuncA\n55.97%"]
+"FuncA" [label="scope=FuncA\ntotal=300B (55.97%)\nself=100B (18.65%)" fillcolor=3]
 "FuncA" -> "FuncB"
-"FuncB" [label="FuncB\n37.31%"]
-"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
 }
 
-digraph MallocTree6 {
-"exampleThr/53600444" [label="thread=exampleThr/53600444\n100.00%\n536B"]
-"exampleThr/53600444" -> "TopFunc"
-"TopFunc" [label="TopFunc\n94.21%"]
+digraph MallocTree_TID3665935 {
+node [colorscheme=reds9 style=filled]
+"exampleThr/5" [label="thread=exampleThr/5\nTID=3665935\ntotal=536B (100.00%)\nself=31B (5.78%)" shape=box fillcolor=2]
+"exampleThr/5" -> "TopFunc"
+"TopFunc" [label="scope=TopFunc\ntotal=505B (94.21%)\nself=5B (0.93%)" fillcolor=1]
 "TopFunc" -> "FuncA"
 "TopFunc" -> "FuncB"
-"FuncA" [label="FuncA\n55.97%"]
+"FuncA" [label="scope=FuncA\ntotal=300B (55.97%)\nself=100B (18.65%)" fillcolor=3]
 "FuncA" -> "FuncB"
-"FuncB" [label="FuncB\n37.31%"]
-"FuncB" [label="FuncB\n37.31%"]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
+"FuncB" [label="scope=FuncB\ntotal=200B (37.31%)\nself=200B (37.31%)" fillcolor=4]
 }
 
 digraph MallocTree_globals {
 "__before_init_node__" [label="Memory Allocated\nBefore MallocTag Init\n72kB"]
-"__malloctag_self_memory__" [label="Memory Allocated\nBy MallocTag itself\n372kB"]
+"__malloctag_self_memory__" [label="Memory Allocated\nBy MallocTag itself\n387kB"]
 }

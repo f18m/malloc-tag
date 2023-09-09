@@ -23,7 +23,7 @@
 <ellipse fill="none" stroke="#000000" cx="301.5807" cy="-37.4767" rx="88.2768" ry="37.4533"/>
 <text text-anchor="middle" x="301.5807" y="-48.7767" font-family="Times,serif" font-size="14.00" fill="#000000">Memory Allocated</text>
 <text text-anchor="middle" x="301.5807" y="-33.7767" font-family="Times,serif" font-size="14.00" fill="#000000">By MallocTag itself</text>
-<text text-anchor="middle" x="301.5807" y="-18.7767" font-family="Times,serif" font-size="14.00" fill="#000000">387kB</text>
+<text text-anchor="middle" x="301.5807" y="-18.7767" font-family="Times,serif" font-size="14.00" fill="#000000">55kB</text>
 </g>
 </g>
 </svg>

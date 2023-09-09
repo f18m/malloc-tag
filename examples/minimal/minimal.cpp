@@ -10,10 +10,11 @@
 #include "malloc_tag.h"
 #include <iostream>
 #include <string.h>
-#include <unistd.h> // for linux
+#include <vector>
 
 void FuncA();
 void FuncB();
+void FuncC();
 
 void TopFunction()
 {
@@ -22,6 +23,7 @@ void TopFunction()
     FuncA();
     malloc(5); // allocation done directly by this TopFunction()
     FuncB();
+    FuncC();
 }
 
 void FuncA()
@@ -36,8 +38,16 @@ void FuncB()
 {
     MallocTagScope noname("FuncB"); // please account all mem allocs under the "FuncB" name from this point onward
 
-    // malloc(100);
-    new uint8_t[200];
+    // use "new" to demonstrate that we also hook "new"
+    new uint8_t[500];
+}
+
+void FuncC()
+{
+    MallocTagScope noname("FuncC"); // please account all mem allocs under the "FuncC" name from this point onward
+
+    std::vector<uint8_t> dummyVec;
+    dummyVec.reserve(1024);
 }
 
 int main()

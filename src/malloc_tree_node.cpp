@@ -13,10 +13,10 @@ void MallocTreeNode::set_sitename_to_shlib_name_from_func_pointer(void* funcpoin
 {
     Dl_info address_info;
     if (dladdr(funcpointer, &address_info) == 0 || address_info.dli_fname == nullptr) {
-        strncpy(&m_siteName[0], "UnknownSharedLib", MTAG_MAX_SITENAME_LEN);
+        strncpy(&m_scopeName[0], "UnknownSharedLib", MTAG_MAX_SCOPENAME_LEN);
     } else
-        strncpy(&m_siteName[0], address_info.dli_fname,
-            std::min(strlen(address_info.dli_fname), (size_t)MTAG_MAX_SITENAME_LEN));
+        strncpy(&m_scopeName[0], address_info.dli_fname,
+            std::min(strlen(address_info.dli_fname), (size_t)MTAG_MAX_SCOPENAME_LEN));
 
     // FIXME: should we free the pointers inside "address_info"??
 }
@@ -24,20 +24,18 @@ void MallocTreeNode::set_sitename_to_shlib_name_from_func_pointer(void* funcpoin
 void MallocTreeNode::set_sitename_to_threadname()
 {
     // get thread name:
-    prctl(PR_GET_NAME, &m_siteName[0], 0, 0);
+    prctl(PR_GET_NAME, &m_scopeName[0], 0, 0);
 
-    // however that could not be unique (it depends if the software makes use of prctl() or pthread_setname_np())
-    // so let's append the thread-ID (TID)
-    int offset = strlen(&m_siteName[0]);
-    if (offset > MTAG_MAX_SITENAME_LEN - 6)
-        offset = MTAG_MAX_SITENAME_LEN - 6; // truncate... 6 digits should be enough for the TID
-    long int tid = syscall(SYS_gettid);
-    snprintf(&m_siteName[offset], MTAG_MAX_SITENAME_LEN - offset, "%ld", tid);
+    // IMPORTANT: thread name is often not unique; indeed by default secondary threads inherit the same name of their
+    // parent
+    //            thread; it's up to the application to make use of prctl() or pthread_setname_np() to adopt a unique
+    //            thread name; for this reason we also save the thread ID (TID) which is garantueed to be unique.
+    m_nThreadID = syscall(SYS_gettid);
 }
 
 void MallocTreeNode::set_sitename(const char* sitename)
 {
-    strncpy(&m_siteName[0], sitename, std::min(strlen(sitename), (size_t)MTAG_MAX_SITENAME_LEN));
+    strncpy(&m_scopeName[0], sitename, std::min(strlen(sitename), (size_t)MTAG_MAX_SCOPENAME_LEN));
 }
 
 bool MallocTreeNode::link_new_children(MallocTreeNode* new_child)
@@ -51,9 +49,9 @@ bool MallocTreeNode::link_new_children(MallocTreeNode* new_child)
 
 MallocTreeNode* MallocTreeNode::get_child_by_name(const char* name) const
 {
-    size_t nchars = std::min(strlen(name), (size_t)MTAG_MAX_SITENAME_LEN);
+    size_t nchars = std::min(strlen(name), (size_t)MTAG_MAX_SCOPENAME_LEN);
     for (unsigned int i = 0; i < m_nChildrens; i++)
-        if (strncmp(&m_pChildren[i]->m_siteName[0], name, nchars) == 0)
+        if (strncmp(&m_pChildren[i]->m_scopeName[0], name, nchars) == 0)
             return m_pChildren[i];
     return NULL;
 }
@@ -62,8 +60,8 @@ void MallocTreeNode::collect_json_stats_recursively(std::string& out)
 {
     // each node is a JSON object
     out += "\"" + get_node_name() + "\":{";
-    out += "\"nBytes\": " + std::to_string(m_nBytes) + ",";
-    out += "\"nBytesDirect\": " + std::to_string(m_nBytesDirect) + ",";
+    out += "\"nBytes\": " + std::to_string(m_nBytesTotal) + ",";
+    out += "\"nBytesDirect\": " + std::to_string(m_nBytesSelf) + ",";
     out += "\"nWeightPercentage\": " + get_weight_percentage_str() + ",";
     out += "\"nAllocations\": " + std::to_string(m_nAllocations) + ",";
     out += "\"nestedScopes\": { ";
@@ -80,15 +78,42 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
 {
     std::string thisNodeName = get_node_name();
 
+    // for each node provide an overall view of
+    // - total memory usage accounted for this node (both in bytes and as percentage)
+    // - self memory usage (both in bytes and as percentage)
+    std::string weight = "total=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " ("
+        + get_weight_percentage_str() + "%)\\nself=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelf) + " ("
+        + get_weight_self_percentage_str() + "%)";
+
     // write a description of this node:
-    std::string thisNodeLabel;
-    if (m_pParent == NULL)
+    std::string thisNodeLabel, thisNodeShape;
+    if (m_pParent == NULL) {
         // for root node, provide a more verbose label
-        thisNodeLabel = "thread=" + thisNodeName + "\\n" + get_weight_percentage_str() + "%" + "\\n"
-            + GraphVizUtils::pretty_print_bytes(m_nBytes);
+        thisNodeLabel = "thread=" + thisNodeName + "\\nTID=" + std::to_string(m_nThreadID) + "\\n" + weight;
+        thisNodeShape = "box"; // to differentiate from all other nodes
+    } else
+        thisNodeLabel = "scope=" + thisNodeName + "\\n" + weight;
+
+    // calculate the fillcolor in a range from 0-9 based on the "self" memory usage:
+    // the idea is to provide a intuitive indication of the self contributions of each malloc scope:
+    float self_w = get_weight_self_percentage();
+    std::string thisNodeFillColor;
+    if (self_w < 5)
+        thisNodeFillColor = "1";
+    else if (self_w < 10)
+        thisNodeFillColor = "2";
+    else if (self_w < 20)
+        thisNodeFillColor = "3";
+    else if (self_w < 40)
+        thisNodeFillColor = "4";
+    else if (self_w < 60)
+        thisNodeFillColor = "5";
+    else if (self_w < 80)
+        thisNodeFillColor = "6";
     else
-        thisNodeLabel = thisNodeName + "\\n" + get_weight_percentage_str() + "%";
-    GraphVizUtils::append_node(out, thisNodeName, thisNodeLabel);
+        thisNodeFillColor = "7";
+
+    GraphVizUtils::append_node(out, thisNodeName, thisNodeLabel, thisNodeShape, thisNodeFillColor);
 
     // write all the connections between this node and its children:
     for (unsigned int i = 0; i < m_nChildrens; i++) {
@@ -109,14 +134,15 @@ size_t MallocTreeNode::compute_bytes_totals_recursively() // returns total bytes
         accumulated_bytes += m_pChildren[i]->compute_bytes_totals_recursively();
 
     // finally "visit" this node, updating the bytes count, using all children contributions:
-    m_nBytes = accumulated_bytes + m_nBytesDirect;
-    return m_nBytes;
+    m_nBytesTotal = accumulated_bytes + m_nBytesSelf;
+    return m_nBytesTotal;
 }
 
 void MallocTreeNode::compute_node_weights_recursively(size_t rootNodeTotalBytes)
 {
-    // weight is defined as:
-    m_nWeight = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytes / rootNodeTotalBytes;
+    // compute weight of this node:
+    m_nWeightTotal = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesTotal / rootNodeTotalBytes;
+    m_nWeightSelf = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesSelf / rootNodeTotalBytes;
 
     // recurse:
     for (unsigned int i = 0; i < m_nChildrens; i++)

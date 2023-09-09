@@ -93,9 +93,8 @@ void MallocTreeRegistry::collect_stats(std::string& stats_str, MallocTagOutputFo
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
         // see https://graphviz.org/doc/info/lang.html
         for (size_t i = 0; i < num_trees; i++) {
-            stats_str += "digraph MallocTree" + std::to_string(i) + " {\n";
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format);
-            stats_str += "}\n\n";
+            stats_str += "\n";
         }
 
         // add a few nodes "external" to the tree:

@@ -1,13 +1,19 @@
-digraph MallocTree {
-minimal35135 [label="thread=minimal35135\n100.00%\n3kB"]
-minimal35135 -> TopFunc
-TopFunc [label="TopFunc\n16.60%"]
-TopFunc -> FuncA
-TopFunc -> FuncB
-FuncA [label="FuncA\n9.86%"]
-FuncA -> FuncB
-FuncB [label="FuncB\n6.57%"]
-FuncB [label="FuncB\n6.57%"]
-__before_init_node__ [label="Memory Allocated\nBefore MallocTag Init\n72kB"]
-__malloctag_self_memory__ [label="Memory Allocated\nBy MallocTag itself\n53kB"]
+digraph MallocTree_TID3665833 {
+node [colorscheme=reds9 style=filled]
+"minimal" [label="thread=minimal\nTID=3665833\ntotal=4kB (100.00%)\nself=2kB (54.36%)" shape=box fillcolor=5]
+"minimal" -> "TopFunc"
+"TopFunc" [label="scope=TopFunc\ntotal=2kB (45.63%)\nself=5B (0.10%)" fillcolor=1]
+"TopFunc" -> "FuncA"
+"TopFunc" -> "FuncB"
+"TopFunc" -> "FuncC"
+"FuncA" [label="scope=FuncA\ntotal=600B (12.86%)\nself=100B (2.14%)" fillcolor=1]
+"FuncA" -> "FuncB"
+"FuncB" [label="scope=FuncB\ntotal=500B (10.71%)\nself=500B (10.71%)" fillcolor=3]
+"FuncB" [label="scope=FuncB\ntotal=500B (10.71%)\nself=500B (10.71%)" fillcolor=3]
+"FuncC" [label="scope=FuncC\ntotal=1kB (21.95%)\nself=1kB (21.95%)" fillcolor=4]
+}
+
+digraph MallocTree_globals {
+"__before_init_node__" [label="Memory Allocated\nBefore MallocTag Init\n72kB"]
+"__malloctag_self_memory__" [label="Memory Allocated\nBy MallocTag itself\n55kB"]
 }
