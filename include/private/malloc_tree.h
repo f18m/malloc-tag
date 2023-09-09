@@ -83,6 +83,7 @@ private:
     fmpool_t(MallocTreeNode) * m_pNodePool = NULL;
     MallocTreeNode* m_pRootNode = NULL; // created by the init()
     MallocTreeNode* m_pCurrentNode = NULL; // pointer to the current malloc scope inside the tree
+    pid_t m_nThreadID = 0; // thread ID of owner thread
 
     // last push status:
     unsigned int m_nPushNodeFailures = 0;

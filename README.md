@@ -25,6 +25,12 @@ malloc-tag profiler can produce output in a machine-friendly JSON format, see e.
 
 ![minimal_example_svg](examples/minimal/minimal_stats.dot.svg?raw=true "Malloc-tag output for MINIMAL example")
 
+From the picture above it becomes obvious that to improve/reduce memory usage, all the allocations accounted against the "minimal" scope and all the code executing in the malloc scope "FuncC" should be improved, since they have the highest self-memory usage, as emphasized by the darkest red shade.
+
+Profiling a more complex example, involving a simple application spawning 6 secondary pthreads, will produce such kind of graph:
+
+![multithread_example_svg](examples/multithread/multithread_stats.dot.svg?raw=true "Malloc-tag output for MULTITHREAD example")
+
 
 # Links
 

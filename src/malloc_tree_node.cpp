@@ -25,12 +25,6 @@ void MallocTreeNode::set_sitename_to_threadname()
 {
     // get thread name:
     prctl(PR_GET_NAME, &m_scopeName[0], 0, 0);
-
-    // IMPORTANT: thread name is often not unique; indeed by default secondary threads inherit the same name of their
-    // parent
-    //            thread; it's up to the application to make use of prctl() or pthread_setname_np() to adopt a unique
-    //            thread name; for this reason we also save the thread ID (TID) which is garantueed to be unique.
-    m_nThreadID = syscall(SYS_gettid);
 }
 
 void MallocTreeNode::set_sitename(const char* sitename)
@@ -63,7 +57,7 @@ void MallocTreeNode::collect_json_stats_recursively(std::string& out)
     out += "\"nBytes\": " + std::to_string(m_nBytesTotal) + ",";
     out += "\"nBytesDirect\": " + std::to_string(m_nBytesSelf) + ",";
     out += "\"nWeightPercentage\": " + get_weight_percentage_str() + ",";
-    out += "\"nAllocations\": " + std::to_string(m_nAllocations) + ",";
+    out += "\"nAllocations\": " + std::to_string(m_nAllocationsSelf) + ",";
     out += "\"nestedScopes\": { ";
     for (unsigned int i = 0; i < m_nChildrens; i++) {
         m_pChildren[i]->collect_json_stats_recursively(out);
@@ -91,7 +85,7 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
         weight = "total=self=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " (" + get_weight_percentage_str()
             + "%)";
 
-    weight += "\\nnum_alloc=" + std::to_string(m_nAllocations);
+    weight += "\\nnum_alloc_self=" + std::to_string(m_nAllocationsSelf);
 
     // write a description of this node:
     std::string thisNodeLabel, thisNodeShape;
@@ -121,11 +115,14 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
     else
         thisNodeFillColor = "7";
 
-    GraphVizUtils::append_node(out, thisNodeName, thisNodeLabel, thisNodeShape, thisNodeFillColor);
+    // finally add this node to the graph:
+    std::string per_thread_node_name = std::to_string(m_nThreadID) + "_" + thisNodeName;
+    GraphVizUtils::append_node(out, per_thread_node_name, thisNodeLabel, thisNodeShape, thisNodeFillColor);
 
     // write all the connections between this node and its children:
     for (unsigned int i = 0; i < m_nChildrens; i++) {
-        GraphVizUtils::append_edge(out, thisNodeName, m_pChildren[i]->get_node_name());
+        std::string child_per_thread_node_name = std::to_string(m_nThreadID) + "_" + m_pChildren[i]->get_node_name();
+        GraphVizUtils::append_edge(out, per_thread_node_name, child_per_thread_node_name);
     }
 
     // now recurse into each children:

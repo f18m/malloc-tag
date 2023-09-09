@@ -20,12 +20,18 @@ bool MallocTree::init(size_t max_tree_nodes, size_t max_tree_levels) // triggers
     if (!m_pNodePool)
         return false;
 
-    // init the "current node" pointer to have the same name of the
+    // init the root node:
     m_pRootNode = fmpool_get(MallocTreeNode, m_pNodePool);
     assert(m_pRootNode);
     m_nTreeNodesInUse++;
-    m_pRootNode->init(NULL); // this is the tree root node
-    // m_pRootNode->set_sitename_to_shlib_name_from_func_pointer(caller);
+
+    // IMPORTANT: thread name is often not unique; indeed by default secondary threads inherit the same name of their
+    // parent
+    //            thread; it's up to the application to make use of prctl() or pthread_setname_np() to adopt a unique
+    //            thread name; for this reason we also save the thread ID (TID) which is garantueed to be unique.
+    m_nThreadID = syscall(SYS_gettid);
+
+    m_pRootNode->init(NULL, m_nThreadID); // this is the tree root node
     m_pRootNode->set_sitename_to_threadname();
 
     m_nTreeLevels = m_pRootNode->get_tree_level();
@@ -68,7 +74,7 @@ void MallocTree::push_new_node(const char* name) // must be malloc-free
     }
 
     m_nTreeNodesInUse++; // successfully obtained a new node from the mempool
-    n->init(m_pCurrentNode);
+    n->init(m_pCurrentNode, m_nThreadID);
     n->set_sitename(name);
     if (!m_pCurrentNode->link_new_children(n)) {
         // failed to link current node: release node back to the pool

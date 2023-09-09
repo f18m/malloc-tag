@@ -94,15 +94,15 @@ public:
     // Node creation API
     //------------------------------------------------------------------------------
 
-    void init(MallocTreeNode* parent)
+    void init(MallocTreeNode* parent, pid_t threadID)
     {
         m_nBytesTotal = 0;
         m_nBytesSelf = 0;
-        m_nAllocations = 0;
+        m_nAllocationsSelf = 0;
         m_nWeightTotal = 0;
         m_nWeightSelf = 0;
         m_nTreeLevel = parent ? parent->m_nTreeLevel + 1 : 0;
-        m_nThreadID = 0;
+        m_nThreadID = threadID;
         m_scopeName[0] = '\0';
         m_nChildrens = 0;
         m_pParent = parent;
@@ -120,7 +120,7 @@ public:
     void track_malloc(size_t nBytes)
     {
         m_nBytesSelf += nBytes;
-        m_nAllocations++;
+        m_nAllocationsSelf++;
     }
 
     void collect_json_stats_recursively(std::string& out);
@@ -183,7 +183,7 @@ private:
     size_t m_nBytesTotal; // Allocated bytes by this node and ALL its descendant nodes. Computed at "stats collection
                           // time".
     size_t m_nBytesSelf; // Allocated bytes only for THIS node.
-    size_t m_nAllocations; // The number of allocations for this node.
+    size_t m_nAllocationsSelf; // The number of allocations for this node.
     unsigned int m_nTreeLevel; // How deep is located this node in the tree?
     size_t m_nWeightTotal; // Weight of this node expressed as MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
     size_t m_nWeightSelf; // Weight of this node expressed as MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
