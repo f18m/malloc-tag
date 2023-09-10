@@ -75,7 +75,7 @@ public:
     }
 
     static void append_node(std::string& out, const std::string& nodeName, const std::string& label,
-        const std::string& shape = "", const std::string& fillcolor = "")
+        const std::string& shape = "", const std::string& fillcolor = "", const std::string& fontsize = "")
     {
         // use double quotes around the node name in case it contains Graphviz-invalid chars e.g. '/'
         out += "\"" + nodeName + "\" [label=\"" + label + "\"";
@@ -84,6 +84,8 @@ public:
             out += " shape=" + shape;
         if (!fillcolor.empty())
             out += " fillcolor=" + fillcolor;
+        if (!fontsize.empty())
+            out += " fontsize=" + fontsize;
 
         out += "]\n";
     }

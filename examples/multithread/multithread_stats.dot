@@ -2,59 +2,59 @@ digraph MallocTree {
 node [colorscheme=reds9 style=filled]
 labelloc="b"
 label="Memory allocated before MallocTag initialization = 72kB\nMemory allocated by MallocTag itself =276kB\n"
-subgraph cluster_TID3761016 {
+subgraph cluster_TID3781339 {
 node [colorscheme=reds9 style=filled]
 labelloc="b"
 label="nPushNodeFailures=0\nnTreeNodesInUse/Max=1/256\n"
-"3761016_multithread" [label="thread=multithread\nTID=3761016\ntotal=self=2kB (100.00%)\nnum_alloc_self=10" shape=box fillcolor=7]
+"3781339_multithread" [label="thread=multithread\nTID=3781339\ntotal=self=2kB (100.00%)\nnum_alloc_self=10" shape=box fillcolor=7 fontsize=20]
 }
 
-subgraph cluster_TID3761017 {
+subgraph cluster_TID3781341 {
 node [colorscheme=reds9 style=filled]
 labelloc="b"
 label="nPushNodeFailures=0\nnTreeNodesInUse/Max=5/256\n"
-"3761017_exampleThr/0" [label="thread=exampleThr/0\nTID=3761017\ntotal=144kB (100.00%)\nself=31B (0.02%)\nnum_alloc_self=1" shape=box fillcolor=1]
-"3761017_exampleThr/0" -> "3761017_ThreadMain"
-"3761017_ThreadMain" [label="scope=ThreadMain\ntotal=144kB (99.97%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
-"3761017_ThreadMain" -> "3761017_FuncA"
-"3761017_ThreadMain" -> "3761017_FuncB"
-"3761017_FuncA" [label="scope=FuncA\ntotal=72kB (50.02%)\nself=100B (0.06%)\nnum_alloc_self=1" fillcolor=1]
-"3761017_FuncA" -> "3761017_FuncB"
-"3761017_FuncB" [label="scope=FuncB\ntotal=self=72kB (49.95%)\nnum_alloc_self=1000" fillcolor=5]
-"3761017_FuncB" [label="scope=FuncB\ntotal=self=72kB (49.95%)\nnum_alloc_self=1000" fillcolor=5]
+"3781341_exampleThr/1" [label="thread=exampleThr/1\nTID=3781341\ntotal=289kB (100.00%)\nself=31B (0.01%)\nnum_alloc_self=1" shape=box fillcolor=1 fontsize=9]
+"3781341_exampleThr/1" -> "3781341_ThreadMain"
+"3781341_ThreadMain" [label="scope=ThreadMain\ntotal=289kB (99.98%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1 fontsize=9]
+"3781341_ThreadMain" -> "3781341_FuncA"
+"3781341_ThreadMain" -> "3781341_FuncB"
+"3781341_FuncA" [label="scope=FuncA\ntotal=145kB (50.18%)\nself=1kB (0.38%)\nnum_alloc_self=1" fillcolor=1 fontsize=9]
+"3781341_FuncA" -> "3781341_FuncB"
+"3781341_FuncB" [label="scope=FuncB\ntotal=self=144kB (49.79%)\nnum_alloc_self=2000" fillcolor=5 fontsize=16]
+"3781341_FuncB" [label="scope=FuncB\ntotal=self=144kB (49.79%)\nnum_alloc_self=2000" fillcolor=5 fontsize=16]
 }
 
-subgraph cluster_TID3761018 {
+subgraph cluster_TID3781340 {
 node [colorscheme=reds9 style=filled]
 labelloc="b"
 label="nPushNodeFailures=0\nnTreeNodesInUse/Max=5/256\n"
-"3761018_exampleThr/1" [label="thread=exampleThr/1\nTID=3761018\ntotal=289kB (100.00%)\nself=31B (0.01%)\nnum_alloc_self=1" shape=box fillcolor=1]
-"3761018_exampleThr/1" -> "3761018_ThreadMain"
-"3761018_ThreadMain" [label="scope=ThreadMain\ntotal=289kB (99.98%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
-"3761018_ThreadMain" -> "3761018_FuncA"
-"3761018_ThreadMain" -> "3761018_FuncB"
-"3761018_FuncA" [label="scope=FuncA\ntotal=145kB (50.18%)\nself=1kB (0.38%)\nnum_alloc_self=1" fillcolor=1]
-"3761018_FuncA" -> "3761018_FuncB"
-"3761018_FuncB" [label="scope=FuncB\ntotal=self=144kB (49.79%)\nnum_alloc_self=2000" fillcolor=5]
-"3761018_FuncB" [label="scope=FuncB\ntotal=self=144kB (49.79%)\nnum_alloc_self=2000" fillcolor=5]
+"3781340_exampleThr/0" [label="thread=exampleThr/0\nTID=3781340\ntotal=144kB (100.00%)\nself=31B (0.02%)\nnum_alloc_self=1" shape=box fillcolor=1 fontsize=9]
+"3781340_exampleThr/0" -> "3781340_ThreadMain"
+"3781340_ThreadMain" [label="scope=ThreadMain\ntotal=144kB (99.97%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1 fontsize=9]
+"3781340_ThreadMain" -> "3781340_FuncA"
+"3781340_ThreadMain" -> "3781340_FuncB"
+"3781340_FuncA" [label="scope=FuncA\ntotal=72kB (50.02%)\nself=100B (0.06%)\nnum_alloc_self=1" fillcolor=1 fontsize=9]
+"3781340_FuncA" -> "3781340_FuncB"
+"3781340_FuncB" [label="scope=FuncB\ntotal=self=72kB (49.95%)\nnum_alloc_self=1000" fillcolor=5 fontsize=16]
+"3781340_FuncB" [label="scope=FuncB\ntotal=self=72kB (49.95%)\nnum_alloc_self=1000" fillcolor=5 fontsize=16]
 }
 
-subgraph cluster_TID3761019 {
+subgraph cluster_TID3781342 {
 node [colorscheme=reds9 style=filled]
 labelloc="b"
 label="nPushNodeFailures=0\nnTreeNodesInUse/Max=1/256\n"
-"3761019_NonInstrumented" [label="thread=NonInstrumented\nTID=3761019\ntotal=self=156kB (100.00%)\nnum_alloc_self=1101" shape=box fillcolor=7]
+"3781342_NonInstrumented" [label="thread=NonInstrumented\nTID=3781342\ntotal=self=156kB (100.00%)\nnum_alloc_self=1101" shape=box fillcolor=7 fontsize=20]
 }
 
-subgraph cluster_TID3761020 {
+subgraph cluster_TID3781343 {
 node [colorscheme=reds9 style=filled]
 labelloc="b"
 label="nPushNodeFailures=0\nnTreeNodesInUse/Max=3/256\n"
-"3761020_exampleThr/2" [label="thread=exampleThr/2\nTID=3761020\ntotal=237kB (100.00%)\nself=31B (0.01%)\nnum_alloc_self=1" shape=box fillcolor=1]
-"3761020_exampleThr/2" -> "3761020_ThreadMain2"
-"3761020_ThreadMain2" [label="scope=ThreadMain2\ntotal=237kB (99.98%)\nself=21kB (9.08%)\nnum_alloc_self=300" fillcolor=2]
-"3761020_ThreadMain2" -> "3761020_FuncB"
-"3761020_FuncB" [label="scope=FuncB\ntotal=self=216kB (90.89%)\nnum_alloc_self=3000" fillcolor=7]
+"3781343_exampleThr/2" [label="thread=exampleThr/2\nTID=3781343\ntotal=237kB (100.00%)\nself=31B (0.01%)\nnum_alloc_self=1" shape=box fillcolor=1 fontsize=9]
+"3781343_exampleThr/2" -> "3781343_ThreadMain2"
+"3781343_ThreadMain2" [label="scope=ThreadMain2\ntotal=237kB (99.98%)\nself=21kB (9.08%)\nnum_alloc_self=300" fillcolor=2 fontsize=10]
+"3781343_ThreadMain2" -> "3781343_FuncB"
+"3781343_FuncB" [label="scope=FuncB\ntotal=self=216kB (90.89%)\nnum_alloc_self=3000" fillcolor=7 fontsize=20]
 }
 
 }

@@ -93,31 +93,41 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
         // for root node, provide a more verbose label
         thisNodeLabel = "thread=" + thisNodeName + "\\nTID=" + std::to_string(m_nThreadID) + "\\n" + weight;
         thisNodeShape = "box"; // to differentiate from all other nodes
-    } else
+    } else {
         thisNodeLabel = "scope=" + thisNodeName + "\\n" + weight;
+    }
 
     // calculate the fillcolor in a range from 0-9 based on the "self" memory usage:
     // the idea is to provide a intuitive indication of the self contributions of each malloc scope:
     float self_w = get_weight_self_percentage();
-    std::string thisNodeFillColor;
-    if (self_w < 5)
+    std::string thisNodeFillColor, thisNodeFontSize = "14";
+    if (self_w < 5) {
         thisNodeFillColor = "1";
-    else if (self_w < 10)
+        thisNodeFontSize = "9";
+    } else if (self_w < 10) {
         thisNodeFillColor = "2";
-    else if (self_w < 20)
+        thisNodeFontSize = "10";
+    } else if (self_w < 20) {
         thisNodeFillColor = "3";
-    else if (self_w < 40)
+        thisNodeFontSize = "12";
+    } else if (self_w < 40) {
         thisNodeFillColor = "4";
-    else if (self_w < 60)
+        thisNodeFontSize = "14";
+    } else if (self_w < 60) {
         thisNodeFillColor = "5";
-    else if (self_w < 80)
+        thisNodeFontSize = "16";
+    } else if (self_w < 80) {
         thisNodeFillColor = "6";
-    else
+        thisNodeFontSize = "18";
+    } else {
         thisNodeFillColor = "7";
+        thisNodeFontSize = "20";
+    }
 
     // finally add this node to the graph:
     std::string per_thread_node_name = std::to_string(m_nThreadID) + "_" + thisNodeName;
-    GraphVizUtils::append_node(out, per_thread_node_name, thisNodeLabel, thisNodeShape, thisNodeFillColor);
+    GraphVizUtils::append_node(
+        out, per_thread_node_name, thisNodeLabel, thisNodeShape, thisNodeFillColor, thisNodeFontSize);
 
     // write all the connections between this node and its children:
     for (unsigned int i = 0; i < m_nChildrens; i++) {
