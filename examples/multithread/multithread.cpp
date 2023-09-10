@@ -8,26 +8,27 @@
 #include "malloc_tag.h"
 #include <iostream>
 #include <map>
+#include <set>
 #include <string.h>
 #include <sys/prctl.h>
 #include <thread>
 #include <vector>
 
-#define NUM_THREADS 3
+#define NUM_THREADS 2
 
 void FuncA(int thread_id);
 void FuncB(int thread_id);
 
-void TopFunction(int thread_id)
+void ThreadMain(int thread_id)
 {
     std::string tName = std::string("exampleThr/") + std::to_string(thread_id);
     prctl(PR_SET_NAME, tName.c_str());
 
     std::cout << ("Hello world from " + tName + "\n") << std::flush;
-    MallocTagScope noname("TopFunc");
+    MallocTagScope noname("ThreadMain");
 
     FuncA(thread_id);
-    malloc(5); // allocation done directly by this TopFunction()
+    malloc(5); // allocation done directly by this ThreadMain()
     FuncB(thread_id);
 }
 
@@ -49,18 +50,50 @@ void FuncB(int thread_id)
         mytestmap["onemorekey" + std::to_string(i)] = i;
 }
 
+void NonInstrumentedThread()
+{
+    prctl(PR_SET_NAME, "NonInstrumented");
+    std::set<std::string> letsConsumeMemory;
+
+    for (size_t i = 0; i < 1000; i++)
+        letsConsumeMemory.insert(std::string(100 + (rand() % 101), 'c'));
+}
+
+void FuncC()
+{
+    std::map<std::string, uint64_t> mytestmap;
+    for (unsigned int i = 0; i < 300; i++)
+        mytestmap["onemorekey" + std::to_string(i)] = i;
+}
+
+void ThreadMain2(int thread_id)
+{
+    std::string tName = std::string("exampleThr/") + std::to_string(thread_id);
+    prctl(PR_SET_NAME, tName.c_str());
+
+    std::cout << ("Hello world from " + tName + "\n") << std::flush;
+    MallocTagScope noname("ThreadMain2");
+
+    FuncB(thread_id);
+    FuncC();
+}
+
 int main()
 {
     // as soon as main() is entered AND BEFORE LAUNCHING THREADS, start malloc tag engine:
     MallocTagEngine::init();
 
-    // launch dummy threads
+    // launch a few mostly-identical threads
     std::cout << "Hello world!" << std::endl;
+
     std::cout << "Now launching " << NUM_THREADS << " threads" << std::endl;
     std::vector<std::thread> threads;
     for (int i = 0; i < NUM_THREADS; i++) {
-        threads.push_back(std::thread(TopFunction, i));
+        threads.push_back(std::thread(ThreadMain, i));
     }
+
+    std::cout << "Now launching a non-instrumented thread" << std::endl;
+    threads.push_back(std::thread(NonInstrumentedThread));
 
     // wait till all threads are terminated:
     for (auto& th : threads) {
@@ -68,10 +101,9 @@ int main()
     }
     threads.clear();
 
-    // launch more dummy threads
-    for (int i = NUM_THREADS; i < NUM_THREADS * 2; i++) {
-        threads.push_back(std::thread(TopFunction, i));
-    }
+    // launch one more dummy threads
+    threads.push_back(std::thread(ThreadMain2, NUM_THREADS));
+
     // wait till all threads are terminated:
     for (auto& th : threads) {
         th.join();

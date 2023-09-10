@@ -91,29 +91,33 @@ void MallocTreeRegistry::collect_stats(
         stats_str += "}";
         break;
 
-    case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
-        // see https://graphviz.org/doc/info/lang.html
+    case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT: {
+
+        std::string meminfo1 = "Memory allocated before MallocTag initialization = "
+            + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init);
+        std::string meminfo2
+            = "Memory allocated by MallocTag itself =" + GraphVizUtils::pretty_print_bytes(get_total_memusage());
+        // use labels to convey extra info:
+        std::vector<std::string> labels;
+        labels.push_back(meminfo1);
+        labels.push_back(meminfo2);
+
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
             // create a single unique graph for ALL threads/trees, named "MallocTree"
-            stats_str += "digraph MallocTree {\n";
-            stats_str += "node [colorscheme=reds9 style=filled]\n"; // apply a colorscheme to all nodes
+            GraphVizUtils::start_digraph(stats_str, "MallocTree", labels);
         }
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
             stats_str += "\n";
         }
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
-            stats_str += "}\n"; // close the MallocTree
+            GraphVizUtils::end_digraph(stats_str); // close the MallocTree
 
-        // add a few nodes "external" to the tree:
-        stats_str += "digraph MallocTree_globals {\n";
-        GraphVizUtils::append_node(stats_str, "__before_init_node__",
-            "Memory Allocated\\nBefore MallocTag Init\\n"
-                + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
-        GraphVizUtils::append_node(stats_str, "__malloctag_self_memory__",
-            "Memory Allocated\\nBy MallocTag itself\\n" + GraphVizUtils::pretty_print_bytes(get_total_memusage()));
-        stats_str += "}";
-
-        break;
+        if (output_options != MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
+            // add a few nodes "external" to the tree:
+            GraphVizUtils::start_digraph(stats_str, "MallocTree_globals", labels);
+            GraphVizUtils::end_digraph(stats_str); // close the MallocTree_globals
+        }
+    } break;
     }
 }

@@ -1,69 +1,61 @@
 digraph MallocTree {
 node [colorscheme=reds9 style=filled]
-"3674586_multithread" [label="thread=multithread\nTID=3674586\ntotal=self=2kB (100.00%)\nnum_alloc_self=12" shape=box fillcolor=7]
+labelloc="b"
+label="Memory allocated before MallocTag initialization = 72kB\nMemory allocated by MallocTag itself =276kB\n"
+subgraph cluster_TID3761016 {
+node [colorscheme=reds9 style=filled]
+labelloc="b"
+label="nPushNodeFailures=0\nnTreeNodesInUse/Max=1/256\n"
+"3761016_multithread" [label="thread=multithread\nTID=3761016\ntotal=self=2kB (100.00%)\nnum_alloc_self=10" shape=box fillcolor=7]
+}
 
-"3674588_exampleThr/1" [label="thread=exampleThr/1\nTID=3674588\ntotal=289kB (100.00%)\nself=31B (0.01%)\nnum_alloc_self=1" shape=box fillcolor=1]
-"3674588_exampleThr/1" -> "3674588_TopFunc"
-"3674588_TopFunc" [label="scope=TopFunc\ntotal=289kB (99.98%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
-"3674588_TopFunc" -> "3674588_FuncA"
-"3674588_TopFunc" -> "3674588_FuncB"
-"3674588_FuncA" [label="scope=FuncA\ntotal=145kB (50.18%)\nself=1kB (0.38%)\nnum_alloc_self=1" fillcolor=1]
-"3674588_FuncA" -> "3674588_FuncB"
-"3674588_FuncB" [label="scope=FuncB\ntotal=self=144kB (49.79%)\nnum_alloc_self=2000" fillcolor=5]
-"3674588_FuncB" [label="scope=FuncB\ntotal=self=144kB (49.79%)\nnum_alloc_self=2000" fillcolor=5]
+subgraph cluster_TID3761017 {
+node [colorscheme=reds9 style=filled]
+labelloc="b"
+label="nPushNodeFailures=0\nnTreeNodesInUse/Max=5/256\n"
+"3761017_exampleThr/0" [label="thread=exampleThr/0\nTID=3761017\ntotal=144kB (100.00%)\nself=31B (0.02%)\nnum_alloc_self=1" shape=box fillcolor=1]
+"3761017_exampleThr/0" -> "3761017_ThreadMain"
+"3761017_ThreadMain" [label="scope=ThreadMain\ntotal=144kB (99.97%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
+"3761017_ThreadMain" -> "3761017_FuncA"
+"3761017_ThreadMain" -> "3761017_FuncB"
+"3761017_FuncA" [label="scope=FuncA\ntotal=72kB (50.02%)\nself=100B (0.06%)\nnum_alloc_self=1" fillcolor=1]
+"3761017_FuncA" -> "3761017_FuncB"
+"3761017_FuncB" [label="scope=FuncB\ntotal=self=72kB (49.95%)\nnum_alloc_self=1000" fillcolor=5]
+"3761017_FuncB" [label="scope=FuncB\ntotal=self=72kB (49.95%)\nnum_alloc_self=1000" fillcolor=5]
+}
 
-"3674587_exampleThr/0" [label="thread=exampleThr/0\nTID=3674587\ntotal=144kB (100.00%)\nself=31B (0.02%)\nnum_alloc_self=1" shape=box fillcolor=1]
-"3674587_exampleThr/0" -> "3674587_TopFunc"
-"3674587_TopFunc" [label="scope=TopFunc\ntotal=144kB (99.97%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
-"3674587_TopFunc" -> "3674587_FuncA"
-"3674587_TopFunc" -> "3674587_FuncB"
-"3674587_FuncA" [label="scope=FuncA\ntotal=72kB (50.02%)\nself=100B (0.06%)\nnum_alloc_self=1" fillcolor=1]
-"3674587_FuncA" -> "3674587_FuncB"
-"3674587_FuncB" [label="scope=FuncB\ntotal=self=72kB (49.95%)\nnum_alloc_self=1000" fillcolor=5]
-"3674587_FuncB" [label="scope=FuncB\ntotal=self=72kB (49.95%)\nnum_alloc_self=1000" fillcolor=5]
+subgraph cluster_TID3761018 {
+node [colorscheme=reds9 style=filled]
+labelloc="b"
+label="nPushNodeFailures=0\nnTreeNodesInUse/Max=5/256\n"
+"3761018_exampleThr/1" [label="thread=exampleThr/1\nTID=3761018\ntotal=289kB (100.00%)\nself=31B (0.01%)\nnum_alloc_self=1" shape=box fillcolor=1]
+"3761018_exampleThr/1" -> "3761018_ThreadMain"
+"3761018_ThreadMain" [label="scope=ThreadMain\ntotal=289kB (99.98%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
+"3761018_ThreadMain" -> "3761018_FuncA"
+"3761018_ThreadMain" -> "3761018_FuncB"
+"3761018_FuncA" [label="scope=FuncA\ntotal=145kB (50.18%)\nself=1kB (0.38%)\nnum_alloc_self=1" fillcolor=1]
+"3761018_FuncA" -> "3761018_FuncB"
+"3761018_FuncB" [label="scope=FuncB\ntotal=self=144kB (49.79%)\nnum_alloc_self=2000" fillcolor=5]
+"3761018_FuncB" [label="scope=FuncB\ntotal=self=144kB (49.79%)\nnum_alloc_self=2000" fillcolor=5]
+}
 
-"3674589_exampleThr/2" [label="thread=exampleThr/2\nTID=3674589\ntotal=434kB (100.00%)\nself=31B (0.00%)\nnum_alloc_self=1" shape=box fillcolor=1]
-"3674589_exampleThr/2" -> "3674589_TopFunc"
-"3674589_TopFunc" [label="scope=TopFunc\ntotal=434kB (99.99%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
-"3674589_TopFunc" -> "3674589_FuncA"
-"3674589_TopFunc" -> "3674589_FuncB"
-"3674589_FuncA" [label="scope=FuncA\ntotal=218kB (50.24%)\nself=2kB (0.49%)\nnum_alloc_self=1" fillcolor=1]
-"3674589_FuncA" -> "3674589_FuncB"
-"3674589_FuncB" [label="scope=FuncB\ntotal=self=216kB (49.74%)\nnum_alloc_self=3000" fillcolor=5]
-"3674589_FuncB" [label="scope=FuncB\ntotal=self=216kB (49.74%)\nnum_alloc_self=3000" fillcolor=5]
+subgraph cluster_TID3761019 {
+node [colorscheme=reds9 style=filled]
+labelloc="b"
+label="nPushNodeFailures=0\nnTreeNodesInUse/Max=1/256\n"
+"3761019_NonInstrumented" [label="thread=NonInstrumented\nTID=3761019\ntotal=self=156kB (100.00%)\nnum_alloc_self=1101" shape=box fillcolor=7]
+}
 
-"3674590_exampleThr/3" [label="thread=exampleThr/3\nTID=3674590\ntotal=579kB (100.00%)\nself=31B (0.00%)\nnum_alloc_self=1" shape=box fillcolor=1]
-"3674590_exampleThr/3" -> "3674590_TopFunc"
-"3674590_TopFunc" [label="scope=TopFunc\ntotal=579kB (99.99%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
-"3674590_TopFunc" -> "3674590_FuncA"
-"3674590_TopFunc" -> "3674590_FuncB"
-"3674590_FuncA" [label="scope=FuncA\ntotal=291kB (50.27%)\nself=3kB (0.54%)\nnum_alloc_self=1" fillcolor=1]
-"3674590_FuncA" -> "3674590_FuncB"
-"3674590_FuncB" [label="scope=FuncB\ntotal=self=288kB (49.72%)\nnum_alloc_self=4000" fillcolor=5]
-"3674590_FuncB" [label="scope=FuncB\ntotal=self=288kB (49.72%)\nnum_alloc_self=4000" fillcolor=5]
-
-"3674591_exampleThr/4" [label="thread=exampleThr/4\nTID=3674591\ntotal=724kB (100.00%)\nself=31B (0.00%)\nnum_alloc_self=1" shape=box fillcolor=1]
-"3674591_exampleThr/4" -> "3674591_TopFunc"
-"3674591_TopFunc" [label="scope=TopFunc\ntotal=724kB (99.99%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
-"3674591_TopFunc" -> "3674591_FuncA"
-"3674591_TopFunc" -> "3674591_FuncB"
-"3674591_FuncA" [label="scope=FuncA\ntotal=364kB (50.28%)\nself=4kB (0.57%)\nnum_alloc_self=1" fillcolor=1]
-"3674591_FuncA" -> "3674591_FuncB"
-"3674591_FuncB" [label="scope=FuncB\ntotal=self=360kB (49.70%)\nnum_alloc_self=5000" fillcolor=5]
-"3674591_FuncB" [label="scope=FuncB\ntotal=self=360kB (49.70%)\nnum_alloc_self=5000" fillcolor=5]
-
-"3674592_exampleThr/5" [label="thread=exampleThr/5\nTID=3674592\ntotal=869kB (100.00%)\nself=31B (0.00%)\nnum_alloc_self=1" shape=box fillcolor=1]
-"3674592_exampleThr/5" -> "3674592_TopFunc"
-"3674592_TopFunc" [label="scope=TopFunc\ntotal=869kB (99.99%)\nself=5B (0.00%)\nnum_alloc_self=1" fillcolor=1]
-"3674592_TopFunc" -> "3674592_FuncA"
-"3674592_TopFunc" -> "3674592_FuncB"
-"3674592_FuncA" [label="scope=FuncA\ntotal=437kB (50.29%)\nself=5kB (0.60%)\nnum_alloc_self=1" fillcolor=1]
-"3674592_FuncA" -> "3674592_FuncB"
-"3674592_FuncB" [label="scope=FuncB\ntotal=self=432kB (49.69%)\nnum_alloc_self=6000" fillcolor=5]
-"3674592_FuncB" [label="scope=FuncB\ntotal=self=432kB (49.69%)\nnum_alloc_self=6000" fillcolor=5]
+subgraph cluster_TID3761020 {
+node [colorscheme=reds9 style=filled]
+labelloc="b"
+label="nPushNodeFailures=0\nnTreeNodesInUse/Max=3/256\n"
+"3761020_exampleThr/2" [label="thread=exampleThr/2\nTID=3761020\ntotal=237kB (100.00%)\nself=31B (0.01%)\nnum_alloc_self=1" shape=box fillcolor=1]
+"3761020_exampleThr/2" -> "3761020_ThreadMain2"
+"3761020_ThreadMain2" [label="scope=ThreadMain2\ntotal=237kB (99.98%)\nself=21kB (9.08%)\nnum_alloc_self=300" fillcolor=2]
+"3761020_ThreadMain2" -> "3761020_FuncB"
+"3761020_FuncB" [label="scope=FuncB\ntotal=self=216kB (90.89%)\nnum_alloc_self=3000" fillcolor=7]
+}
 
 }
-digraph MallocTree_globals {
-"__before_init_node__" [label="Memory Allocated\nBefore MallocTag Init\n72kB"]
-"__malloctag_self_memory__" [label="Memory Allocated\nBy MallocTag itself\n387kB"]
-}
+

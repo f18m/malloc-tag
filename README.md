@@ -31,6 +31,7 @@ Profiling a more complex example, involving a simple application spawning 6 seco
 
 ![multithread_example_svg](examples/multithread/multithread_stats.dot.svg?raw=true "Malloc-tag output for MULTITHREAD example")
 
+From this picture it should be evident that all the memory allocations happen, regardless of the thread, in the malloc scope named "FuncB" (look at the self memory usage of that node and also at the number of malloc operations!).
 
 # Links
 

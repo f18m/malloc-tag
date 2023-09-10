@@ -24,6 +24,7 @@
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <vector>
 
 //------------------------------------------------------------------------------
 // Constants
@@ -41,8 +42,38 @@
 // Utils
 //------------------------------------------------------------------------------
 
+// see https://graphviz.org/doc/info/lang.html
 class GraphVizUtils {
 public:
+    static void start_digraph(std::string& out, const std::string& digraph_name, const std::vector<std::string>& labels,
+        const std::string& colorscheme = "reds9")
+    {
+        out += "digraph " + digraph_name + " {\n";
+        out += "node [colorscheme=" + colorscheme + " style=filled]\n"; // apply a colorscheme to all nodes
+
+        if (!labels.empty()) {
+            out += "labelloc=\"b\"\nlabel=\"";
+            for (const auto& l : labels)
+                out += l + "\\n";
+            out += "\"\n";
+        }
+    }
+    static void end_digraph(std::string& out) { out += "}\n"; }
+
+    static void start_subgraph(std::string& out, const std::string& digraph_name,
+        const std::vector<std::string>& labels, const std::string& colorscheme = "reds9")
+    {
+        out += "subgraph cluster_" + digraph_name + " {\n";
+        out += "node [colorscheme=" + colorscheme + " style=filled]\n"; // apply a colorscheme to all nodes
+
+        if (!labels.empty()) {
+            out += "labelloc=\"b\"\nlabel=\"";
+            for (const auto& l : labels)
+                out += l + "\\n";
+            out += "\"\n";
+        }
+    }
+
     static void append_node(std::string& out, const std::string& nodeName, const std::string& label,
         const std::string& shape = "", const std::string& fillcolor = "")
     {
@@ -62,7 +93,6 @@ public:
         // use double quotes around the node name in case it contains Graphviz-invalid chars e.g. '/'
         out += "\"" + nodeName1 + "\" -> \"" + nodeName2 + "\"\n";
     }
-
     static std::string pretty_print_bytes(size_t bytes)
     {
         // NOTE: we convert to kilo/mega/giga (multiplier=1000) not to kibi/mebi/gibi (multiplier=1024) bytes !!!

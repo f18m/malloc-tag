@@ -134,18 +134,25 @@ void MallocTree::collect_stats_recursively(
         out += "}";
         break;
 
-    case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
-        // there is no much room in Graphviz DOT to include some extra info related to the whole tree
-        // like the ones we put in the JSON output... so we leave out info like
-        // m_nTreeNodesInUse/m_nMaxTreeNodes/m_nPushNodeFailures/etc
+    case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT: {
+        std::string graphviz_name = "TID" + std::to_string(m_pRootNode->get_tid());
+
+        // let's use the digraph/subgraph label to convey extra info about this MallocTree:
+        std::vector<std::string> labels;
+        labels.push_back("nPushNodeFailures=" + std::to_string(m_nPushNodeFailures));
+        labels.push_back(
+            "nTreeNodesInUse/Max=" + std::to_string(m_nTreeNodesInUse) + "/" + std::to_string(m_nMaxTreeNodes));
+
         if (output_options != MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
-            // create one tree for each thread:
-            out += "digraph MallocTree_TID" + std::to_string(m_pRootNode->get_tid()) + " {\n";
-            out += "node [colorscheme=reds9 style=filled]\n"; // apply a colorscheme to all nodes
+            // create one tree for each MallocTree:
+            GraphVizUtils::start_digraph(out, graphviz_name, labels);
+        } else {
+            // create one subcluster for each MallocTree
+            GraphVizUtils::start_subgraph(out, graphviz_name, labels);
         }
+
         m_pRootNode->collect_graphviz_dot_output_recursively(out);
-        if (output_options != MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
-            out += "}\n"; // close this tree
-        break;
+        out += "}\n"; // close this digraph/subgraph
+    } break;
     }
 }
