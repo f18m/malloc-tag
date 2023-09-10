@@ -54,7 +54,10 @@ public:
 
     void push_new_node(const char* name); // must be malloc-free
     void pop_last_node(); // must be malloc-free
-    void track_malloc_in_current_scope(size_t nBytes) { m_pCurrentNode->track_malloc(nBytes); }
+    void track_alloc_in_current_scope(MallocTagGlibcPrimitive_e type, size_t nBytes)
+    {
+        m_pCurrentNode->track_alloc(type, nBytes);
+    }
 
     //------------------------------------------------------------------------------
     // Memory profiling APIs

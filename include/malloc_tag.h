@@ -36,9 +36,28 @@
 //------------------------------------------------------------------------------
 
 extern "C" {
-// the malloc()/free() interceptor defined by this library
+/* the malloc()/free() interceptor defined by this library
+   NOTE that GNU libc will define all these functions as "weak"
+   symbols so that they can be overridden by any other library exporting
+   a non-weak symbol:
+
+   nm -C /usr/lib64/libc.so.6  | grep -i alloc | grep " W "
+    000000000009d360 W aligned_alloc
+    000000000009d420 W calloc
+    0000000000125620 W fallocate
+    000000000009e130 W malloc_info
+    000000000009dcf0 W malloc_stats
+    000000000009d810 W malloc_trim
+    000000000009dae0 W malloc_usable_size
+    000000000009d3b0 W pvalloc
+    000000000009fae0 W reallocarray
+    000000000009d370 W valloc
+*/
 void* malloc(size_t size);
 void free(void* __ptr) __THROW;
+
+void* realloc(void* ptr, size_t newsize);
+void* calloc(size_t count, size_t eltsize);
 };
 
 //------------------------------------------------------------------------------
@@ -75,11 +94,15 @@ public:
         const std::string& fullpath = "", const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
 
     // Get the RSS memory reported by Linux for this process.
-    // This is Linux-specific utility.
-    // This utility function has nothing to do with malloctag but it can be used to get the
+    // This is a Linux-specific utility.
+    // This utility function has nothing to do with malloctag profiler but it can be used to get the
     // OS-view of memory usage and see if it roughly matches with malloctag-reported results.
     // The total memory allocations intercepted by malloctag will never match exactly the VIRT/RSS memory
     // reported by Linux for a number of reasons:
+    //  * malloctag only knows the size of newly allocated memory; whenever memory is free()d
+    //    malloctag does not know how much is free()d and thus malloctag total memory consumption will
+    //    be close to the OS-reported memory usage only for software that roughly releases all major
+    //    memory-intensive dataset at the end of the software.
     //  * malloctag is not aware about the internal-allocator (e.g. glibc ptmalloc) overhead and
     //    logic to acquire memory from the OS
     //  * some memory allocations might happen via alternative methods compared to malloc()/new,

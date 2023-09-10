@@ -45,6 +45,8 @@ extern "C" {
 // these __libc_* functions are the actual glibc implementation:
 void* __libc_malloc(size_t size);
 void __libc_free(void*);
+void* __libc_realloc(void* ptr, size_t newsize);
+void* __libc_calloc(size_t count, size_t eltsize);
 };
 
 //------------------------------------------------------------------------------
@@ -240,45 +242,47 @@ size_t MallocTagEngine::get_linux_rss_mem_usage_in_bytes()
 // set to 1 to debug if the actual application malloc()/free() are properly hooked or not
 #define DEBUG_HOOKS 0
 
+void __malloctag_track_allocation_from_glibc_override(MallocTagGlibcPrimitive_e type, size_t size)
+{
+    if (g_perthread_malloc_hook_active) {
+        if (g_registry.has_main_thread_tree()) {
+            // MallocTagEngine::init() has been invoked, good;
+            // it means the tree for the main-thread is ready.
+            // Let's check if the tree of _this_ thread has been initialized or not:
+            if (UNLIKELY(!g_perthread_tree || !g_perthread_tree->is_ready())) {
+                HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+                g_perthread_tree = g_registry.register_secondary_thread_tree();
+                // NOTE: if we're out of memory, g_perthread_tree might be nullptr
+            }
+            // else: this thread has its tree already available... nothing to do
+
+            if (g_perthread_tree && g_perthread_tree->is_ready())
+                g_perthread_tree->track_alloc_in_current_scope(type, size);
+
+        } else
+            // MallocTagEngine::init() has never been invoked... wait for that to happen
+            g_bytes_allocated_before_init += size;
+    }
+    // else: hooks disabled: just behave as standard glibc malloc()
+}
+
 extern "C" {
 void* malloc(size_t size)
 {
-    void* caller = __builtin_return_address(0);
-
     // always use the libc implementation to actually satisfy the malloc:
     void* result = __libc_malloc(size);
-    if (g_perthread_malloc_hook_active) {
-        if (result) {
-            if (g_registry.has_main_thread_tree()) {
-                // MallocTagEngine::init() has been invoked, good;
-                // it means the tree for the main-thread is ready.
-                // Let's check if the tree of _this_ thread has been initialized or not:
-                if (UNLIKELY(!g_perthread_tree || !g_perthread_tree->is_ready())) {
-                    HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
-                    g_perthread_tree = g_registry.register_secondary_thread_tree();
-                    // NOTE: if we're out of memory, g_perthread_tree might be nullptr
-                }
-                // else: this thread has its tree already available... nothing to do
-
-                if (g_perthread_tree && g_perthread_tree->is_ready())
-                    g_perthread_tree->track_malloc_in_current_scope(size);
-
-            } else
-                // MallocTagEngine::init() has never been invoked... wait for that to happen
-                g_bytes_allocated_before_init += size;
-        }
-        // else: this software is out of memory... nothing to track
+    if (result) {
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_MALLOC, size);
+    }
+    // else: this software is out of memory... nothing to track
 
 #if DEBUG_HOOKS
-        // do logging
-        {
-            HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
-            printf("mtag_malloc_hook %zuB\n", size);
-        }
-#endif
+    // do logging
+    {
+        HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+        printf("mtag_malloc_hook %zuB\n", size);
     }
-    // else: hooks disabled: just behave as standard glibc malloc()
-
+#endif
     return result;
 }
 
@@ -286,6 +290,9 @@ void free(void* __ptr) __THROW
 {
     // always use the libc implementation to actually free memory:
     __libc_free(__ptr);
+    if (g_perthread_malloc_hook_active)
+        if (g_perthread_tree && g_perthread_tree->is_ready())
+            g_perthread_tree->track_alloc_in_current_scope(MTAG_GLIBC_PRIMITIVE_FREE, 0 /* size is unknown */);
 
 #if DEBUG_HOOKS
     if (g_perthread_malloc_hook_active) // do logging
@@ -295,4 +302,42 @@ void free(void* __ptr) __THROW
     }
 #endif
 }
+
+void* realloc(void* ptr, size_t newsize)
+{
+    // always use the libc implementation to actually satisfy the realloc:
+    void* result = __libc_realloc(ptr, newsize);
+    if (result) {
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_REALLOC, newsize);
+    }
+    // else: this software is out of memory... nothing to track
+
+#if DEBUG_HOOKS
+    // do logging
+    {
+        HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+        printf("mtag_malloc_hook %zuB\n", size);
+    }
+#endif
+    return result;
+}
+void* calloc(size_t count, size_t eltsize)
+{
+    // always use the libc implementation to actually satisfy the calloc:
+    void* result = __libc_calloc(count, eltsize);
+    if (result) {
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, count * eltsize);
+    }
+    // else: this software is out of memory... nothing to track
+
+#if DEBUG_HOOKS
+    // do logging
+    {
+        HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+        printf("mtag_malloc_hook %zuB\n", size);
+    }
+#endif
+    return result;
+}
+
 }; // extern C

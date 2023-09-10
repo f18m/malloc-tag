@@ -1,22 +1,22 @@
 digraph MallocTree {
 node [colorscheme=reds9 style=filled]
 labelloc="b"
-label="Memory allocated before MallocTag initialization = 72kB\nMemory allocated by MallocTag itself =55kB\n"
-subgraph cluster_TID3781305 {
+label="Memory allocated before MallocTag initialization = 72kB\nMemory allocated by MallocTag itself =61kB\n"
+subgraph cluster_TID3789864 {
 node [colorscheme=reds9 style=filled]
 labelloc="b"
 label="nPushNodeFailures=0\nnTreeNodesInUse/Max=6/256\n"
-"3781305_minimal" [label="thread=minimal\nTID=3781305\ntotal=4kB (100.00%)\nself=2kB (54.36%)\nnum_alloc_self=3" shape=box fillcolor=5 fontsize=16]
-"3781305_minimal" -> "3781305_TopFunc"
-"3781305_TopFunc" [label="scope=TopFunc\ntotal=2kB (45.63%)\nself=5B (0.10%)\nnum_alloc_self=1" fillcolor=1 fontsize=9]
-"3781305_TopFunc" -> "3781305_FuncA"
-"3781305_TopFunc" -> "3781305_FuncB"
-"3781305_TopFunc" -> "3781305_FuncC"
-"3781305_FuncA" [label="scope=FuncA\ntotal=600B (12.86%)\nself=100B (2.14%)\nnum_alloc_self=1" fillcolor=1 fontsize=9]
-"3781305_FuncA" -> "3781305_FuncB"
-"3781305_FuncB" [label="scope=FuncB\ntotal=self=500B (10.71%)\nnum_alloc_self=1" fillcolor=3 fontsize=12]
-"3781305_FuncB" [label="scope=FuncB\ntotal=self=500B (10.71%)\nnum_alloc_self=1" fillcolor=3 fontsize=12]
-"3781305_FuncC" [label="scope=FuncC\ntotal=self=1kB (21.95%)\nnum_alloc_self=1" fillcolor=4 fontsize=14]
+"3789864_minimal" [label="thread=minimal\nTID=3789864\ntotal=4kB (100.00%)\nself=2kB (52.12%)\nnum_malloc_self=3\nnum_free_self=2" shape=box fillcolor=5 fontsize=16]
+"3789864_minimal" -> "3789864_TopFunc"
+"3789864_TopFunc" [label="scope=TopFunc\ntotal=2kB (47.87%)\nself=5B (0.10%)\nnum_malloc_self=1" fillcolor=1 fontsize=9]
+"3789864_TopFunc" -> "3789864_FuncA"
+"3789864_TopFunc" -> "3789864_FuncB"
+"3789864_TopFunc" -> "3789864_FuncC"
+"3789864_FuncA" [label="scope=FuncA\ntotal=800B (16.44%)\nself=300B (6.16%)\nnum_malloc_self=1\nnum_realloc_self=1\nnum_free_self=1" fillcolor=2 fontsize=10]
+"3789864_FuncA" -> "3789864_FuncB"
+"3789864_FuncB" [label="scope=FuncB\ntotal=self=500B (10.27%)\nnum_malloc_self=1\nnum_free_self=1" fillcolor=3 fontsize=12]
+"3789864_FuncB" [label="scope=FuncB\ntotal=self=500B (10.27%)\nnum_malloc_self=1\nnum_free_self=1" fillcolor=3 fontsize=12]
+"3789864_FuncC" [label="scope=FuncC\ntotal=self=1kB (21.04%)\nnum_malloc_self=1\nnum_free_self=1" fillcolor=4 fontsize=14]
 }
 
 }

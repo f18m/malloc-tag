@@ -9,6 +9,23 @@
 
 #include "private/malloc_tree_node.h"
 
+std::string MallocTagGlibcPrimitive2String(MallocTagGlibcPrimitive_e t)
+{
+    switch (t) {
+    case MTAG_GLIBC_PRIMITIVE_MALLOC:
+        return "malloc";
+    case MTAG_GLIBC_PRIMITIVE_REALLOC:
+        return "realloc";
+    case MTAG_GLIBC_PRIMITIVE_CALLOC:
+        return "calloc";
+    case MTAG_GLIBC_PRIMITIVE_FREE:
+        return "free";
+
+    default:
+        return "INVALID";
+    }
+}
+
 void MallocTreeNode::set_sitename_to_shlib_name_from_func_pointer(void* funcpointer)
 {
     Dl_info address_info;
@@ -57,7 +74,9 @@ void MallocTreeNode::collect_json_stats_recursively(std::string& out)
     out += "\"nBytes\": " + std::to_string(m_nBytesTotal) + ",";
     out += "\"nBytesDirect\": " + std::to_string(m_nBytesSelf) + ",";
     out += "\"nWeightPercentage\": " + get_weight_percentage_str() + ",";
-    out += "\"nAllocations\": " + std::to_string(m_nAllocationsSelf) + ",";
+    for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
+        out += "\"nCallsTo_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i)
+            + "\": " + std::to_string(m_nAllocationsSelf[i]) + ",";
     out += "\"nestedScopes\": { ";
     for (unsigned int i = 0; i < m_nChildrens; i++) {
         m_pChildren[i]->collect_json_stats_recursively(out);
@@ -85,7 +104,10 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
         weight = "total=self=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " (" + get_weight_percentage_str()
             + "%)";
 
-    weight += "\\nnum_alloc_self=" + std::to_string(m_nAllocationsSelf);
+    for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
+        if (m_nAllocationsSelf[i])
+            weight += "\\nnum_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i)
+                + "_self=" + std::to_string(m_nAllocationsSelf[i]);
 
     // write a description of this node:
     std::string thisNodeLabel, thisNodeShape;

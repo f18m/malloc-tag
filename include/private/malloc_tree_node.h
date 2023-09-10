@@ -38,6 +38,17 @@
 // (to save memory)
 #define MTAG_NODE_WEIGHT_MULTIPLIER 10000
 
+enum MallocTagGlibcPrimitive_e {
+    MTAG_GLIBC_PRIMITIVE_MALLOC,
+    MTAG_GLIBC_PRIMITIVE_REALLOC,
+    MTAG_GLIBC_PRIMITIVE_CALLOC,
+    MTAG_GLIBC_PRIMITIVE_FREE,
+
+    MTAG_GLIBC_PRIMITIVE_MAX
+};
+
+std::string MallocTagGlibcPrimitive2String(MallocTagGlibcPrimitive_e t);
+
 //------------------------------------------------------------------------------
 // Utils
 //------------------------------------------------------------------------------
@@ -130,7 +141,8 @@ public:
     {
         m_nBytesTotal = 0;
         m_nBytesSelf = 0;
-        m_nAllocationsSelf = 0;
+        for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
+            m_nAllocationsSelf[i] = 0;
         m_nWeightTotal = 0;
         m_nWeightSelf = 0;
         m_nTreeLevel = parent ? parent->m_nTreeLevel + 1 : 0;
@@ -149,10 +161,10 @@ public:
     // Memory profiling APIs
     //------------------------------------------------------------------------------
 
-    void track_malloc(size_t nBytes)
+    void track_alloc(MallocTagGlibcPrimitive_e type, size_t nBytes)
     {
         m_nBytesSelf += nBytes;
-        m_nAllocationsSelf++;
+        m_nAllocationsSelf[type]++;
     }
 
     void collect_json_stats_recursively(std::string& out);
@@ -215,7 +227,7 @@ private:
     size_t m_nBytesTotal; // Allocated bytes by this node and ALL its descendant nodes. Computed at "stats collection
                           // time".
     size_t m_nBytesSelf; // Allocated bytes only for THIS node.
-    size_t m_nAllocationsSelf; // The number of allocations for this node.
+    size_t m_nAllocationsSelf[MTAG_GLIBC_PRIMITIVE_MAX]; // The number of allocations for this node.
     unsigned int m_nTreeLevel; // How deep is located this node in the tree?
     size_t m_nWeightTotal; // Weight of this node expressed as MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
     size_t m_nWeightSelf; // Weight of this node expressed as MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)

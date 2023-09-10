@@ -21,7 +21,7 @@ void TopFunction()
     MallocTagScope noname("TopFunc"); // please account all mem allocs under the "TopFunc" name from this point onward
 
     FuncA();
-    malloc(5); // allocation done directly by this TopFunction()
+    malloc(5); // allocation done directly by this TopFunction()... which results in a memleak...
     FuncB();
     FuncC();
 }
@@ -30,8 +30,11 @@ void FuncA()
 {
     MallocTagScope noname("FuncA"); // please account all mem allocs under the "FuncA" name from this point onward
 
-    malloc(100);
+    void* a = malloc(100);
+    realloc(a, 200); // just show also realloc() is accounted for
     FuncB();
+
+    free(a);
 }
 
 void FuncB()
@@ -39,7 +42,9 @@ void FuncB()
     MallocTagScope noname("FuncB"); // please account all mem allocs under the "FuncB" name from this point onward
 
     // use "new" to demonstrate that we also hook "new"
-    new uint8_t[500];
+    uint8_t* p = new uint8_t[500]; // new[] will count as "malloc"
+
+    delete[] p; // delete[] will count as "free"
 }
 
 void FuncC()
