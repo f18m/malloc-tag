@@ -8,6 +8,7 @@
  */
 
 #include "private/malloc_tree_registry.h"
+#include "private/output_utils.h"
 
 //------------------------------------------------------------------------------
 // Globals

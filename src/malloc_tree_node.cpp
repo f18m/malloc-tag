@@ -8,6 +8,7 @@
  */
 
 #include "private/malloc_tree_node.h"
+#include "private/output_utils.h"
 
 //------------------------------------------------------------------------------
 // Global functions

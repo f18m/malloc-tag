@@ -8,6 +8,7 @@
  */
 
 #include "private/malloc_tree.h"
+#include "private/output_utils.h"
 
 #define UNLIKELY(x) __builtin_expect((x), 0)
 
