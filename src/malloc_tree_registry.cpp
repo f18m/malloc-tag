@@ -93,17 +93,32 @@ void MallocTreeRegistry::collect_stats(
     // this code is thread-safe because trees can only get registered, never removed:
     size_t num_trees = m_nMallocTrees.load();
 
-    char timeCharStr[64];
-    strftime(timeCharStr, sizeof(timeCharStr), "%Y-%m-%d @ %H:%M:%S %Z", &m_tmStartProfiling);
+    // we provide 2 timestamps:
+    // * start of memory profiling session
+    // * current timestamp
+    char tmStartProfilingStr[64];
+    strftime(tmStartProfilingStr, sizeof(tmStartProfilingStr), "%Y-%m-%d @ %H:%M:%S %Z", &m_tmStartProfiling);
+
+    time_t current_time;
+    struct tm current_time_tm;
+    time(&current_time); // Get the current time
+    localtime_r(&current_time, &current_time_tm); // Convert to local time
+
+    char tmCurrentStr[64];
+    strftime(tmCurrentStr, sizeof(tmCurrentStr), "%Y-%m-%d @ %H:%M:%S %Z", &current_time_tm);
+
+    size_t vmSizeNow = MallocTagEngine::get_linux_vmsize_in_bytes();
 
     switch (format) {
     case MTAG_OUTPUT_FORMAT_JSON: {
         JsonUtils::start_document(stats_str);
         JsonUtils::append_field(stats_str, "PID", getpid());
-        JsonUtils::append_field(stats_str, "tmStartProfiling", timeCharStr);
+        JsonUtils::append_field(stats_str, "tmStartProfiling", tmStartProfilingStr);
+        JsonUtils::append_field(stats_str, "tmCurrentSnapshot", tmCurrentStr);
 
         JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init + g_vmsize_at_init);
         JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage());
+        JsonUtils::append_field(stats_str, "VmSizeNow", vmSizeNow);
 
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init + g_vmsize_at_init;
         for (size_t i = 0; i < num_trees; i++) {
@@ -136,8 +151,10 @@ void MallocTreeRegistry::collect_stats(
             "Memory allocated by MallocTag itself =" + GraphVizUtils::pretty_print_bytes(get_total_memusage()));
         labels.push_back("Total memory tracked by MallocTag across all threads ="
             + GraphVizUtils::pretty_print_bytes(tot_tracked_mem_bytes));
-        labels.push_back("Start time of memory profiling session: " + std::string(timeCharStr));
-        labels.push_back("PID=" + std::to_string(getpid()));
+        labels.push_back("Memory profiling session start timestamp = " + std::string(tmStartProfilingStr));
+        labels.push_back("This snapshot timestamp = " + std::string(tmCurrentStr));
+        labels.push_back("PID =" + std::to_string(getpid()));
+        labels.push_back("VmSizeNow =" + GraphVizUtils::pretty_print_bytes(vmSizeNow));
 
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
             GraphVizUtils::end_digraph(stats_str, labels); // close the MallocTree

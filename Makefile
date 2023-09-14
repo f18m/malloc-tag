@@ -57,6 +57,7 @@ minimal_example: $(BINS)
 	@echo
 	@dot -Tsvg -O $(PWD)/examples/minimal/minimal_stats.dot
 
+# stracing is Always a Good Thing to learn more about basic things like e.g. dynamic linker, mmap(), brk(), etc
 minimal_strace: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \

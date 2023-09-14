@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/prctl.h>
 #include <thread>
+#include <unistd.h>
 #include <vector>
 
 #define NUM_THREADS 2
@@ -84,7 +85,7 @@ int main()
     MallocTagEngine::init();
 
     // launch a few mostly-identical threads
-    std::cout << "Hello world!" << std::endl;
+    std::cout << "Hello world from PID " << getpid() << std::endl;
 
     std::cout << "Now launching " << NUM_THREADS << " threads" << std::endl;
     std::vector<std::thread> threads;
@@ -109,8 +110,6 @@ int main()
         th.join();
     }
     threads.clear();
-
-    std::cout << "VmSIZE: " << MallocTagEngine::get_linux_vmsize_in_bytes() / 1000 << "kB" << std::endl;
 
     // dump stats in both JSON and graphviz formats
     if (MallocTagEngine::write_stats_on_disk())

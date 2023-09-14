@@ -67,11 +67,9 @@ int main()
     MallocTagEngine::init();
 
     // run some dummy memory allocations
-    std::cout << "Hello world!" << std::endl;
+    std::cout << "Hello world from PID " << getpid() << std::endl;
     std::cout << "Starting some dumb allocations to exercise the malloc_tag library" << std::endl;
     TopFunction();
-    std::cout << "VmSIZE: " << MallocTagEngine::get_linux_vmsize_in_bytes() / 1000 << "kB" << std::endl;
-    std::cout << "PID: " << getpid() << std::endl;
 
     // dump stats in both JSON and graphviz formats
     if (MallocTagEngine::write_stats_on_disk())

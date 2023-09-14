@@ -203,6 +203,11 @@ bool MallocTagEngine::write_stats_on_disk(
     bool bwritten = false;
     switch (format) {
     case MTAG_OUTPUT_FORMAT_ALL:
+        // if asked to write stats into multiple output format,
+        // disable the hooks just once and re-enable the hooks only when done for all output formats;
+        // this is important to maintain coherency between the data we write in the different output files:
+        // if HookDisabler goes out of scope between the first & second output generation steps, we risk
+        // that the second step contains more collected data compared to the first one
         bwritten = __internal_write_stats_on_disk(MTAG_OUTPUT_FORMAT_JSON, fullpath, output_options);
         bwritten &= __internal_write_stats_on_disk(MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT, fullpath, output_options);
         break;
