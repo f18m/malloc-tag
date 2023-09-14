@@ -8,7 +8,8 @@ LIB_HDR = \
 	include/malloc_tag.h \
 	include/private/malloc_tree_node.h \
 	include/private/malloc_tree_registry.h \
-	include/private/malloc_tree.h
+	include/private/malloc_tree.h \
+	include/private/output_utils.h
 LIB_SRC = \
 	src/malloc_tag.cpp \
 	src/malloc_tree.cpp \

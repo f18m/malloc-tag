@@ -53,8 +53,12 @@ public:
 
     void collect_stats(std::string& stats_str, MallocTagOutputFormat_e format, const std::string& output_options);
 
+protected:
 private:
     // the registry is the OWNER of m_nMallocTrees whose pointers get stored in m_pMallocTreeRegistry[]
     MallocTree* m_pMallocTreeRegistry[MAX_THREADS];
     std::atomic_uint m_nMallocTrees;
+
+    // records the time the memory profiling has started:
+    struct tm m_tmStartProfiling;
 };

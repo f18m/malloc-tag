@@ -34,6 +34,12 @@ MallocTree* MallocTreeRegistry::register_main_tree(size_t max_tree_nodes, size_t
 {
     assert(m_nMallocTrees.fetch_add(1) == 0); // the main tree must be the first one to get created
 
+    // when we register the main tree, it means basically the memory profiling session is starting;
+    // so let's remember the date/time to put it later in stats:
+    timespec tmstamp;
+    clock_gettime(CLOCK_MONOTONIC, &tmstamp);
+    localtime_r(&tmstamp.tv_sec, &m_tmStartProfiling);
+
     MallocTree* t = new MallocTree();
     if (!t || !t->init(max_tree_nodes, max_tree_levels))
         return nullptr; // out of memory
@@ -86,9 +92,15 @@ void MallocTreeRegistry::collect_stats(
     // this code is thread-safe because trees can only get registered, never removed:
     size_t num_trees = m_nMallocTrees.load();
 
+    char timeCharStr[64];
+    strftime(timeCharStr, sizeof(timeCharStr), "%b %d %Y (%a) @ %H:%M:%S", &m_tmStartProfiling);
+
     switch (format) {
     case MTAG_OUTPUT_FORMAT_JSON:
         JsonUtils::start_document(stats_str);
+        JsonUtils::append_field(stats_str, "PID", getpid());
+        JsonUtils::append_field(stats_str, "tmStartProfiling", timeCharStr);
+
         JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init);
         JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage());
 
@@ -120,6 +132,7 @@ void MallocTreeRegistry::collect_stats(
             "Memory allocated by MallocTag itself =" + GraphVizUtils::pretty_print_bytes(get_total_memusage()));
         labels.push_back("Total memory tracked by MallocTag across all threads ="
             + GraphVizUtils::pretty_print_bytes(tot_tracked_mem_bytes));
+        labels.push_back("Start time of memory profiling: " + std::string(timeCharStr));
 
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
             GraphVizUtils::end_digraph(stats_str, labels); // close the MallocTree

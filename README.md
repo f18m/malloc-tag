@@ -101,7 +101,6 @@ Apache 2.0 License
 
 # TODO
 
-* refactor JSON output code
 * make everything configurable via env vars
 * interval-based snapshotting of memory profiling results
 * install signal hook on initialization

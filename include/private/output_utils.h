@@ -37,10 +37,10 @@ public:
         const std::vector<std::string>& labels = std::vector<std::string>(), const std::string& colorscheme = "reds9")
     {
         out += "digraph " + digraph_name + " {\n";
-        out += "node [colorscheme=" + colorscheme + " style=filled]\n"; // apply a colorscheme to all nodes
+        out += " node [colorscheme=" + colorscheme + " style=filled]\n"; // apply a colorscheme to all nodes
 
         if (!labels.empty()) {
-            out += "labelloc=\"b\"\nlabel=\"";
+            out += " labelloc=\"b\"\n label=\"";
             for (const auto& l : labels)
                 out += l + "\\n";
             out += "\"\n";
@@ -49,7 +49,7 @@ public:
     static void end_digraph(std::string& out, const std::vector<std::string>& labels = std::vector<std::string>())
     {
         if (!labels.empty()) {
-            out += "labelloc=\"b\"\nlabel=\"";
+            out += " labelloc=\"b\"\n label=\"";
             for (const auto& l : labels)
                 out += l + "\\n";
             out += "\"\n";
@@ -60,22 +60,23 @@ public:
     static void start_subgraph(std::string& out, const std::string& digraph_name,
         const std::vector<std::string>& labels, const std::string& colorscheme = "reds9")
     {
-        out += "subgraph cluster_" + digraph_name + " {\n";
-        out += "node [colorscheme=" + colorscheme + " style=filled]\n"; // apply a colorscheme to all nodes
+        out += " subgraph cluster_" + digraph_name + " {\n";
+        out += "  node [colorscheme=" + colorscheme + " style=filled]\n"; // apply a colorscheme to all nodes
 
         if (!labels.empty()) {
-            out += "labelloc=\"b\"\nlabel=\"";
+            out += "  labelloc=\"b\"\n  label=\"";
             for (const auto& l : labels)
                 out += l + "\\n";
             out += "\"\n";
         }
     }
+    static void end_subgraph(std::string& out) { out += " }\n"; }
 
     static void append_node(std::string& out, const std::string& nodeName, const std::string& label,
         const std::string& shape = "", const std::string& fillcolor = "", const std::string& fontsize = "")
     {
         // use double quotes around the node name in case it contains Graphviz-invalid chars e.g. '/'
-        out += "\"" + nodeName + "\" [label=\"" + label + "\"";
+        out += "  \"" + nodeName + "\" [label=\"" + label + "\"";
 
         if (!shape.empty())
             out += " shape=" + shape;
@@ -90,7 +91,7 @@ public:
     static void append_edge(std::string& out, const std::string& nodeName1, const std::string& nodeName2)
     {
         // use double quotes around the node name in case it contains Graphviz-invalid chars e.g. '/'
-        out += "\"" + nodeName1 + "\" -> \"" + nodeName2 + "\"\n";
+        out += "  \"" + nodeName1 + "\" -> \"" + nodeName2 + "\"\n";
     }
     static std::string pretty_print_bytes(size_t bytes)
     {
@@ -137,7 +138,7 @@ public:
     static void append_field(
         std::string& out, const std::string& field_name, const std::string& field_value, bool is_last = false)
     {
-        out += "\"" + field_name + "\": " + field_value;
+        out += "\"" + field_name + "\": \"" + field_value + "\"";
         if (!is_last)
             out += ",\n";
     }

@@ -160,7 +160,7 @@ void MallocTree::collect_stats_recursively(
         }
 
         m_pRootNode->collect_graphviz_dot_output_recursively(out);
-        out += "}\n"; // close this digraph/subgraph
+        GraphVizUtils::end_subgraph(out); // close this digraph/subgraph
     } break;
 
     default:
