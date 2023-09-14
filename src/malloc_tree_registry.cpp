@@ -15,6 +15,7 @@
 //------------------------------------------------------------------------------
 
 extern std::atomic<size_t> g_bytes_allocated_before_init;
+extern size_t g_vmsize_at_init;
 
 //------------------------------------------------------------------------------
 // MallocTreeRegistry
@@ -93,7 +94,7 @@ void MallocTreeRegistry::collect_stats(
     size_t num_trees = m_nMallocTrees.load();
 
     char timeCharStr[64];
-    strftime(timeCharStr, sizeof(timeCharStr), "%b %d %Y (%a) @ %H:%M:%S", &m_tmStartProfiling);
+    strftime(timeCharStr, sizeof(timeCharStr), "%Y-%m-%d @ %H:%M:%S %Z", &m_tmStartProfiling);
 
     switch (format) {
     case MTAG_OUTPUT_FORMAT_JSON: {
@@ -101,10 +102,10 @@ void MallocTreeRegistry::collect_stats(
         JsonUtils::append_field(stats_str, "PID", getpid());
         JsonUtils::append_field(stats_str, "tmStartProfiling", timeCharStr);
 
-        JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init);
+        JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init + g_vmsize_at_init);
         JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage());
 
-        size_t tot_tracked_mem_bytes = 0;
+        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init + g_vmsize_at_init;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
@@ -120,7 +121,7 @@ void MallocTreeRegistry::collect_stats(
             // create a single unique graph for ALL threads/trees, named "MallocTree"
             GraphVizUtils::start_digraph(stats_str, "MallocTree");
         }
-        size_t tot_tracked_mem_bytes = 0;
+        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init + g_vmsize_at_init;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
@@ -130,13 +131,13 @@ void MallocTreeRegistry::collect_stats(
         // use labels to convey extra info:
         std::vector<std::string> labels;
         labels.push_back("Memory allocated before MallocTag initialization = "
-            + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
+            + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init + g_vmsize_at_init));
         labels.push_back(
             "Memory allocated by MallocTag itself =" + GraphVizUtils::pretty_print_bytes(get_total_memusage()));
         labels.push_back("Total memory tracked by MallocTag across all threads ="
             + GraphVizUtils::pretty_print_bytes(tot_tracked_mem_bytes));
-        labels.push_back(
-            "Start time of memory profiling session: " + std::string(timeCharStr) + " PID=" + std::to_string(getpid()));
+        labels.push_back("Start time of memory profiling session: " + std::string(timeCharStr));
+        labels.push_back("PID=" + std::to_string(getpid()));
 
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
             GraphVizUtils::end_digraph(stats_str, labels); // close the MallocTree

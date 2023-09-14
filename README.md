@@ -1,6 +1,8 @@
 # malloc-tag
-A small library to add a tag / category to each memory allocation inside C/C++ projects 
 
+A lighweight, intrusive memory profiler that allows to categorize memory allocation inside C/C++ projects, for Linux systems.
+In practice this project provides a small dynamic library (.so) to add a tag / category to each memory allocation inside C/C++ projects.
+This library provides a "malloc interposer" that allows for minimal-overhead memory profiling.
 
 # High-Level Design Criteria
 
@@ -93,6 +95,8 @@ Then open the resulting SVG file with any suitable viewer.
 * Replacing glibc malloc: https://www.gnu.org/software/libc/manual/html_node/Replacing-malloc.html
 * Free-list Memory Pool in C: https://github.com/djoldman/fmpool
 * libtcmalloc profiler: https://gperftools.github.io/gperftools/heapprofile.html
+* https://www.brendangregg.com/FlameGraphs/memoryflamegraphs.html
+* https://www.joyfulbikeshedding.com/blog/2019-01-31-full-system-dynamic-tracing-on-linux-using-ebpf-and-bpftrace.html
 
 # License
 
@@ -106,3 +110,7 @@ Apache 2.0 License
 * install signal hook on initialization
 * for multithreading, have the total referred to the GLOBAL software mem usage? or both?
 
+
+# FUTURE
+
+* explore bpftrace and generally-speaking eBPF-based approaches to memory observability

@@ -68,6 +68,9 @@ MallocTreeRegistry g_registry;
 // this accounts for ALL mallocs done by ALL threads before MallocTagEngine::init()
 std::atomic<size_t> g_bytes_allocated_before_init;
 
+// this is the VmSize reported by Linux kernel at MallocTagEngine::init() time
+size_t g_vmsize_at_init = 0;
+
 //------------------------------------------------------------------------------
 // Utils
 //------------------------------------------------------------------------------
@@ -137,6 +140,8 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
     {
         HookDisabler doNotAccountSelfMemoryUsage;
         g_perthread_tree = g_registry.register_main_tree(max_tree_nodes, max_tree_levels);
+
+        g_vmsize_at_init = get_linux_vmsize_in_bytes();
     }
 
     return g_perthread_tree != nullptr;
@@ -220,7 +225,7 @@ int parseLine(char* line)
     return atoi(p); // it will be zero on error
 }
 
-size_t MallocTagEngine::get_linux_rss_mem_usage_in_bytes()
+size_t MallocTagEngine::get_linux_vmsize_in_bytes()
 {
     FILE* file = fopen("/proc/self/status", "r");
     if (!file)

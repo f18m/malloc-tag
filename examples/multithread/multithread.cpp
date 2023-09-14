@@ -110,7 +110,7 @@ int main()
     }
     threads.clear();
 
-    std::cout << "VmRSS: " << MallocTagEngine::get_linux_rss_mem_usage_in_bytes() << "B" << std::endl;
+    std::cout << "VmSIZE: " << MallocTagEngine::get_linux_vmsize_in_bytes() / 1000 << "kB" << std::endl;
 
     // dump stats in both JSON and graphviz formats
     if (MallocTagEngine::write_stats_on_disk())

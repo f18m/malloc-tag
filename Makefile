@@ -57,7 +57,14 @@ minimal_example: $(BINS)
 	@echo
 	@dot -Tsvg -O $(PWD)/examples/minimal/minimal_stats.dot
 
- multithread_example: $(BINS)
+minimal_strace: $(BINS)
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
+		strace -e trace=%memory,%file	examples/minimal/minimal
+
+
+multithread_example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \

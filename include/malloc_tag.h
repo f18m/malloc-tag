@@ -96,7 +96,7 @@ public:
     static bool write_stats_on_disk(MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL,
         const std::string& fullpath = "", const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
 
-    // Get the RSS memory reported by Linux for this process.
+    // Get all virtual memory "associated" by Linux to this process.
     // This is a Linux-specific utility.
     // This utility function has nothing to do with malloctag profiler but it can be used to get the
     // OS-view of memory usage and see if it roughly matches with malloctag-reported results.
@@ -110,7 +110,10 @@ public:
     //    logic to acquire memory from the OS
     //  * some memory allocations might happen via alternative methods compared to malloc()/new,
     //    e.g. invoking directly mmap() or sbrk() syscalls
-    static size_t get_linux_rss_mem_usage_in_bytes();
+    // To understand the difference between VmSize/VmRSS and other memory measurements reported by
+    // the Linux kernel, check e.g.
+    //  https://web.archive.org/web/20120520221529/http://emilics.com/blog/article/mconsumption.html
+    static size_t get_linux_vmsize_in_bytes();
 };
 
 class MallocTagScope {
