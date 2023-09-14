@@ -1,5 +1,5 @@
-{"PID": 839581,
-"tmStartProfiling": "Aug 02 1970 (Sun) @ 04:44:53",
+{"PID": 886074,
+"tmStartProfiling": "Sep 14 2023 (Thu) @ 22:23:01",
 "nBytesAllocBeforeInit": 72704,
 "nBytesMallocTagSelfUsage": 307320,
 "tree_for_thread_multithread": {"nTreeLevels": 0,
@@ -14,56 +14,6 @@
 "nCallsTo_calloc": 3,
 "nCallsTo_free": 21,
 "nestedScopes": {}
-}
-}
-,"tree_for_thread_exampleThr/1": {"nTreeLevels": 3,
-"nTreeNodesInUse": 5,
-"nMaxTreeNodes": 256,
-"nPushNodeFailures": 0,
-"exampleThr/1": {"nBytesTotal": 289160,
-"nBytesDirect": 31,
-"nWeightPercentage": "100.00",
-"nCallsTo_malloc": 1,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 3,
-"nestedScopes": {"ThreadMain": {"nBytesTotal": 289129,
-"nBytesDirect": 5,
-"nWeightPercentage": "99.98",
-"nCallsTo_malloc": 1,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 0,
-"nestedScopes": {"FuncA": {"nBytesTotal": 145124,
-"nBytesDirect": 1124,
-"nWeightPercentage": "50.18",
-"nCallsTo_malloc": 1,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 0,
-"nestedScopes": {"FuncB": {"nBytesTotal": 144000,
-"nBytesDirect": 144000,
-"nWeightPercentage": "49.79",
-"nCallsTo_malloc": 2000,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 2000,
-"nestedScopes": {}
-}
-}
-}
-,"FuncB": {"nBytesTotal": 144000,
-"nBytesDirect": 144000,
-"nWeightPercentage": "49.79",
-"nCallsTo_malloc": 2000,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 2000,
-"nestedScopes": {}
-}
-}
-}
-}
 }
 }
 ,"tree_for_thread_exampleThr/0": {"nTreeLevels": 3,
@@ -109,6 +59,56 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 1000,
+"nestedScopes": {}
+}
+}
+}
+}
+}
+}
+,"tree_for_thread_exampleThr/1": {"nTreeLevels": 3,
+"nTreeNodesInUse": 5,
+"nMaxTreeNodes": 256,
+"nPushNodeFailures": 0,
+"exampleThr/1": {"nBytesTotal": 289160,
+"nBytesDirect": 31,
+"nWeightPercentage": "100.00",
+"nCallsTo_malloc": 1,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 3,
+"nestedScopes": {"ThreadMain": {"nBytesTotal": 289129,
+"nBytesDirect": 5,
+"nWeightPercentage": "99.98",
+"nCallsTo_malloc": 1,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 0,
+"nestedScopes": {"FuncA": {"nBytesTotal": 145124,
+"nBytesDirect": 1124,
+"nWeightPercentage": "50.18",
+"nCallsTo_malloc": 1,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 0,
+"nestedScopes": {"FuncB": {"nBytesTotal": 144000,
+"nBytesDirect": 144000,
+"nWeightPercentage": "49.79",
+"nCallsTo_malloc": 2000,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 2000,
+"nestedScopes": {}
+}
+}
+}
+,"FuncB": {"nBytesTotal": 144000,
+"nBytesDirect": 144000,
+"nWeightPercentage": "49.79",
+"nCallsTo_malloc": 2000,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 2000,
 "nestedScopes": {}
 }
 }
@@ -162,4 +162,4 @@
 }
 }
 }
-}
+,"nTotalTrackedBytes": 831015}

@@ -36,9 +36,9 @@ MallocTree* MallocTreeRegistry::register_main_tree(size_t max_tree_nodes, size_t
 
     // when we register the main tree, it means basically the memory profiling session is starting;
     // so let's remember the date/time to put it later in stats:
-    timespec tmstamp;
-    clock_gettime(CLOCK_MONOTONIC, &tmstamp);
-    localtime_r(&tmstamp.tv_sec, &m_tmStartProfiling);
+    time_t current_time;
+    time(&current_time); // Get the current time
+    localtime_r(&current_time, &m_tmStartProfiling); // Convert to local time
 
     MallocTree* t = new MallocTree();
     if (!t || !t->init(max_tree_nodes, max_tree_levels))
@@ -96,7 +96,7 @@ void MallocTreeRegistry::collect_stats(
     strftime(timeCharStr, sizeof(timeCharStr), "%b %d %Y (%a) @ %H:%M:%S", &m_tmStartProfiling);
 
     switch (format) {
-    case MTAG_OUTPUT_FORMAT_JSON:
+    case MTAG_OUTPUT_FORMAT_JSON: {
         JsonUtils::start_document(stats_str);
         JsonUtils::append_field(stats_str, "PID", getpid());
         JsonUtils::append_field(stats_str, "tmStartProfiling", timeCharStr);
@@ -104,13 +104,16 @@ void MallocTreeRegistry::collect_stats(
         JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init);
         JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage());
 
+        size_t tot_tracked_mem_bytes = 0;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
-            if (i != num_trees - 1)
-                stats_str += ",";
+            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
+            stats_str += ",";
         }
+
+        JsonUtils::append_field(stats_str, "nTotalTrackedBytes", tot_tracked_mem_bytes, true /* is_last */);
         JsonUtils::end_document(stats_str);
-        break;
+    } break;
 
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT: {
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
@@ -132,7 +135,8 @@ void MallocTreeRegistry::collect_stats(
             "Memory allocated by MallocTag itself =" + GraphVizUtils::pretty_print_bytes(get_total_memusage()));
         labels.push_back("Total memory tracked by MallocTag across all threads ="
             + GraphVizUtils::pretty_print_bytes(tot_tracked_mem_bytes));
-        labels.push_back("Start time of memory profiling: " + std::string(timeCharStr));
+        labels.push_back(
+            "Start time of memory profiling session: " + std::string(timeCharStr) + " PID=" + std::to_string(getpid()));
 
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
             GraphVizUtils::end_digraph(stats_str, labels); // close the MallocTree

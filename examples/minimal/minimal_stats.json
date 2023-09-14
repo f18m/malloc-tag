@@ -1,5 +1,5 @@
-{"PID": 839567,
-"tmStartProfiling": "Aug 02 1970 (Sun) @ 04:44:36",
+{"PID": 886032,
+"tmStartProfiling": "Sep 14 2023 (Thu) @ 22:22:30",
 "nBytesAllocBeforeInit": 72704,
 "nBytesMallocTagSelfUsage": 61464,
 "tree_for_thread_minimal": {"nTreeLevels": 3,
@@ -61,4 +61,4 @@
 }
 }
 }
-}
+,"nTotalTrackedBytes": 4865}
