@@ -88,16 +88,16 @@ void MallocTreeRegistry::collect_stats(
 
     switch (format) {
     case MTAG_OUTPUT_FORMAT_JSON:
-        stats_str += "{";
-        stats_str += "\"nBytesAllocBeforeInit\": " + std::to_string(g_bytes_allocated_before_init) + ",";
-        stats_str += "\"nBytesMallocTagSelfUsage\": " + std::to_string(get_total_memusage()) + ",";
+        JsonUtils::start_document(stats_str);
+        JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init);
+        JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage());
 
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
             if (i != num_trees - 1)
                 stats_str += ",";
         }
-        stats_str += "}";
+        JsonUtils::end_document(stats_str);
         break;
 
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT: {

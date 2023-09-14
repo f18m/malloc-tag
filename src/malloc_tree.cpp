@@ -130,13 +130,16 @@ void MallocTree::collect_stats_recursively(
 
     switch (format) {
     case MTAG_OUTPUT_FORMAT_JSON:
-        out += "\"tree_for_thread_" + m_pRootNode->get_node_name() + "\": {";
-        out += "\"nTreeLevels\": " + std::to_string(m_nTreeLevels) + ",";
-        out += "\"nTreeNodesInUse\": " + std::to_string(m_nTreeNodesInUse) + ",";
-        out += "\"nMaxTreeNodes\": " + std::to_string(m_nMaxTreeNodes) + ",";
-        out += "\"nPushNodeFailures\": " + std::to_string(m_nPushNodeFailures) + ",";
+        JsonUtils::start_object(out, "tree_for_thread_" + m_pRootNode->get_node_name());
+
+        JsonUtils::append_field(out, "nTreeLevels", m_nTreeLevels);
+        JsonUtils::append_field(out, "nTreeNodesInUse", m_nTreeNodesInUse);
+        JsonUtils::append_field(out, "nMaxTreeNodes", m_nMaxTreeNodes);
+        JsonUtils::append_field(out, "nPushNodeFailures", m_nPushNodeFailures);
+
         m_pRootNode->collect_json_stats_recursively(out);
-        out += "}";
+
+        JsonUtils::end_object(out);
         break;
 
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT: {

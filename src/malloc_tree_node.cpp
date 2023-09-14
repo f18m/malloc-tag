@@ -75,21 +75,27 @@ MallocTreeNode* MallocTreeNode::get_child_by_name(const char* name) const
 void MallocTreeNode::collect_json_stats_recursively(std::string& out)
 {
     // each node is a JSON object
-    out += "\"" + get_node_name() + "\":{";
-    out += "\"nBytes\": " + std::to_string(m_nBytesTotal) + ",";
-    out += "\"nBytesDirect\": " + std::to_string(m_nBytesSelf) + ",";
-    out += "\"nWeightPercentage\": " + get_weight_percentage_str() + ",";
+    JsonUtils::start_object(out, get_node_name());
+
+    JsonUtils::append_field(out, "nBytesTotal", m_nBytesTotal);
+    JsonUtils::append_field(out, "nBytesDirect", m_nBytesSelf);
+    JsonUtils::append_field(out, "nWeightPercentage", get_weight_percentage_str());
+
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
-        out += "\"nCallsTo_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i)
-            + "\": " + std::to_string(m_nAllocationsSelf[i]) + ",";
-    out += "\"nestedScopes\": { ";
-    for (unsigned int i = 0; i < m_nChildrens; i++) {
-        m_pChildren[i]->collect_json_stats_recursively(out);
-        if (i < m_nChildrens - 1)
-            // there's another node to dump:
-            out += ",";
+        JsonUtils::append_field(
+            out, "nCallsTo_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i), m_nAllocationsSelf[i]);
+
+    {
+        JsonUtils::start_object(out, "nestedScopes");
+        for (unsigned int i = 0; i < m_nChildrens; i++) {
+            m_pChildren[i]->collect_json_stats_recursively(out);
+            if (i < m_nChildrens - 1)
+                // there's another node to dump:
+                out += ",";
+        }
+        JsonUtils::end_object(out); // close childrenNodes
     }
-    out += "}}"; // close childrenNodes + the whole node object
+    JsonUtils::end_object(out); // close the whole node object
 }
 
 void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)

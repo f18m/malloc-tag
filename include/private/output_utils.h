@@ -105,3 +105,46 @@ public:
             return std::to_string(bytes / 1000000000ul) + "GB";
     }
 };
+
+//------------------------------------------------------------------------------
+// JsonUtils
+//------------------------------------------------------------------------------
+
+class JsonUtils {
+public:
+    static void start_document(std::string& out)
+    {
+        // start object
+        out += "{";
+    }
+    static void end_document(std::string& out)
+    {
+        // start object
+        out += "}";
+    }
+
+    static void start_object(std::string& out, const std::string& object_name)
+    {
+        // start object
+        out += "\"" + object_name + "\": {";
+    }
+    static void end_object(std::string& out)
+    {
+        // end object
+        out += "}\n";
+    }
+
+    static void append_field(
+        std::string& out, const std::string& field_name, const std::string& field_value, bool is_last = false)
+    {
+        out += "\"" + field_name + "\": " + field_value;
+        if (!is_last)
+            out += ",\n";
+    }
+    static void append_field(std::string& out, const std::string& field_name, size_t field_value, bool is_last = false)
+    {
+        out += "\"" + field_name + "\": " + std::to_string(field_value);
+        if (!is_last)
+            out += ",\n";
+    }
+};
