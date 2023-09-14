@@ -58,6 +58,10 @@ public:
     {
         m_pCurrentNode->track_alloc(type, nBytes);
     }
+    void track_free_in_current_scope(MallocTagGlibcPrimitive_e type, size_t nBytes)
+    {
+        m_pCurrentNode->track_free(type, nBytes);
+    }
 
     //------------------------------------------------------------------------------
     // Memory profiling APIs
@@ -66,6 +70,14 @@ public:
     //------------------------------------------------------------------------------
 
     void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format, const std::string& output_options);
+
+    size_t get_total_bytes_tracked() const
+    {
+        // call this function only after collect_stats_recursively() API.
+        // the result will be an approximated result: it will report the total memory accounted by this tree
+        // at the time collect_stats_recursively() API was called the last time.
+        return m_pRootNode->get_total_bytes();
+    }
 
     //------------------------------------------------------------------------------
     // Getters

@@ -11,6 +11,10 @@
 
 #define UNLIKELY(x) __builtin_expect((x), 0)
 
+//------------------------------------------------------------------------------
+// MallocTree
+//------------------------------------------------------------------------------
+
 bool MallocTree::init(size_t max_tree_nodes, size_t max_tree_levels) // triggers some MEMORY ALLOCATION
 {
     assert(m_pNodePool == nullptr);
@@ -154,5 +158,8 @@ void MallocTree::collect_stats_recursively(
         m_pRootNode->collect_graphviz_dot_output_recursively(out);
         out += "}\n"; // close this digraph/subgraph
     } break;
+
+    default:
+        break;
     }
 }

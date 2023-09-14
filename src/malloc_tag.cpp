@@ -47,6 +47,9 @@ void* __libc_malloc(size_t size);
 void __libc_free(void*);
 void* __libc_realloc(void* ptr, size_t newsize);
 void* __libc_calloc(size_t count, size_t eltsize);
+void* __libc_memalign(size_t alignment, size_t size);
+void* __libc_valloc(size_t __size);
+void* __libc_pvalloc(size_t __size);
 };
 
 //------------------------------------------------------------------------------
@@ -78,17 +81,17 @@ public:
         // HookDisabler shall NOT re-enable hooks.
         // E.g. consider:
         /*
-            {
-                HookDisabler firstDisabler;
+    {
+        HookDisabler firstDisabler;
 
-                {
-                    HookDisabler nestedDisabler;
-                } // dtor of nestedDisabler invoked
+        {
+            HookDisabler nestedDisabler;
+        } // dtor of nestedDisabler invoked
 
-                // ...some function whose memory usage must NOT be accounted for...
+        // ...some function whose memory usage must NOT be accounted for...
 
-            } // dtor of firstDisabler invoked
-        */
+    } // dtor of firstDisabler invoked
+*/
         m_prev_state = g_perthread_malloc_hook_active;
         g_perthread_malloc_hook_active = false;
     }
@@ -169,6 +172,11 @@ bool __internal_write_stats_on_disk(
         case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
             if (getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV))
                 fpath = std::string(getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV));
+            break;
+
+        case MTAG_OUTPUT_FORMAT_ALL:
+            assert(0); // caller must deal with MTAG_OUTPUT_FORMAT_ALL
+            break;
         }
     }
 
@@ -258,7 +266,6 @@ void __malloctag_track_allocation_from_glibc_override(MallocTagGlibcPrimitive_e 
 
             if (g_perthread_tree && g_perthread_tree->is_ready())
                 g_perthread_tree->track_alloc_in_current_scope(type, size);
-
         } else
             // MallocTagEngine::init() has never been invoked... wait for that to happen
             g_bytes_allocated_before_init += size;
@@ -292,7 +299,7 @@ void free(void* __ptr) __THROW
     __libc_free(__ptr);
     if (g_perthread_malloc_hook_active)
         if (g_perthread_tree && g_perthread_tree->is_ready())
-            g_perthread_tree->track_alloc_in_current_scope(MTAG_GLIBC_PRIMITIVE_FREE, 0 /* size is unknown */);
+            g_perthread_tree->track_free_in_current_scope(MTAG_GLIBC_PRIMITIVE_FREE, 0);
 
 #if DEBUG_HOOKS
     if (g_perthread_malloc_hook_active) // do logging
@@ -303,7 +310,7 @@ void free(void* __ptr) __THROW
 #endif
 }
 
-void* realloc(void* ptr, size_t newsize)
+void* realloc(void* ptr, size_t newsize) __THROW
 {
     // always use the libc implementation to actually satisfy the realloc:
     void* result = __libc_realloc(ptr, newsize);
@@ -321,12 +328,70 @@ void* realloc(void* ptr, size_t newsize)
 #endif
     return result;
 }
-void* calloc(size_t count, size_t eltsize)
+
+void* calloc(size_t count, size_t eltsize) __THROW
 {
     // always use the libc implementation to actually satisfy the calloc:
     void* result = __libc_calloc(count, eltsize);
     if (result) {
         __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, count * eltsize);
+    }
+    // else: this software is out of memory... nothing to track
+
+#if DEBUG_HOOKS
+    // do logging
+    {
+        HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+        printf("mtag_malloc_hook %zuB\n", size);
+    }
+#endif
+    return result;
+}
+
+void* memalign(size_t alignment, size_t size) __THROW
+{
+    // always use the libc implementation to actually satisfy the calloc:
+    void* result = __libc_memalign(alignment, size);
+    if (result) {
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, size);
+    }
+    // else: this software is out of memory... nothing to track
+
+#if DEBUG_HOOKS
+    // do logging
+    {
+        HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+        printf("mtag_malloc_hook %zuB\n", size);
+    }
+#endif
+    return result;
+}
+
+void* valloc(size_t size) __THROW
+{
+    // always use the libc implementation to actually satisfy the calloc:
+    void* result = __libc_valloc(size);
+    if (result) {
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, size);
+    }
+    // else: this software is out of memory... nothing to track
+
+#if DEBUG_HOOKS
+    // do logging
+    {
+        HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+        printf("mtag_malloc_hook %zuB\n", size);
+    }
+#endif
+    return result;
+}
+
+void* pvalloc(size_t size) __THROW
+{
+    // always use the libc implementation to actually satisfy the calloc:
+    void* result = __libc_pvalloc(size);
+    if (result) {
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, size);
     }
     // else: this software is out of memory... nothing to track
 

@@ -85,7 +85,20 @@ clean:
 	find -name *.o -exec rm {} \;
 	rm $(BINS)
 
-.PHONY: all example examples clean
+install:
+ifndef DESTDIR
+	@echo "*** ERROR: please call this makefile supplying explicitly the DESTDIR variable. E.g. use DESTDIR=/usr or DESTDIR=/usr/local"
+	@exit 1
+endif
+	@echo "Installing malloc-tag header into $(DESTDIR)/include"
+	@mkdir --parents                    $(DESTDIR)/include
+	@cp -fv include/malloc_tag.h        $(DESTDIR)/include/
+	@echo "Installing malloc-tag library into $(DESTDIR)/lib"
+	@mkdir --parents                    $(DESTDIR)/lib
+	@cp -fv src/libmalloc_tag.so*       $(DESTDIR)/lib/
+
+
+.PHONY: all minimal_example multithread_example examples clean install
 
 
 # Rules

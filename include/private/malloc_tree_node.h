@@ -56,8 +56,8 @@ std::string MallocTagGlibcPrimitive2String(MallocTagGlibcPrimitive_e t);
 // see https://graphviz.org/doc/info/lang.html
 class GraphVizUtils {
 public:
-    static void start_digraph(std::string& out, const std::string& digraph_name, const std::vector<std::string>& labels,
-        const std::string& colorscheme = "reds9")
+    static void start_digraph(std::string& out, const std::string& digraph_name,
+        const std::vector<std::string>& labels = std::vector<std::string>(), const std::string& colorscheme = "reds9")
     {
         out += "digraph " + digraph_name + " {\n";
         out += "node [colorscheme=" + colorscheme + " style=filled]\n"; // apply a colorscheme to all nodes
@@ -69,7 +69,16 @@ public:
             out += "\"\n";
         }
     }
-    static void end_digraph(std::string& out) { out += "}\n"; }
+    static void end_digraph(std::string& out, const std::vector<std::string>& labels = std::vector<std::string>())
+    {
+        if (!labels.empty()) {
+            out += "labelloc=\"b\"\nlabel=\"";
+            for (const auto& l : labels)
+                out += l + "\\n";
+            out += "\"\n";
+        }
+        out += "}\n";
+    }
 
     static void start_subgraph(std::string& out, const std::string& digraph_name,
         const std::vector<std::string>& labels, const std::string& colorscheme = "reds9")
@@ -164,6 +173,11 @@ public:
     void track_alloc(MallocTagGlibcPrimitive_e type, size_t nBytes)
     {
         m_nBytesSelf += nBytes;
+        m_nAllocationsSelf[type]++;
+    }
+    void track_free(MallocTagGlibcPrimitive_e type, size_t nBytes)
+    {
+        m_nBytesSelf -= nBytes;
         m_nAllocationsSelf[type]++;
     }
 

@@ -9,6 +9,16 @@
 
 #include "private/malloc_tree_registry.h"
 
+//------------------------------------------------------------------------------
+// Globals
+//------------------------------------------------------------------------------
+
+extern std::atomic<size_t> g_bytes_allocated_before_init;
+
+//------------------------------------------------------------------------------
+// MallocTreeRegistry
+//------------------------------------------------------------------------------
+
 MallocTreeRegistry::~MallocTreeRegistry()
 {
     size_t toDelete = m_nMallocTrees.fetch_sub(1);
@@ -69,8 +79,6 @@ size_t MallocTreeRegistry::get_total_memusage()
     return total_bytes;
 }
 
-extern std::atomic<size_t> g_bytes_allocated_before_init;
-
 void MallocTreeRegistry::collect_stats(
     std::string& stats_str, MallocTagOutputFormat_e format, const std::string& output_options)
 {
@@ -92,26 +100,28 @@ void MallocTreeRegistry::collect_stats(
         break;
 
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT: {
-
-        std::string meminfo1 = "Memory allocated before MallocTag initialization = "
-            + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init);
-        std::string meminfo2
-            = "Memory allocated by MallocTag itself =" + GraphVizUtils::pretty_print_bytes(get_total_memusage());
-        // use labels to convey extra info:
-        std::vector<std::string> labels;
-        labels.push_back(meminfo1);
-        labels.push_back(meminfo2);
-
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
             // create a single unique graph for ALL threads/trees, named "MallocTree"
-            GraphVizUtils::start_digraph(stats_str, "MallocTree", labels);
+            GraphVizUtils::start_digraph(stats_str, "MallocTree");
         }
+        size_t tot_tracked_mem_bytes = 0;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
+            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
             stats_str += "\n";
         }
+
+        // use labels to convey extra info:
+        std::vector<std::string> labels;
+        labels.push_back("Memory allocated before MallocTag initialization = "
+            + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
+        labels.push_back(
+            "Memory allocated by MallocTag itself =" + GraphVizUtils::pretty_print_bytes(get_total_memusage()));
+        labels.push_back("Total memory tracked by MallocTag across all threads ="
+            + GraphVizUtils::pretty_print_bytes(tot_tracked_mem_bytes));
+
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
-            GraphVizUtils::end_digraph(stats_str); // close the MallocTree
+            GraphVizUtils::end_digraph(stats_str, labels); // close the MallocTree
 
         if (output_options != MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
             // add a few nodes "external" to the tree:
@@ -119,5 +129,8 @@ void MallocTreeRegistry::collect_stats(
             GraphVizUtils::end_digraph(stats_str); // close the MallocTree_globals
         }
     } break;
+
+    default:
+        break;
     }
 }

@@ -105,4 +105,5 @@ Apache 2.0 License
 * make everything configurable via env vars
 * interval-based snapshotting of memory profiling results
 * install signal hook on initialization
+* for multithreading, have the total referred to the GLOBAL software mem usage? or both?
 

@@ -9,6 +9,10 @@
 
 #include "private/malloc_tree_node.h"
 
+//------------------------------------------------------------------------------
+// Global functions
+//------------------------------------------------------------------------------
+
 std::string MallocTagGlibcPrimitive2String(MallocTagGlibcPrimitive_e t)
 {
     switch (t) {
@@ -26,14 +30,17 @@ std::string MallocTagGlibcPrimitive2String(MallocTagGlibcPrimitive_e t)
     }
 }
 
+//------------------------------------------------------------------------------
+// MallocTreeNode
+//------------------------------------------------------------------------------
+
 void MallocTreeNode::set_sitename_to_shlib_name_from_func_pointer(void* funcpointer)
 {
     Dl_info address_info;
     if (dladdr(funcpointer, &address_info) == 0 || address_info.dli_fname == nullptr) {
         strncpy(&m_scopeName[0], "UnknownSharedLib", MTAG_MAX_SCOPENAME_LEN);
     } else
-        strncpy(&m_scopeName[0], address_info.dli_fname,
-            std::min(strlen(address_info.dli_fname), (size_t)MTAG_MAX_SCOPENAME_LEN));
+        strncpy(&m_scopeName[0], address_info.dli_fname, MTAG_MAX_SCOPENAME_LEN);
 
     // FIXME: should we free the pointers inside "address_info"??
 }
@@ -44,10 +51,7 @@ void MallocTreeNode::set_sitename_to_threadname()
     prctl(PR_GET_NAME, &m_scopeName[0], 0, 0);
 }
 
-void MallocTreeNode::set_sitename(const char* sitename)
-{
-    strncpy(&m_scopeName[0], sitename, std::min(strlen(sitename), (size_t)MTAG_MAX_SCOPENAME_LEN));
-}
+void MallocTreeNode::set_sitename(const char* sitename) { strncpy(&m_scopeName[0], sitename, MTAG_MAX_SCOPENAME_LEN); }
 
 bool MallocTreeNode::link_new_children(MallocTreeNode* new_child)
 {

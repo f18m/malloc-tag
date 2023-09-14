@@ -53,11 +53,14 @@ extern "C" {
     000000000009fae0 W reallocarray
     000000000009d370 W valloc
 */
-void* malloc(size_t size);
+void* malloc(size_t size) __attribute_malloc__;
 void free(void* __ptr) __THROW;
 
-void* realloc(void* ptr, size_t newsize);
-void* calloc(size_t count, size_t eltsize);
+void* realloc(void* ptr, size_t newsize) __THROW;
+void* calloc(size_t count, size_t eltsize) __THROW;
+void* memalign(size_t alignment, size_t size) __THROW __attribute_malloc__;
+void* valloc(size_t __size) __THROW __attribute_malloc__;
+void* pvalloc(size_t __size) __THROW __attribute_malloc__;
 };
 
 //------------------------------------------------------------------------------
