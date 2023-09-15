@@ -37,7 +37,7 @@ std::string MallocTagGlibcPrimitive2String(MallocTagGlibcPrimitive_e t)
 // MallocTreeNode
 //------------------------------------------------------------------------------
 
-void MallocTreeNode::set_sitename_to_shlib_name_from_func_pointer(void* funcpointer)
+void MallocTreeNode::set_scope_name_to_shlib_name_from_func_pointer(void* funcpointer)
 {
     Dl_info address_info;
     if (dladdr(funcpointer, &address_info) == 0 || address_info.dli_fname == nullptr) {
@@ -48,13 +48,17 @@ void MallocTreeNode::set_sitename_to_shlib_name_from_func_pointer(void* funcpoin
     // FIXME: should we free the pointers inside "address_info"??
 }
 
-void MallocTreeNode::set_sitename_to_threadname()
+void MallocTreeNode::set_scope_name_to_threadname()
 {
     // get thread name:
     prctl(PR_GET_NAME, &m_scopeName[0], 0, 0);
 }
 
-void MallocTreeNode::set_sitename(const char* sitename) { strncpy(&m_scopeName[0], sitename, MTAG_MAX_SCOPENAME_LEN); }
+void MallocTreeNode::set_scope_name(const char* sitename)
+{
+    strncpy(&m_scopeName[0], sitename, MTAG_MAX_SCOPENAME_LEN);
+    m_scopeName[MTAG_MAX_SCOPENAME_LEN - 1] = '\0';
+}
 
 bool MallocTreeNode::link_new_children(MallocTreeNode* new_child)
 {

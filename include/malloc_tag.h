@@ -132,8 +132,13 @@ public:
 
 class MallocTagScope {
 public:
-    // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
+    // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" SCOPE
     MallocTagScope(const char* tag_name);
+
+    // advance the per-thread cursor inside the malloc tree by 1 more level, adding the
+    //   class_name::function_name
+    // SCOPE
+    MallocTagScope(const char* class_name, const char* function_name);
 
     // pop by 1 level the current per-thread cursor
     ~MallocTagScope();

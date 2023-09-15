@@ -26,7 +26,7 @@
 // Constants
 //------------------------------------------------------------------------------
 
-#define MTAG_MAX_SCOPENAME_LEN 20 // must be at least 16 bytes long due to use in prctl(PR_GET_NAME)
+#define MTAG_MAX_SCOPENAME_LEN 32 // must be at least 16 bytes long due to use in prctl(PR_GET_NAME)
 #define MTAG_MAX_CHILDREN_PER_NODE 16
 
 // the use of MTAG_NODE_WEIGHT_MULTIPLIER is just a trick that allows to store a percentage (ranging 0-100)
@@ -77,9 +77,9 @@ public:
         m_pParent = parent;
     }
 
-    void set_sitename_to_shlib_name_from_func_pointer(void* funcpointer);
-    void set_sitename_to_threadname();
-    void set_sitename(const char* sitename);
+    void set_scope_name_to_shlib_name_from_func_pointer(void* funcpointer);
+    void set_scope_name_to_threadname();
+    void set_scope_name(const char* sitename);
     bool link_new_children(MallocTreeNode* new_child);
 
     //------------------------------------------------------------------------------

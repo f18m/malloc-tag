@@ -38,7 +38,7 @@ bool MallocTree::init(
     m_nThreadID = syscall(SYS_gettid);
 
     m_pRootNode->init(NULL, m_nThreadID); // this is the tree root node
-    m_pRootNode->set_sitename_to_threadname();
+    m_pRootNode->set_scope_name_to_threadname();
 
     // This MallocTree::init() API is invoked each time a malloc() is detected on a previously-unknown thread.
     // By the time that thread reaches the first malloc() point, the dynamic linker & glibc will have already
@@ -121,7 +121,7 @@ void MallocTree::push_new_node(const char* name) // must be malloc-free
 
     m_nTreeNodesInUse++; // successfully obtained a new node from the mempool
     n->init(m_pCurrentNode, m_nThreadID);
-    n->set_sitename(name);
+    n->set_scope_name(name);
     if (!m_pCurrentNode->link_new_children(n)) {
         // failed to link current node: release node back to the pool
         m_nTreeNodesInUse--;

@@ -71,20 +71,23 @@ void FuncC()
         mytestmap["onemorekey" + std::to_string(i)] = i;
 }
 
-void YetAnotherThread(int thread_id)
-{
-    std::string tName = std::string("YetAnThr/") + std::to_string(thread_id);
-    prctl(PR_SET_NAME, tName.c_str());
+class YetAnotherThread {
+public:
+    static void MainEvLoop(int thread_id)
+    {
+        std::string tName = std::string("YetAnThr/") + std::to_string(thread_id);
+        prctl(PR_SET_NAME, tName.c_str());
 
-    std::cout << ("Hello world from " + tName + "\n") << std::flush;
-    MallocTagScope noname("YetAnotherThread");
+        std::cout << ("Hello world from " + tName + "\n") << std::flush;
+        MallocTagScope noname("YetAnThr", __FUNCTION__);
 
-    FuncB(thread_id);
-    FuncC();
+        FuncB(thread_id);
+        FuncC();
 
-    // decomment this is you want to have the time to look at this process still running with e.g. "top"
-    // sleep(100000);
-}
+        // decomment this is you want to have the time to look at this process still running with e.g. "top"
+        // sleep(100000);
+    }
+};
 
 int main()
 {
@@ -115,7 +118,7 @@ int main()
     threads.clear();
 
     // launch one more dummy threads
-    threads.push_back(std::thread(YetAnotherThread, NUM_EXAMPLE_THREADS));
+    threads.push_back(std::thread(YetAnotherThread::MainEvLoop, NUM_EXAMPLE_THREADS));
 
     // wait till all threads are terminated:
     for (auto& th : threads) {

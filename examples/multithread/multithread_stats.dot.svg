@@ -10,231 +10,231 @@
 <title>MallocTree</title>
 <polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-853.997 1466,-853.997 1466,4 -4,4"/>
 <text text-anchor="middle" x="731" y="-97.8" font-family="Times,serif" font-size="14.00" fill="#000000">Memory allocated before MallocTag initialization = 72kB</text>
-<text text-anchor="middle" x="731" y="-82.8" font-family="Times,serif" font-size="14.00" fill="#000000">Memory allocated by MallocTag itself =307kB</text>
+<text text-anchor="middle" x="731" y="-82.8" font-family="Times,serif" font-size="14.00" fill="#000000">Memory allocated by MallocTag itself =327kB</text>
 <text text-anchor="middle" x="731" y="-67.8" font-family="Times,serif" font-size="14.00" fill="#000000">Total memory tracked by MallocTag across all threads =566MB</text>
 <text text-anchor="middle" x="731" y="-52.8" font-family="Times,serif" font-size="14.00" fill="#000000">VmSizeNow = 241MB</text>
-<text text-anchor="middle" x="731" y="-37.8" font-family="Times,serif" font-size="14.00" fill="#000000">Memory profiling session start timestamp = 2023&#45;09&#45;15 @ 17:41:11 CEST</text>
-<text text-anchor="middle" x="731" y="-22.8" font-family="Times,serif" font-size="14.00" fill="#000000">This snapshot timestamp = 2023&#45;09&#45;15 @ 17:41:11 CEST</text>
-<text text-anchor="middle" x="731" y="-7.8" font-family="Times,serif" font-size="14.00" fill="#000000">PID = 1152561</text>
+<text text-anchor="middle" x="731" y="-37.8" font-family="Times,serif" font-size="14.00" fill="#000000">Memory profiling session start timestamp = 2023&#45;09&#45;15 @ 18:45:56 CEST</text>
+<text text-anchor="middle" x="731" y="-22.8" font-family="Times,serif" font-size="14.00" fill="#000000">This snapshot timestamp = 2023&#45;09&#45;15 @ 18:45:56 CEST</text>
+<text text-anchor="middle" x="731" y="-7.8" font-family="Times,serif" font-size="14.00" fill="#000000">PID = 1179241</text>
 <g id="clust1" class="cluster">
-<title>cluster_TID1152561</title>
+<title>cluster_TID1179241</title>
 <polygon fill="none" stroke="#000000" points="8,-632.997 8,-841.997 248,-841.997 248,-632.997 8,-632.997"/>
-<text text-anchor="middle" x="128" y="-670.797" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1152561</text>
+<text text-anchor="middle" x="128" y="-670.797" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1179241</text>
 <text text-anchor="middle" x="128" y="-655.797" font-family="Times,serif" font-size="14.00" fill="#000000">nPushNodeFailures=0</text>
 <text text-anchor="middle" x="128" y="-640.797" font-family="Times,serif" font-size="14.00" fill="#000000">nTreeNodesInUse/Max=1/256</text>
 </g>
 <g id="clust2" class="cluster">
-<title>cluster_TID1152562</title>
+<title>cluster_TID1179242</title>
 <polygon fill="none" stroke="#000000" points="256,-121 256,-805.997 534,-805.997 534,-121 256,-121"/>
-<text text-anchor="middle" x="395" y="-158.8" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1152562</text>
+<text text-anchor="middle" x="395" y="-158.8" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1179242</text>
 <text text-anchor="middle" x="395" y="-143.8" font-family="Times,serif" font-size="14.00" fill="#000000">nPushNodeFailures=0</text>
 <text text-anchor="middle" x="395" y="-128.8" font-family="Times,serif" font-size="14.00" fill="#000000">nTreeNodesInUse/Max=5/256</text>
 </g>
 <g id="clust3" class="cluster">
-<title>cluster_TID1152563</title>
+<title>cluster_TID1179243</title>
 <polygon fill="none" stroke="#000000" points="542,-121 542,-805.997 832,-805.997 832,-121 542,-121"/>
-<text text-anchor="middle" x="687" y="-158.8" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1152563</text>
+<text text-anchor="middle" x="687" y="-158.8" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1179243</text>
 <text text-anchor="middle" x="687" y="-143.8" font-family="Times,serif" font-size="14.00" fill="#000000">nPushNodeFailures=0</text>
 <text text-anchor="middle" x="687" y="-128.8" font-family="Times,serif" font-size="14.00" fill="#000000">nTreeNodesInUse/Max=5/256</text>
 </g>
 <g id="clust4" class="cluster">
-<title>cluster_TID1152564</title>
+<title>cluster_TID1179244</title>
 <polygon fill="none" stroke="#000000" points="840,-643.997 840,-830.997 1100,-830.997 1100,-643.997 840,-643.997"/>
-<text text-anchor="middle" x="970" y="-681.797" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1152564</text>
+<text text-anchor="middle" x="970" y="-681.797" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1179244</text>
 <text text-anchor="middle" x="970" y="-666.797" font-family="Times,serif" font-size="14.00" fill="#000000">nPushNodeFailures=0</text>
 <text text-anchor="middle" x="970" y="-651.797" font-family="Times,serif" font-size="14.00" fill="#000000">nTreeNodesInUse/Max=1/256</text>
 </g>
 <g id="clust5" class="cluster">
-<title>cluster_TID1152565</title>
+<title>cluster_TID1179245</title>
 <polygon fill="none" stroke="#000000" points="1108,-303.1371 1108,-805.997 1454,-805.997 1454,-303.1371 1108,-303.1371"/>
-<text text-anchor="middle" x="1281" y="-340.9371" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1152565</text>
+<text text-anchor="middle" x="1281" y="-340.9371" font-family="Times,serif" font-size="14.00" fill="#000000">TID=1179245</text>
 <text text-anchor="middle" x="1281" y="-325.9371" font-family="Times,serif" font-size="14.00" fill="#000000">nPushNodeFailures=0</text>
 <text text-anchor="middle" x="1281" y="-310.9371" font-family="Times,serif" font-size="14.00" fill="#000000">nTreeNodesInUse/Max=3/256</text>
 </g>
-<!-- 1152561_multithread -->
+<!-- 1179241_multithread -->
 <g id="node1" class="node">
-<title>1152561_multithread</title>
+<title>1179241_multithread</title>
 <polygon fill="#cb181d" stroke="#000000" points="240,-833.997 16,-833.997 16,-693.997 240,-693.997 240,-833.997"/>
 <text text-anchor="middle" x="128" y="-813.997" font-family="Times,serif" font-size="20.00" fill="#000000">thread=multithread</text>
-<text text-anchor="middle" x="128" y="-791.997" font-family="Times,serif" font-size="20.00" fill="#000000">TID=1152561</text>
+<text text-anchor="middle" x="128" y="-791.997" font-family="Times,serif" font-size="20.00" fill="#000000">TID=1179241</text>
 <text text-anchor="middle" x="128" y="-769.997" font-family="Times,serif" font-size="20.00" fill="#000000">total=self=6kB (100.00%)</text>
 <text text-anchor="middle" x="128" y="-747.997" font-family="Times,serif" font-size="20.00" fill="#000000">num_malloc_self=14</text>
 <text text-anchor="middle" x="128" y="-725.997" font-family="Times,serif" font-size="20.00" fill="#000000">num_calloc_self=3</text>
 <text text-anchor="middle" x="128" y="-703.997" font-family="Times,serif" font-size="20.00" fill="#000000">num_free_self=25</text>
 </g>
-<!-- 1152562_ExampleThr/0 -->
+<!-- 1179242_ExampleThr/0 -->
 <g id="node2" class="node">
-<title>1152562_ExampleThr/0</title>
+<title>1179242_ExampleThr/0</title>
 <polygon fill="#fff5f0" stroke="#000000" points="423.5,-797.997 322.5,-797.997 322.5,-729.997 423.5,-729.997 423.5,-797.997"/>
 <text text-anchor="middle" x="373" y="-786.797" font-family="Times,serif" font-size="9.00" fill="#000000">thread=ExampleThr/0</text>
-<text text-anchor="middle" x="373" y="-776.797" font-family="Times,serif" font-size="9.00" fill="#000000">TID=1152562</text>
+<text text-anchor="middle" x="373" y="-776.797" font-family="Times,serif" font-size="9.00" fill="#000000">TID=1179242</text>
 <text text-anchor="middle" x="373" y="-766.797" font-family="Times,serif" font-size="9.00" fill="#000000">total=144kB (100.00%)</text>
 <text text-anchor="middle" x="373" y="-756.797" font-family="Times,serif" font-size="9.00" fill="#000000">self=31B (0.02%)</text>
 <text text-anchor="middle" x="373" y="-746.797" font-family="Times,serif" font-size="9.00" fill="#000000">num_malloc_self=1</text>
 <text text-anchor="middle" x="373" y="-736.797" font-family="Times,serif" font-size="9.00" fill="#000000">num_free_self=3</text>
 </g>
-<!-- 1152562_ExampleThread -->
+<!-- 1179242_ExampleThread -->
 <g id="node3" class="node">
-<title>1152562_ExampleThread</title>
+<title>1179242_ExampleThread</title>
 <ellipse fill="#fff5f0" stroke="#000000" cx="373" cy="-580.4493" rx="69.0935" ry="33.8824"/>
 <text text-anchor="middle" x="373" y="-593.2493" font-family="Times,serif" font-size="9.00" fill="#000000">scope=ExampleThread</text>
 <text text-anchor="middle" x="373" y="-583.2493" font-family="Times,serif" font-size="9.00" fill="#000000">total=144kB (99.97%)</text>
 <text text-anchor="middle" x="373" y="-573.2493" font-family="Times,serif" font-size="9.00" fill="#000000">self=5B (0.00%)</text>
 <text text-anchor="middle" x="373" y="-563.2493" font-family="Times,serif" font-size="9.00" fill="#000000">num_malloc_self=1</text>
 </g>
-<!-- 1152562_ExampleThr/0&#45;&gt;1152562_ExampleThread -->
+<!-- 1179242_ExampleThr/0&#45;&gt;1179242_ExampleThread -->
 <g id="edge1" class="edge">
-<title>1152562_ExampleThr/0&#45;&gt;1152562_ExampleThread</title>
+<title>1179242_ExampleThr/0&#45;&gt;1179242_ExampleThread</title>
 <path fill="none" stroke="#000000" d="M373,-729.9033C373,-700.2483 373,-657.0808 373,-624.755"/>
 <polygon fill="#000000" stroke="#000000" points="376.5001,-624.6714 373,-614.6714 369.5001,-624.6715 376.5001,-624.6714"/>
 </g>
-<!-- 1152562_FuncA -->
+<!-- 1179242_FuncA -->
 <g id="node4" class="node">
-<title>1152562_FuncA</title>
+<title>1179242_FuncA</title>
 <ellipse fill="#fff5f0" stroke="#000000" cx="351" cy="-432.0193" rx="65.1077" ry="33.8824"/>
 <text text-anchor="middle" x="351" y="-444.8193" font-family="Times,serif" font-size="9.00" fill="#000000">scope=FuncA</text>
 <text text-anchor="middle" x="351" y="-434.8193" font-family="Times,serif" font-size="9.00" fill="#000000">total=72kB (50.02%)</text>
 <text text-anchor="middle" x="351" y="-424.8193" font-family="Times,serif" font-size="9.00" fill="#000000">self=100B (0.06%)</text>
 <text text-anchor="middle" x="351" y="-414.8193" font-family="Times,serif" font-size="9.00" fill="#000000">num_malloc_self=1</text>
 </g>
-<!-- 1152562_ExampleThread&#45;&gt;1152562_FuncA -->
+<!-- 1179242_ExampleThread&#45;&gt;1179242_FuncA -->
 <g id="edge2" class="edge">
-<title>1152562_ExampleThread&#45;&gt;1152562_FuncA</title>
+<title>1179242_ExampleThread&#45;&gt;1179242_FuncA</title>
 <path fill="none" stroke="#000000" d="M367.9528,-546.3965C364.8505,-525.4659 360.8442,-498.4366 357.5053,-475.9092"/>
 <polygon fill="#000000" stroke="#000000" points="360.9522,-475.2925 356.0238,-465.9137 354.0278,-476.3188 360.9522,-475.2925"/>
 </g>
-<!-- 1152562_FuncB -->
+<!-- 1179242_FuncB -->
 <g id="node5" class="node">
-<title>1152562_FuncB</title>
+<title>1179242_FuncB</title>
 <ellipse fill="#fb6a4a" stroke="#000000" cx="395" cy="-238.5685" rx="130.6298" ry="56.6372"/>
 <text text-anchor="middle" x="395" y="-261.7685" font-family="Times,serif" font-size="16.00" fill="#000000">scope=FuncB</text>
 <text text-anchor="middle" x="395" y="-243.7685" font-family="Times,serif" font-size="16.00" fill="#000000">total=self=72kB (49.95%)</text>
 <text text-anchor="middle" x="395" y="-225.7685" font-family="Times,serif" font-size="16.00" fill="#000000">num_malloc_self=1000</text>
 <text text-anchor="middle" x="395" y="-207.7685" font-family="Times,serif" font-size="16.00" fill="#000000">num_free_self=1000</text>
 </g>
-<!-- 1152562_ExampleThread&#45;&gt;1152562_FuncB -->
+<!-- 1179242_ExampleThread&#45;&gt;1179242_FuncB -->
 <g id="edge3" class="edge">
-<title>1152562_ExampleThread&#45;&gt;1152562_FuncB</title>
+<title>1179242_ExampleThread&#45;&gt;1179242_FuncB</title>
 <path fill="none" stroke="#000000" d="M399.3972,-548.873C409.4948,-534.8053 419.8235,-517.464 425,-499.9016 448.8309,-419.0495 444.2519,-390.5884 424.8166,-304.0254"/>
 <polygon fill="#000000" stroke="#000000" points="428.1795,-303.0269 422.5689,-294.0395 421.3503,-304.5641 428.1795,-303.0269"/>
 </g>
-<!-- 1152562_FuncA&#45;&gt;1152562_FuncB -->
+<!-- 1179242_FuncA&#45;&gt;1179242_FuncB -->
 <g id="edge4" class="edge">
-<title>1152562_FuncA&#45;&gt;1152562_FuncB</title>
+<title>1179242_FuncA&#45;&gt;1179242_FuncB</title>
 <path fill="none" stroke="#000000" d="M358.765,-397.8795C364.5976,-372.236 372.7695,-336.3075 379.8768,-305.0595"/>
 <polygon fill="#000000" stroke="#000000" points="383.3375,-305.6247 382.1426,-295.0975 376.5119,-304.0722 383.3375,-305.6247"/>
 </g>
-<!-- 1152563_ExampleThr/1 -->
+<!-- 1179243_ExampleThr/1 -->
 <g id="node6" class="node">
-<title>1152563_ExampleThr/1</title>
+<title>1179243_ExampleThr/1</title>
 <polygon fill="#fff5f0" stroke="#000000" points="747.5,-797.997 646.5,-797.997 646.5,-729.997 747.5,-729.997 747.5,-797.997"/>
 <text text-anchor="middle" x="697" y="-786.797" font-family="Times,serif" font-size="9.00" fill="#000000">thread=ExampleThr/1</text>
-<text text-anchor="middle" x="697" y="-776.797" font-family="Times,serif" font-size="9.00" fill="#000000">TID=1152563</text>
+<text text-anchor="middle" x="697" y="-776.797" font-family="Times,serif" font-size="9.00" fill="#000000">TID=1179243</text>
 <text text-anchor="middle" x="697" y="-766.797" font-family="Times,serif" font-size="9.00" fill="#000000">total=289kB (100.00%)</text>
 <text text-anchor="middle" x="697" y="-756.797" font-family="Times,serif" font-size="9.00" fill="#000000">self=31B (0.01%)</text>
 <text text-anchor="middle" x="697" y="-746.797" font-family="Times,serif" font-size="9.00" fill="#000000">num_malloc_self=1</text>
 <text text-anchor="middle" x="697" y="-736.797" font-family="Times,serif" font-size="9.00" fill="#000000">num_free_self=3</text>
 </g>
-<!-- 1152563_ExampleThread -->
+<!-- 1179243_ExampleThread -->
 <g id="node7" class="node">
-<title>1152563_ExampleThread</title>
+<title>1179243_ExampleThread</title>
 <ellipse fill="#fff5f0" stroke="#000000" cx="697" cy="-580.4493" rx="69.0935" ry="33.8824"/>
 <text text-anchor="middle" x="697" y="-593.2493" font-family="Times,serif" font-size="9.00" fill="#000000">scope=ExampleThread</text>
 <text text-anchor="middle" x="697" y="-583.2493" font-family="Times,serif" font-size="9.00" fill="#000000">total=289kB (99.98%)</text>
 <text text-anchor="middle" x="697" y="-573.2493" font-family="Times,serif" font-size="9.00" fill="#000000">self=5B (0.00%)</text>
 <text text-anchor="middle" x="697" y="-563.2493" font-family="Times,serif" font-size="9.00" fill="#000000">num_malloc_self=1</text>
 </g>
-<!-- 1152563_ExampleThr/1&#45;&gt;1152563_ExampleThread -->
+<!-- 1179243_ExampleThr/1&#45;&gt;1179243_ExampleThread -->
 <g id="edge5" class="edge">
-<title>1152563_ExampleThr/1&#45;&gt;1152563_ExampleThread</title>
+<title>1179243_ExampleThr/1&#45;&gt;1179243_ExampleThread</title>
 <path fill="none" stroke="#000000" d="M697,-729.9033C697,-700.2483 697,-657.0808 697,-624.755"/>
 <polygon fill="#000000" stroke="#000000" points="700.5001,-624.6714 697,-614.6714 693.5001,-624.6715 700.5001,-624.6714"/>
 </g>
-<!-- 1152563_FuncA -->
+<!-- 1179243_FuncA -->
 <g id="node8" class="node">
-<title>1152563_FuncA</title>
+<title>1179243_FuncA</title>
 <ellipse fill="#fff5f0" stroke="#000000" cx="653" cy="-432.0193" rx="68.6788" ry="33.8824"/>
 <text text-anchor="middle" x="653" y="-444.8193" font-family="Times,serif" font-size="9.00" fill="#000000">scope=FuncA</text>
 <text text-anchor="middle" x="653" y="-434.8193" font-family="Times,serif" font-size="9.00" fill="#000000">total=145kB (50.18%)</text>
 <text text-anchor="middle" x="653" y="-424.8193" font-family="Times,serif" font-size="9.00" fill="#000000">self=1kB (0.38%)</text>
 <text text-anchor="middle" x="653" y="-414.8193" font-family="Times,serif" font-size="9.00" fill="#000000">num_malloc_self=1</text>
 </g>
-<!-- 1152563_ExampleThread&#45;&gt;1152563_FuncA -->
+<!-- 1179243_ExampleThread&#45;&gt;1179243_FuncA -->
 <g id="edge6" class="edge">
-<title>1152563_ExampleThread&#45;&gt;1152563_FuncA</title>
+<title>1179243_ExampleThread&#45;&gt;1179243_FuncA</title>
 <path fill="none" stroke="#000000" d="M687.0157,-546.7683C680.7652,-525.6826 672.648,-498.2999 665.9107,-475.5723"/>
 <polygon fill="#000000" stroke="#000000" points="669.2187,-474.4165 663.0208,-465.8237 662.5073,-476.4061 669.2187,-474.4165"/>
 </g>
-<!-- 1152563_FuncB -->
+<!-- 1179243_FuncB -->
 <g id="node9" class="node">
-<title>1152563_FuncB</title>
+<title>1179243_FuncB</title>
 <ellipse fill="#fb6a4a" stroke="#000000" cx="687" cy="-238.5685" rx="137.3577" ry="56.6372"/>
 <text text-anchor="middle" x="687" y="-261.7685" font-family="Times,serif" font-size="16.00" fill="#000000">scope=FuncB</text>
 <text text-anchor="middle" x="687" y="-243.7685" font-family="Times,serif" font-size="16.00" fill="#000000">total=self=144kB (49.79%)</text>
 <text text-anchor="middle" x="687" y="-225.7685" font-family="Times,serif" font-size="16.00" fill="#000000">num_malloc_self=2000</text>
 <text text-anchor="middle" x="687" y="-207.7685" font-family="Times,serif" font-size="16.00" fill="#000000">num_free_self=2000</text>
 </g>
-<!-- 1152563_ExampleThread&#45;&gt;1152563_FuncB -->
+<!-- 1179243_ExampleThread&#45;&gt;1179243_FuncB -->
 <g id="edge7" class="edge">
-<title>1152563_ExampleThread&#45;&gt;1152563_FuncB</title>
+<title>1179243_ExampleThread&#45;&gt;1179243_FuncB</title>
 <path fill="none" stroke="#000000" d="M714.5106,-547.3146C721.0667,-533.1271 727.7177,-516.1176 731,-499.9016 748.349,-414.1889 756.7668,-386.7058 731,-303.1371 730.8988,-302.809 730.7954,-302.481 730.6896,-302.1533"/>
 <polygon fill="#000000" stroke="#000000" points="733.9171,-300.7952 727.0443,-292.7319 727.3887,-303.3212 733.9171,-300.7952"/>
 </g>
-<!-- 1152563_FuncA&#45;&gt;1152563_FuncB -->
+<!-- 1179243_FuncA&#45;&gt;1179243_FuncB -->
 <g id="edge8" class="edge">
-<title>1152563_FuncA&#45;&gt;1152563_FuncB</title>
+<title>1179243_FuncA&#45;&gt;1179243_FuncB</title>
 <path fill="none" stroke="#000000" d="M659.0003,-397.8795C663.5072,-372.236 669.8219,-336.3075 675.3139,-305.0595"/>
 <polygon fill="#000000" stroke="#000000" points="678.7808,-305.5524 677.0647,-295.0975 671.8865,-304.3406 678.7808,-305.5524"/>
 </g>
-<!-- 1152564_NonInstrThr -->
+<!-- 1179244_NonInstrThr -->
 <g id="node10" class="node">
-<title>1152564_NonInstrThr</title>
+<title>1179244_NonInstrThr</title>
 <polygon fill="#cb181d" stroke="#000000" points="1091.5,-822.997 848.5,-822.997 848.5,-704.997 1091.5,-704.997 1091.5,-822.997"/>
 <text text-anchor="middle" x="970" y="-802.997" font-family="Times,serif" font-size="20.00" fill="#000000">thread=NonInstrThr</text>
-<text text-anchor="middle" x="970" y="-780.997" font-family="Times,serif" font-size="20.00" fill="#000000">TID=1152564</text>
+<text text-anchor="middle" x="970" y="-780.997" font-family="Times,serif" font-size="20.00" fill="#000000">TID=1179244</text>
 <text text-anchor="middle" x="970" y="-758.997" font-family="Times,serif" font-size="20.00" fill="#000000">total=self=156kB (100.00%)</text>
 <text text-anchor="middle" x="970" y="-736.997" font-family="Times,serif" font-size="20.00" fill="#000000">num_malloc_self=1101</text>
 <text text-anchor="middle" x="970" y="-714.997" font-family="Times,serif" font-size="20.00" fill="#000000">num_free_self=1103</text>
 </g>
-<!-- 1152565_YetAnThr/2 -->
+<!-- 1179245_YetAnThr/2 -->
 <g id="node11" class="node">
-<title>1152565_YetAnThr/2</title>
+<title>1179245_YetAnThr/2</title>
 <polygon fill="#fff5f0" stroke="#000000" points="1331.5,-797.997 1230.5,-797.997 1230.5,-729.997 1331.5,-729.997 1331.5,-797.997"/>
 <text text-anchor="middle" x="1281" y="-786.797" font-family="Times,serif" font-size="9.00" fill="#000000">thread=YetAnThr/2</text>
-<text text-anchor="middle" x="1281" y="-776.797" font-family="Times,serif" font-size="9.00" fill="#000000">TID=1152565</text>
+<text text-anchor="middle" x="1281" y="-776.797" font-family="Times,serif" font-size="9.00" fill="#000000">TID=1179245</text>
 <text text-anchor="middle" x="1281" y="-766.797" font-family="Times,serif" font-size="9.00" fill="#000000">total=237kB (100.00%)</text>
 <text text-anchor="middle" x="1281" y="-756.797" font-family="Times,serif" font-size="9.00" fill="#000000">self=31B (0.01%)</text>
 <text text-anchor="middle" x="1281" y="-746.797" font-family="Times,serif" font-size="9.00" fill="#000000">num_malloc_self=1</text>
 <text text-anchor="middle" x="1281" y="-736.797" font-family="Times,serif" font-size="9.00" fill="#000000">num_free_self=3</text>
 </g>
-<!-- 1152565_YetAnotherThread -->
+<!-- 1179245_YetAnThr::MainEvLoop -->
 <g id="node12" class="node">
-<title>1152565_YetAnotherThread</title>
-<ellipse fill="#fee0d2" stroke="#000000" cx="1281" cy="-580.4493" rx="86.0347" ry="44.5955"/>
-<text text-anchor="middle" x="1281" y="-599.9493" font-family="Times,serif" font-size="10.00" fill="#000000">scope=YetAnotherThread</text>
+<title>1179245_YetAnThr::MainEvLoop</title>
+<ellipse fill="#fee0d2" stroke="#000000" cx="1281" cy="-580.4493" rx="103.4757" ry="44.5955"/>
+<text text-anchor="middle" x="1281" y="-599.9493" font-family="Times,serif" font-size="10.00" fill="#000000">scope=YetAnThr::MainEvLoop</text>
 <text text-anchor="middle" x="1281" y="-588.9493" font-family="Times,serif" font-size="10.00" fill="#000000">total=237kB (99.98%)</text>
 <text text-anchor="middle" x="1281" y="-577.9493" font-family="Times,serif" font-size="10.00" fill="#000000">self=21kB (9.08%)</text>
 <text text-anchor="middle" x="1281" y="-566.9493" font-family="Times,serif" font-size="10.00" fill="#000000">num_malloc_self=300</text>
 <text text-anchor="middle" x="1281" y="-555.9493" font-family="Times,serif" font-size="10.00" fill="#000000">num_free_self=300</text>
 </g>
-<!-- 1152565_YetAnThr/2&#45;&gt;1152565_YetAnotherThread -->
+<!-- 1179245_YetAnThr/2&#45;&gt;1179245_YetAnThr::MainEvLoop -->
 <g id="edge9" class="edge">
-<title>1152565_YetAnThr/2&#45;&gt;1152565_YetAnotherThread</title>
+<title>1179245_YetAnThr/2&#45;&gt;1179245_YetAnThr::MainEvLoop</title>
 <path fill="none" stroke="#000000" d="M1281,-729.9033C1281,-703.3573 1281,-665.9835 1281,-635.2514"/>
 <polygon fill="#000000" stroke="#000000" points="1284.5001,-635.109 1281,-625.109 1277.5001,-635.1091 1284.5001,-635.109"/>
 </g>
-<!-- 1152565_FuncB -->
+<!-- 1179245_FuncB -->
 <g id="node13" class="node">
-<title>1152565_FuncB</title>
+<title>1179245_FuncB</title>
 <ellipse fill="#cb181d" stroke="#000000" cx="1281" cy="-432.0193" rx="164.5121" ry="67.7647"/>
 <text text-anchor="middle" x="1281" y="-460.0193" font-family="Times,serif" font-size="20.00" fill="#000000">scope=FuncB</text>
 <text text-anchor="middle" x="1281" y="-438.0193" font-family="Times,serif" font-size="20.00" fill="#000000">total=self=216kB (90.89%)</text>
 <text text-anchor="middle" x="1281" y="-416.0193" font-family="Times,serif" font-size="20.00" fill="#000000">num_malloc_self=3000</text>
 <text text-anchor="middle" x="1281" y="-394.0193" font-family="Times,serif" font-size="20.00" fill="#000000">num_free_self=3000</text>
 </g>
-<!-- 1152565_YetAnotherThread&#45;&gt;1152565_FuncB -->
+<!-- 1179245_YetAnThr::MainEvLoop&#45;&gt;1179245_FuncB -->
 <g id="edge10" class="edge">
-<title>1152565_YetAnotherThread&#45;&gt;1152565_FuncB</title>
+<title>1179245_YetAnThr::MainEvLoop&#45;&gt;1179245_FuncB</title>
 <path fill="none" stroke="#000000" d="M1281,-535.5126C1281,-527.4787 1281,-518.8996 1281,-510.2475"/>
 <polygon fill="#000000" stroke="#000000" points="1284.5001,-510.0855 1281,-500.0856 1277.5001,-510.0856 1284.5001,-510.0855"/>
 </g>
