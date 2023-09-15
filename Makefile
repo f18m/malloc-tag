@@ -62,9 +62,15 @@ minimal_strace: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
-		strace -e trace=%memory,%file	examples/minimal/minimal
+		strace -e trace=%memory,%file \
+		examples/minimal/minimal
 
-
+#
+# If you want to experiment decreasing the glibc VIRT memory usage in multithreaded apps,
+# you can add
+#	GLIBC_TUNABLES=glibc.malloc.arena_max=1 
+# to the env vars used below:
+#
 multithread_example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
@@ -79,6 +85,13 @@ multithread_example: $(BINS)
 	@cat $(PWD)/examples/multithread/multithread_stats.dot
 	@echo
 	@dot -Tsvg -O $(PWD)/examples/multithread/multithread_stats.dot
+
+multithread_strace: $(BINS)
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
+		strace -e trace=%memory,%file -t -f \
+		examples/multithread/multithread
 
 
 # build and run all examples at once

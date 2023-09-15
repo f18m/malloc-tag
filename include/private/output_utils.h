@@ -13,17 +13,6 @@
 // Includes
 //------------------------------------------------------------------------------
 
-#include "malloc_tag.h"
-#include "private/fmpool.h"
-#include <array>
-#include <atomic>
-#include <cassert>
-#include <cstring>
-#include <dlfcn.h>
-#include <fstream>
-#include <sys/prctl.h>
-#include <sys/syscall.h>
-#include <unistd.h>
 #include <vector>
 
 //------------------------------------------------------------------------------

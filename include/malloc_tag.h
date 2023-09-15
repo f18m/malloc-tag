@@ -106,14 +106,28 @@ public:
     //    malloctag does not know how much is free()d and thus malloctag total memory consumption will
     //    be close to the OS-reported memory usage only for software that roughly releases all major
     //    memory-intensive dataset at the end of the software.
+    //  * malloctag only knows when new threads are spawned (if they use malloc) but is not notified
+    //    that a thread has completed, so it cannot remove the "tree" associated with that thread from
+    //    the total tracked memory bytes
     //  * malloctag is not aware about the internal-allocator (e.g. glibc ptmalloc) overhead and
-    //    logic to acquire memory from the OS
+    //    logic to acquire memory from the OS, specially the glibc per-thread arena mechanism.
     //  * some memory allocations might happen via alternative methods compared to malloc()/new,
     //    e.g. invoking directly mmap() or sbrk() syscalls
-    // To understand the difference between VmSize/VmRSS and other memory measurements reported by
+    // Due to all considerations above, generally speaking the total memory tracked by malloc-tag
+    // will be HIGHER than the VIRT memory reported by the kernel.
+    //
+    // Btw to understand the difference between VmSize/VmRSS and other memory measurements reported by
     // the Linux kernel, check e.g.
     //  https://web.archive.org/web/20120520221529/http://emilics.com/blog/article/mconsumption.html
+    // Please note that this function will allocate memory itself!!!
     static size_t get_linux_vmsize_in_bytes();
+
+    // Get glibc internal allocator stats in std::string form.
+    // This utility function has nothing to do with malloctag profiler and uses the glibc ::malloc_info()
+    //  to acquire these stats which will be in XML format and that may vary across different glibc versions, see
+    //  https://man7.org/linux/man-pages/man3/malloc_info.3.html
+    // Please note that this function will allocate memory itself!!!
+    static std::string malloc_info();
 };
 
 class MallocTagScope {

@@ -18,11 +18,7 @@
 #include <atomic>
 #include <cassert>
 #include <cstring>
-#include <dlfcn.h>
-#include <fstream>
 #include <mutex>
-#include <sys/prctl.h>
-#include <sys/syscall.h>
 #include <unistd.h>
 
 //------------------------------------------------------------------------------
@@ -40,12 +36,12 @@ public:
     // Init API
     //------------------------------------------------------------------------------
 
-    bool init(size_t max_tree_nodes, size_t max_tree_levels); // triggers some MEMORY ALLOCATION
+    bool init(size_t max_tree_nodes, size_t max_tree_levels, bool is_main_thread); // triggers some MEMORY ALLOCATION
     bool init(MallocTree* main_thread_tree)
     {
         // all secondary threads will create trees identical to the main-thread tree
         // (this might change if I see the memory usage of malloctag is too high)
-        return init(main_thread_tree->m_nMaxTreeNodes, main_thread_tree->m_nMaxTreeLevels);
+        return init(main_thread_tree->m_nMaxTreeNodes, main_thread_tree->m_nMaxTreeLevels, false /* is_main_thread */);
     }
 
     //------------------------------------------------------------------------------
@@ -76,14 +72,16 @@ public:
         // call this function only after collect_stats_recursively() API.
         // the result will be an approximated result: it will report the total memory accounted by this tree
         // at the time collect_stats_recursively() API was called the last time.
-        return m_pRootNode->get_total_bytes();
+        return m_nVmSizeAtCreation + m_pRootNode->get_total_bytes();
     }
 
     //------------------------------------------------------------------------------
     // Getters
     //------------------------------------------------------------------------------
 
-    bool is_ready() { return m_pNodePool != NULL && m_pRootNode != NULL && m_pCurrentNode != NULL; }
+    bool is_ready() const { return m_pNodePool != NULL && m_pRootNode != NULL && m_pCurrentNode != NULL; }
+
+    pid_t get_tid() const { return m_nThreadID; }
 
     size_t get_memory_usage_in_bytes() const
     {
@@ -99,6 +97,11 @@ private:
     MallocTreeNode* m_pRootNode = NULL; // created by the init()
     MallocTreeNode* m_pCurrentNode = NULL; // pointer to the current malloc scope inside the tree
     pid_t m_nThreadID = 0; // thread ID of owner thread
+
+    // this is the best estimation we can deliver for the virtual memory mmap()ped by
+    //  * dynamic linker to launch the main thread (if this is the main tree)
+    //  * pthread library to launch the secondary thread (if this is a secondary tree owned by a secondary thread)
+    size_t m_nVmSizeAtCreation = 0; // in bytes
 
     // last push status:
     unsigned int m_nPushNodeFailures = 0;

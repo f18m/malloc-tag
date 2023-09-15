@@ -9,6 +9,8 @@
 
 #include "private/malloc_tree_node.h"
 #include "private/output_utils.h"
+#include <dlfcn.h>
+#include <sys/prctl.h>
 
 //------------------------------------------------------------------------------
 // Global functions
@@ -78,7 +80,7 @@ void MallocTreeNode::collect_json_stats_recursively(std::string& out)
     JsonUtils::start_object(out, get_node_name());
 
     JsonUtils::append_field(out, "nBytesTotal", m_nBytesTotal);
-    JsonUtils::append_field(out, "nBytesDirect", m_nBytesSelf);
+    JsonUtils::append_field(out, "nBytesSelf", m_nBytesSelf);
     JsonUtils::append_field(out, "nWeightPercentage", get_weight_percentage_str());
 
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)

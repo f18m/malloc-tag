@@ -68,9 +68,6 @@ MallocTreeRegistry g_registry;
 // this accounts for ALL mallocs done by ALL threads before MallocTagEngine::init()
 std::atomic<size_t> g_bytes_allocated_before_init;
 
-// this is the VmSize reported by Linux kernel at MallocTagEngine::init() time
-size_t g_vmsize_at_init = 0;
-
 //------------------------------------------------------------------------------
 // Utils
 //------------------------------------------------------------------------------
@@ -140,8 +137,6 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
     {
         HookDisabler doNotAccountSelfMemoryUsage;
         g_perthread_tree = g_registry.register_main_tree(max_tree_nodes, max_tree_levels);
-
-        g_vmsize_at_init = get_linux_vmsize_in_bytes();
     }
 
     return g_perthread_tree != nullptr;
@@ -232,13 +227,19 @@ int parseLine(char* line)
 
 size_t MallocTagEngine::get_linux_vmsize_in_bytes()
 {
+    char line[128];
+
+    // IMPORTANT: remember that Linux will not account memory usage separately on a thread-basis.
+    //            so even if this software is multi-threaded, all files under
+    //    /proc/<PID>/task/<TID>/status
+    // will report identical VmSize, VmRSS, etc etc
+    // So this function can and will always return only the GRAND TOTAL of virtual memory taken by the whole process
     FILE* file = fopen("/proc/self/status", "r");
     if (!file)
         return 0;
     int result = -1;
-    char line[128];
 
-    while (fgets(line, 128, file) != NULL) {
+    while (fgets(line, sizeof(line), file) != NULL) {
         if (strncmp(line, "VmSize:", 7) == 0) {
             result = parseLine(line);
             break;
@@ -251,6 +252,30 @@ size_t MallocTagEngine::get_linux_vmsize_in_bytes()
         result *= 1000;
 
     return result;
+}
+
+std::string MallocTagEngine::malloc_info()
+{
+    // get the malloc_info() stats; from the manpage:
+    //  "The malloc_info() function is designed to address deficiencies in
+    //   malloc_stats(3) and mallinfo(3)."
+    // so it looks like the most modern way to get info out of glibc allocator
+    char buf[16384];
+    FILE* fp = fmemopen(buf, sizeof(buf), "w+");
+    if (!fp) {
+        // failed to get extra info, errno is set
+        return "";
+    }
+
+    if (::malloc_info(0 /* options */, fp) != 0) {
+        // failed to get extra info, errno is set
+        return "";
+    }
+
+    fflush(fp);
+    fclose(fp);
+
+    return std::string(buf);
 }
 
 //------------------------------------------------------------------------------
@@ -269,6 +294,7 @@ void __malloctag_track_allocation_from_glibc_override(MallocTagGlibcPrimitive_e 
             // Let's check if the tree of _this_ thread has been initialized or not:
             if (UNLIKELY(!g_perthread_tree || !g_perthread_tree->is_ready())) {
                 HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+
                 g_perthread_tree = g_registry.register_secondary_thread_tree();
                 // NOTE: if we're out of memory, g_perthread_tree might be nullptr
             }

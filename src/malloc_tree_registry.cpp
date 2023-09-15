@@ -15,7 +15,6 @@
 //------------------------------------------------------------------------------
 
 extern std::atomic<size_t> g_bytes_allocated_before_init;
-extern size_t g_vmsize_at_init;
 
 //------------------------------------------------------------------------------
 // MallocTreeRegistry
@@ -42,7 +41,7 @@ MallocTree* MallocTreeRegistry::register_main_tree(size_t max_tree_nodes, size_t
     localtime_r(&current_time, &m_tmStartProfiling); // Convert to local time
 
     MallocTree* t = new MallocTree();
-    if (!t || !t->init(max_tree_nodes, max_tree_levels))
+    if (!t || !t->init(max_tree_nodes, max_tree_levels, true /* main thread */))
         return nullptr; // out of memory
 
     assert(t->is_ready()); // it's a logical mistake to try to register a non-ready tree
@@ -116,17 +115,20 @@ void MallocTreeRegistry::collect_stats(
         JsonUtils::append_field(stats_str, "tmStartProfiling", tmStartProfilingStr);
         JsonUtils::append_field(stats_str, "tmCurrentSnapshot", tmCurrentStr);
 
-        JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init + g_vmsize_at_init);
-        JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage());
-        JsonUtils::append_field(stats_str, "VmSizeNow", vmSizeNow);
-
-        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init + g_vmsize_at_init;
+        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
             stats_str += ",";
         }
 
+        JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init);
+        JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage());
+
+        // VmSizeNow and nTotalTrackedBytes should be similar ideally. In practice nTotalTrackedBytes>>VmSizeNow
+        // because free() operations do not reduce the value of nTotalTrackedBytes but they can potentially reduce
+        // VmSizeNow
+        JsonUtils::append_field(stats_str, "VmSizeNow", vmSizeNow);
         JsonUtils::append_field(stats_str, "nTotalTrackedBytes", tot_tracked_mem_bytes, true /* is_last */);
         JsonUtils::end_document(stats_str);
     } break;
@@ -136,7 +138,7 @@ void MallocTreeRegistry::collect_stats(
             // create a single unique graph for ALL threads/trees, named "MallocTree"
             GraphVizUtils::start_digraph(stats_str, "MallocTree");
         }
-        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init + g_vmsize_at_init;
+        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
@@ -146,15 +148,15 @@ void MallocTreeRegistry::collect_stats(
         // use labels to convey extra info:
         std::vector<std::string> labels;
         labels.push_back("Memory allocated before MallocTag initialization = "
-            + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init + g_vmsize_at_init));
+            + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
         labels.push_back(
             "Memory allocated by MallocTag itself =" + GraphVizUtils::pretty_print_bytes(get_total_memusage()));
         labels.push_back("Total memory tracked by MallocTag across all threads ="
             + GraphVizUtils::pretty_print_bytes(tot_tracked_mem_bytes));
+        labels.push_back("VmSizeNow = " + GraphVizUtils::pretty_print_bytes(vmSizeNow));
         labels.push_back("Memory profiling session start timestamp = " + std::string(tmStartProfilingStr));
         labels.push_back("This snapshot timestamp = " + std::string(tmCurrentStr));
-        labels.push_back("PID =" + std::to_string(getpid()));
-        labels.push_back("VmSizeNow =" + GraphVizUtils::pretty_print_bytes(vmSizeNow));
+        labels.push_back("PID = " + std::to_string(getpid()));
 
         if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
             GraphVizUtils::end_digraph(stats_str, labels); // close the MallocTree

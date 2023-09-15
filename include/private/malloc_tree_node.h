@@ -19,10 +19,6 @@
 #include <atomic>
 #include <cassert>
 #include <cstring>
-#include <dlfcn.h>
-#include <fstream>
-#include <sys/prctl.h>
-#include <sys/syscall.h>
 #include <unistd.h>
 #include <vector>
 

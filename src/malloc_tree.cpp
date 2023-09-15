@@ -9,6 +9,7 @@
 
 #include "private/malloc_tree.h"
 #include "private/output_utils.h"
+#include <sys/syscall.h>
 
 #define UNLIKELY(x) __builtin_expect((x), 0)
 
@@ -16,7 +17,8 @@
 // MallocTree
 //------------------------------------------------------------------------------
 
-bool MallocTree::init(size_t max_tree_nodes, size_t max_tree_levels) // triggers some MEMORY ALLOCATION
+bool MallocTree::init(
+    size_t max_tree_nodes, size_t max_tree_levels, bool is_owned_by_main_thread) // triggers some MEMORY ALLOCATION
 {
     assert(m_pNodePool == nullptr);
 
@@ -30,14 +32,53 @@ bool MallocTree::init(size_t max_tree_nodes, size_t max_tree_levels) // triggers
     assert(m_pRootNode);
     m_nTreeNodesInUse++;
 
-    // IMPORTANT: thread name is often not unique; indeed by default secondary threads inherit the same name of their
-    // parent
-    //            thread; it's up to the application to make use of prctl() or pthread_setname_np() to adopt a unique
-    //            thread name; for this reason we also save the thread ID (TID) which is garantueed to be unique.
+    // thread name is often not unique; indeed by default secondary threads inherit the same name of their
+    // parent thread; it's up to the application to make use of prctl() or pthread_setname_np() to adopt a unique
+    // thread name; for this reason we also save the thread ID (TID) which is garantueed to be unique.
     m_nThreadID = syscall(SYS_gettid);
 
     m_pRootNode->init(NULL, m_nThreadID); // this is the tree root node
     m_pRootNode->set_sitename_to_threadname();
+
+    // This MallocTree::init() API is invoked each time a malloc() is detected on a previously-unknown thread.
+    // By the time that thread reaches the first malloc() point, the dynamic linker & glibc will have already
+    // mmap()ed some memory and set the amount of virtual memory available to this thread.
+    // So let's save how much memory has been allocated so far: this will help malloc-tag grand-total of tracked memory
+    // usage to match the TOTAL VmSize of the whole process
+    if (is_owned_by_main_thread) {
+        // for main thread we can read the global VmSize of the whole process and consider that as a starting point.
+        // By stracing any software you will see that by the time the first malloc() is invoked the glibc/dynamic-linker
+        // they have already used mmap() a number of times to make room for dynamic libraries
+        m_nVmSizeAtCreation = MallocTagEngine::get_linux_vmsize_in_bytes();
+    } else {
+        // for secondary threads we don't how much memory has been mmap()ed exactly by the pthreads library.
+        // The problem is that
+        // * Linux does not account memory on a per-thread basis
+        // * pthread library is not using malloc() and instead relies on mmap() syscall directly
+        // so we estimate the amount of un-tracked VM usage by taking the pthread stack size:
+        pthread_attr_t attr;
+        pthread_getattr_np(pthread_self(), &attr);
+        pthread_attr_getstacksize(&attr, &m_nVmSizeAtCreation);
+        pthread_attr_destroy(&attr);
+
+// Now we've got yet another issue: by default glibc allocator will create a new arena for each new thread.
+// Internet is full of people complaining about the high VIRT usage of glibc malloc() implementation for
+// multithreading and that's due to the "liberal" use of per-thread arenas of malloc() allocator, which of
+// course has been implemented for performance reasons but has the downside of increasing a lot the VIRT memory.
+// See also https://siddhesh.in/posts/malloc-per-thread-arenas-in-glibc.html
+// Glibc arena VIRT cost contributes an increase so large that sometimes the application layer malloc() are
+// irrelevant compared to the amount of virtual memory requested by glibc malloc.
+// Of course VIRT memory comes for free... only when the memory is really touched the Linux on-demand paging
+// mechanism will provide a real physical page to back that virtual memory. But for malloc-tag purposes, it
+// would be nice for the developer to see a sort of match between the VIRT memory and the malloc-tag-tracked
+// memory. Since we cannot track the mmap() calls done by malloc itself for his own overhead (at least not in
+// userspace) we estimate that. Stracing multithreaded applications on a few Linux RHEL8 systems and according
+// to many others on Internet (see e.g. https://bugs.openjdk.org/browse/JDK-8193521), 128MB of virtual memory is
+// a good estimate of what a glibc arena will consume. So we use it here as estimate of how much virt memory has
+// "escaped" malloc-tag tracking:
+#define GLIBC_PER_THREAD_ARENA_VIRT_MEMORY_SIZE_ESTIMATE (128 * 1000 * 1000)
+        m_nVmSizeAtCreation += GLIBC_PER_THREAD_ARENA_VIRT_MEMORY_SIZE_ESTIMATE;
+    }
 
     m_nTreeLevels = m_pRootNode->get_tree_level();
     m_nMaxTreeNodes = max_tree_nodes;
@@ -130,12 +171,15 @@ void MallocTree::collect_stats_recursively(
 
     switch (format) {
     case MTAG_OUTPUT_FORMAT_JSON:
-        JsonUtils::start_object(out, "tree_for_thread_" + m_pRootNode->get_node_name());
+        JsonUtils::start_object(out, "tree_for_TID" + std::to_string(m_nThreadID));
 
+        JsonUtils::append_field(out, "TID", m_nThreadID);
+        JsonUtils::append_field(out, "ThreadName", m_pRootNode->get_node_name());
         JsonUtils::append_field(out, "nTreeLevels", m_nTreeLevels);
         JsonUtils::append_field(out, "nTreeNodesInUse", m_nTreeNodesInUse);
         JsonUtils::append_field(out, "nMaxTreeNodes", m_nMaxTreeNodes);
         JsonUtils::append_field(out, "nPushNodeFailures", m_nPushNodeFailures);
+        JsonUtils::append_field(out, "nVmSizeAtCreation", m_nVmSizeAtCreation); // in bytes
 
         m_pRootNode->collect_json_stats_recursively(out);
 
@@ -143,10 +187,11 @@ void MallocTree::collect_stats_recursively(
         break;
 
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT: {
-        std::string graphviz_name = "TID" + std::to_string(m_pRootNode->get_tid());
+        std::string graphviz_name = "TID" + std::to_string(m_nThreadID);
 
         // let's use the digraph/subgraph label to convey extra info about this MallocTree:
         std::vector<std::string> labels;
+        labels.push_back("TID=" + std::to_string(m_nThreadID));
         labels.push_back("nPushNodeFailures=" + std::to_string(m_nPushNodeFailures));
         labels.push_back(
             "nTreeNodesInUse/Max=" + std::to_string(m_nTreeNodesInUse) + "/" + std::to_string(m_nMaxTreeNodes));
