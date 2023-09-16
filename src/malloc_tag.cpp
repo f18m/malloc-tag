@@ -122,7 +122,7 @@ MallocTagScope::MallocTagScope(const char* class_name, const char* function_name
         && g_perthread_tree->is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
 
     char scopeName[MTAG_MAX_SCOPENAME_LEN] = { '\0' };
-    strncpy(scopeName, class_name, MTAG_MAX_SCOPENAME_LEN); // try to abbreviate class_name if it's too long!
+    strncpy(scopeName, class_name, MTAG_MAX_SCOPENAME_LEN - 1); // try to abbreviate class_name if it's too long!
     strncat(scopeName, "::", MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
     strncat(scopeName, function_name, MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
 

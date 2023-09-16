@@ -81,7 +81,7 @@ MallocTreeNode* MallocTreeNode::get_child_by_name(const char* name) const
 void MallocTreeNode::collect_json_stats_recursively(std::string& out)
 {
     // each node is a JSON object
-    JsonUtils::start_object(out, get_node_name());
+    JsonUtils::start_object(out, "scope_" + get_node_name());
 
     JsonUtils::append_field(out, "nBytesTotal", m_nBytesTotal);
     JsonUtils::append_field(out, "nBytesSelf", m_nBytesSelf);

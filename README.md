@@ -1,8 +1,8 @@
 # malloc-tag
 
 A lighweight, intrusive memory profiler that allows to categorize memory allocation inside C/C++ projects, for Linux systems.
-In practice this project provides a small dynamic library (.so) to add a tag / category to each memory allocation inside C/C++ projects.
-This library provides a "malloc interposer" that allows for minimal-overhead memory profiling.
+In short this project provides a small dynamic library (.so) containing a "malloc interposer" plus some basic "tagging facility" to instrument your code and add a tag / category to each memory allocation inside C/C++ projects. By its nature the malloc interposer provided in this project will do a minimal operation and then simply use the original glibc malloc() implementation. This allows to intercept any memory allocation done using standard malloc()/new operators even from 3rd party libraries, C++ STL library, etc.
+This library enables minimal-overhead, per-thread memory profiling.
 
 # High-Level Design Criteria
 
@@ -13,6 +13,10 @@ This library provides a "malloc interposer" that allows for minimal-overhead mem
 * C++ aware
 
 # Technical Implementation
+
+A graphical overview of how malloc-tag works:
+
+![overview_svg](docs/malloctag_overview.svg?raw=true "Malloc-tag implementation overview")
 
 * categorization limited to a tree with limited number of levels, pre-defined at build time
 * each tree level has a "tag" or "category" which is a limited-size string (limit pre-defined at build time)
@@ -40,12 +44,27 @@ From this picture it should be evident that all the memory allocations happen, r
 
 ## Part 1: instrumenting the code
 
-1) copy the public header "malloc_tag.h" and the "libmalloc_tag.so.1" files in paths that are accessible to your C/C++ application pipeline; in the linking step, add "-lmalloc_tag" to your compiler linker flags.
-
-2) add malloctag initialization as close as possible to the entrypoint of your application, e.g. as first instruction in your `main()`, using:
+1) build&install this project:
 
 ```
-MallocTagEngine::init();
+git clone https://github.com/f18m/malloc-tag.git
+cd malloc-tag
+make && make install
+```
+
+2) add "-lmalloc_tag" to your C/C++ project linker flags in order to link against malloc-tag library
+
+3) if your C/C++ project is using tcmalloc or jemalloc: disable them... malloc-tag has been tested only with glibc stock allocator
+
+4) add malloctag initialization as close as possible to the entrypoint of your application, e.g. as first instruction in your `main()`, using:
+
+```
+#include <malloc_tag.h>
+
+int main() {
+  MallocTagEngine::init();
+  ...
+}
 ```
 
 3) whenever you want a snapshot of the memory profiling results to be written, invoke the API to write results on disk:
@@ -93,6 +112,8 @@ Then open the resulting SVG file with any suitable viewer.
 * Pixar TfMallocTag: https://openusd.org/dev/api/page_tf__malloc_tag.html
 * GNU libc malloc hook alternative: https://stackoverflow.com/questions/17803456/an-alternative-for-the-deprecated-malloc-hook-functionality-of-glibc
 * Replacing glibc malloc: https://www.gnu.org/software/libc/manual/html_node/Replacing-malloc.html
+* GNU libc malloc design: https://sourceware.org/glibc/wiki/MallocInternals
+* GNU libc memory tunables: https://sourceware.org/glibc/wiki/MallocInternals
 * Free-list Memory Pool in C: https://github.com/djoldman/fmpool
 * libtcmalloc profiler: https://gperftools.github.io/gperftools/heapprofile.html
 * https://www.brendangregg.com/FlameGraphs/memoryflamegraphs.html
