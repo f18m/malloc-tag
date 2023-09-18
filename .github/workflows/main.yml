@@ -44,6 +44,12 @@ jobs:
         ulimit -c unlimited
         # run the example
         make multithread_example
+    - name: run tcmalloc example
+      run: |
+        # Allow core dumps
+        ulimit -c unlimited
+        # run the example
+        make minimal_tcmalloc_example
 
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}  # Run only if something went wrong
