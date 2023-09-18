@@ -15,6 +15,7 @@
 
 int main()
 {
+    int ret_code = 0;
     prctl(PR_SET_NAME, MAIN_THREAD_NAME); // shorten the name of this thread
 
     // as soon as main() is entered, start malloc tag engine:
@@ -39,10 +40,12 @@ int main()
             MallocExtension::Ownership t = MallocExtension::instance()->GetOwnership(p);
             if (t == MallocExtension::kOwned)
                 std::cout << "SUCCESS: TcMalloc has been used to carry out memory allocation" << std::endl;
-            else
+            else {
                 std::cout
                     << "FAILURE: apparently the malloc() operation has been served by a non-tcmalloc implementation"
                     << std::endl;
+                ret_code = 1;
+            }
 
             // check that also malloc-tag has processed that malloc() operation
             MallocTagStatMap_t mtag_stats = MallocTagEngine::collect_stats();
@@ -54,9 +57,11 @@ int main()
             if (mtag_stats[key_for_inner_scope + ".nCallsTo_malloc"] == 1
                 && mtag_stats[key_for_inner_scope + ".nBytesSelf"] == MALLOC_AMOUNT)
                 std::cout << "SUCCESS: Malloc-tag is aware of the memory allocation" << std::endl;
-            else
+            else {
                 std::cout << "FAILURE: apparently the malloc() operation has NOT been served by malloc-tag"
                           << std::endl;
+                ret_code = 1;
+            }
         }
     }
 
@@ -79,5 +84,5 @@ int main()
 
     std::cout << "Bye!" << std::endl;
 
-    return 0;
+    return ret_code;
 }
