@@ -1,5 +1,15 @@
 # Very simple makefile to build the library and example code
 
+# Configurable flags:
+
+ifeq ($(USE_TCMALLOC),)
+# default value: assume you have a package like "gperftools-libs" installed on your system
+USE_TCMALLOC=1
+endif
+
+
+# Start of Makefile
+
 CC=g++
 CXXFLAGS_OPT= -fPIC -std=c++11 -Iinclude -O3 -pthread -Wno-attributes -Wno-unused-result
 CXXFLAGS_DBG= -fPIC -std=c++11 -Iinclude -g -O0 -pthread -Wno-attributes -Wno-unused-result
@@ -20,9 +30,10 @@ LIBS = \
 BINS = \
 	examples/minimal/minimal \
 	examples/multithread/multithread
-EXAMPLE_LIST = \
-	minimal \
-	multithread
+
+ifeq ($(USE_TCMALLOC),1)
+	BINS += examples/minimal_tcmalloc/minimal_tcmalloc
+endif
 
 LIB_OBJ = $(subst .cpp,.o,$(LIB_SRC))
 LIB_VER = 1
@@ -65,6 +76,13 @@ minimal_strace: $(BINS)
 		strace -e trace=%memory,%file \
 		examples/minimal/minimal
 
+minimal_debug: $(BINS)
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
+		gdb \
+		examples/minimal/minimal
+
 #
 # If you want to experiment decreasing the glibc VIRT memory usage in multithreaded apps,
 # you can add
@@ -92,6 +110,18 @@ multithread_strace: $(BINS)
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
 		strace -e trace=%memory,%file -t -f \
 		examples/multithread/multithread
+
+
+ifeq ($(USE_TCMALLOC),1)
+	
+minimal_tcmalloc_example: $(BINS)
+	@echo "Starting example application"
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
+		examples/minimal_tcmalloc/minimal_tcmalloc
+
+endif
 
 
 # build and run all examples at once
@@ -152,10 +182,13 @@ examples/$(1)/%: examples/$(1)/%.o
 examples/$(1)/$(1): examples/$(1)/$(1).o $(LIBS)
 	$(CC) -o examples/$(1)/$(1) \
 		examples/$(1)/$(1).o \
-		-ldl -Lsrc -lmalloc_tag -pthread
+		-ldl -Lsrc -lmalloc_tag -pthread $(2)
 
 endef
 
-$(foreach ex, $(EXAMPLE_LIST), $(eval $(call example_build_targets,$(ex))))
+#$(foreach ex, $(EXAMPLE_LIST), $(eval $(call example_build_targets,$(ex))))
 
+$(eval $(call example_build_targets,minimal))
+$(eval $(call example_build_targets,multithread))
+$(eval $(call example_build_targets,minimal_tcmalloc,-ltcmalloc))
 

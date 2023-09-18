@@ -18,7 +18,9 @@ A graphical overview of how malloc-tag works:
 
 ![overview_svg](docs/malloctag_overview.svg?raw=true "Malloc-tag implementation overview")
 
-* categorization limited to a tree with limited number of levels, pre-defined at build time
+To achieve the (high level design criterias)[#high-level-design-criteria] the following implementation choices have been made:
+
+* each per-thread memory stat tree has a limited number of levels, pre-defined at build time
 * each tree level has a "tag" or "category" which is a limited-size string (limit pre-defined at build time)
 * max tree depth (i.e. number of nested nodes) is pre-defined at build time
 * per-thread enable/disable flag
@@ -67,7 +69,7 @@ int main() {
 }
 ```
 
-3) whenever you want a snapshot of the memory profiling results to be written, invoke the API to write results on disk:
+5) whenever you want a snapshot of the memory profiling results to be written, invoke the API to write results on disk:
 
 ```
 MallocTagEngine::write_stats_on_disk()
@@ -76,7 +78,7 @@ MallocTagEngine::write_stats_on_disk()
 This function might be placed at the very end of your main() or any other exit point. In alternative it can be hooked to a signal e.g. SIGUSR1 so that the
 you will be able to write the statistics whenever you want at runtime.
 
-4) optional: start by adding a few instances of MallocTagScope to "tag" the parts of your application which you believe are the most memory-hungry portions:
+6) optional: start by adding a few instances of MallocTagScope to "tag" the parts of your application which you believe are the most memory-hungry portions:
 
 ```
 MallocTagScope nestedMallocScope("someInterestingPart");
