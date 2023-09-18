@@ -1,5 +1,6 @@
 /*
  * Malloc hooks that implement a low-overhead memory profiler
+ * This is the PUBLIC header that applications using malloc-tag should include
  *
  * Inspired by:
  *  - Pixar TfMallocTag tool, see https://openusd.org/dev/api/page_tf__malloc_tag.html
@@ -17,6 +18,7 @@
 //------------------------------------------------------------------------------
 
 #include <malloc.h> // provides prototypes for malloc()/free()/etc
+#include <map>
 #include <string>
 
 //------------------------------------------------------------------------------
@@ -74,6 +76,8 @@ enum MallocTagOutputFormat_e {
     MTAG_OUTPUT_FORMAT_ALL
 };
 
+typedef std::map<std::string, size_t> MallocTagStatMap_t;
+
 class MallocTagEngine {
 public:
     MallocTagEngine() { }
@@ -85,10 +89,33 @@ public:
         size_t max_tree_nodes = MTAG_DEFAULT_MAX_TREE_NODES, // fn
         size_t max_tree_levels = MTAG_DEFAULT_MAX_TREE_LEVELS);
 
-    // The main API to collect all results in JSON format
-    // NOTE: invoking this function will indeed trigger some memory allocation on its own (!!!)
+    // The main API to collect all results in JSON/GRAPHVIZ-DOT format
+    // NOTE: invoking this function will indeed trigger several memory allocation on its own (!!!);
+    //       such memory allocations are EXCLUDED from the stats collected by MallocTagEngine
     static std::string collect_stats(
         MallocTagOutputFormat_e format, const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
+
+    // Another API to collect all stats in form of a flat map/dictionary.
+    // This API provides a machine-friendly structured view on all the memory allocation stats for all the trees
+    /* Suggested way to explore the contents of the returned std::map is:
+        for (const auto& it : MallocTagEngine::collect_stats())
+            std::cout << it.first << "=" << it.second << std::endl;
+
+       Example:
+            .nTrees=1
+            tid1734695_minimal_tcm.nBytesSelf=1024
+            tid1734695_minimal_tcm.nBytesTotal=0
+            tid1734695_minimal_tcm.nCallsTo_calloc=0
+            tid1734695_minimal_tcm.nCallsTo_free=0
+            tid1734695_minimal_tcm.nCallsTo_malloc=1
+            tid1734695_minimal_tcm.nCallsTo_realloc=0
+    */
+    static MallocTagStatMap_t collect_stats();
+
+    // Returns the prefix of the keys contained in the MallocTagStatMap_t that are associated with a particular
+    // thread of this application. If the provided thread_id is zero, the prefix for current thread is returned.
+    // Concatenate the returned string with "." and the name of a KPI to access MallocTagStatMap_t contents.
+    static std::string get_stat_key_prefix_for_thread(pid_t thread_id = 0);
 
     // Write memory profiler stats into a file on disk;
     // if an empty string is passed, the full path will be taken from the environment variable
@@ -119,14 +146,14 @@ public:
     // Btw to understand the difference between VmSize/VmRSS and other memory measurements reported by
     // the Linux kernel, check e.g.
     //  https://web.archive.org/web/20120520221529/http://emilics.com/blog/article/mconsumption.html
-    // Please note that this function will allocate memory itself!!!
+    // Please note that this function will allocate memory itself (!!!)
     static size_t get_linux_vmsize_in_bytes();
 
     // Get glibc internal allocator stats in std::string form.
     // This utility function has nothing to do with malloctag profiler and uses the glibc ::malloc_info()
-    //  to acquire these stats which will be in XML format and that may vary across different glibc versions, see
+    // to acquire these stats which will be in XML format and that may vary across different glibc versions, see
     //  https://man7.org/linux/man-pages/man3/malloc_info.3.html
-    // Please note that this function will allocate memory itself!!!
+    // Please note that this function will allocate memory itself (!!!)
     static std::string malloc_info();
 };
 

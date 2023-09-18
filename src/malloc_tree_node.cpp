@@ -78,7 +78,31 @@ MallocTreeNode* MallocTreeNode::get_child_by_name(const char* name) const
     return NULL;
 }
 
-void MallocTreeNode::collect_json_stats_recursively(std::string& out)
+void MallocTreeNode::collect_stats_recursively_MAP(MallocTagStatMap_t& out, const std::string& parent_kpi_prefix)
+{
+    // use an underscore to flatten the "address" of this node inside the tree into a single string:
+    std::string fullName;
+    if (m_nTreeLevel == 0)
+        fullName = parent_kpi_prefix + ":" + get_node_name();
+    else
+        fullName = parent_kpi_prefix + "." + get_node_name();
+
+    // provide a programmer-friendly way to get stats out of a "flat dictionary":
+    out[fullName + ".nBytesTotal"] = m_nBytesTotal;
+    out[fullName + ".nBytesSelf"] = m_nBytesSelf;
+
+    for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++) {
+        std::string kpiName = fullName + ".nCallsTo_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i);
+        out[kpiName] = m_nAllocationsSelf[i];
+    }
+
+    // recurse
+    for (unsigned int i = 0; i < m_nChildrens; i++) {
+        m_pChildren[i]->collect_stats_recursively_MAP(out, fullName);
+    }
+}
+
+void MallocTreeNode::collect_stats_recursively_JSON(std::string& out)
 {
     // each node is a JSON object
     JsonUtils::start_object(out, "scope_" + get_node_name());
@@ -94,7 +118,7 @@ void MallocTreeNode::collect_json_stats_recursively(std::string& out)
     {
         JsonUtils::start_object(out, "nestedScopes");
         for (unsigned int i = 0; i < m_nChildrens; i++) {
-            m_pChildren[i]->collect_json_stats_recursively(out);
+            m_pChildren[i]->collect_stats_recursively_JSON(out);
             if (i < m_nChildrens - 1)
                 // there's another node to dump:
                 out += ",";
@@ -104,7 +128,7 @@ void MallocTreeNode::collect_json_stats_recursively(std::string& out)
     JsonUtils::end_object(out); // close the whole node object
 }
 
-void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
+void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
 {
     std::string thisNodeName = get_node_name();
 
@@ -176,7 +200,7 @@ void MallocTreeNode::collect_graphviz_dot_output_recursively(std::string& out)
 
     // now recurse into each children:
     for (unsigned int i = 0; i < m_nChildrens; i++)
-        m_pChildren[i]->collect_graphviz_dot_output_recursively(out);
+        m_pChildren[i]->collect_stats_recursively_GRAPHVIZDOT(out);
 }
 
 size_t MallocTreeNode::compute_bytes_totals_recursively() // returns total bytes accumulated by this node

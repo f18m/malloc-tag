@@ -172,3 +172,13 @@ void MallocTreeRegistry::collect_stats(
         break;
     }
 }
+
+void MallocTreeRegistry::collect_stats_MAP(MallocTagStatMap_t& out)
+{
+    size_t num_trees = m_nMallocTrees.load();
+
+    out[".nTrees"] = num_trees;
+    for (size_t i = 0; i < num_trees; i++) {
+        m_pMallocTreeRegistry[i]->collect_stats_recursively_MAP(out);
+    }
+}

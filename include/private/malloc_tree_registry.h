@@ -1,5 +1,7 @@
 /*
  * malloc_tree_registry.h
+ * This is a PRIVATE header. It should not be included by any application directly.
+ * This is used only during the build of malloc-tag library itself.
  *
  * Author: fmontorsi
  * Created: Aug 2023
@@ -48,6 +50,7 @@ public:
     }
 
     void collect_stats(std::string& stats_str, MallocTagOutputFormat_e format, const std::string& output_options);
+    void collect_stats_MAP(MallocTagStatMap_t& out);
 
 protected:
 private:

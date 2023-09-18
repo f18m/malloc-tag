@@ -1,5 +1,7 @@
 /*
  * malloc_tree.h
+ * This is a PRIVATE header. It should not be included by any application directly.
+ * This is used only during the build of malloc-tag library itself.
  *
  * Author: fmontorsi
  * Created: Aug 2023
@@ -66,6 +68,7 @@ public:
     //------------------------------------------------------------------------------
 
     void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format, const std::string& output_options);
+    void collect_stats_recursively_MAP(MallocTagStatMap_t& out);
 
     size_t get_total_bytes_tracked() const
     {
