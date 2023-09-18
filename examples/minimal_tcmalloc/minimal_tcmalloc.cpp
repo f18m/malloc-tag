@@ -49,8 +49,8 @@ int main()
 
             // check that also malloc-tag has processed that malloc() operation
             MallocTagStatMap_t mtag_stats = MallocTagEngine::collect_stats();
-            // for (const auto& it : mtag_stats)
-            //    std::cout << it.first << "=" << it.second << std::endl;
+            for (const auto& it : mtag_stats)
+                std::cout << it.first << "=" << it.second << std::endl;
 
             std::string key_for_inner_scope = MallocTagEngine::get_stat_key_prefix_for_thread()
                 + std::string(MAIN_THREAD_NAME) + ".OuterScope.InnerScope";

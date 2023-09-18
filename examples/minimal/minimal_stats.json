@@ -1,13 +1,13 @@
-{"PID": 1743610,
-"tmStartProfiling": "2023-09-18 @ 23:51:50 CEST",
-"tmCurrentSnapshot": "2023-09-18 @ 23:51:50 CEST",
-"tree_for_TID1743610": {"TID": 1743610,
+{"PID": 1745664,
+"tmStartProfiling": "2023-09-18 @ 23:57:51 CEST",
+"tmCurrentSnapshot": "2023-09-18 @ 23:57:51 CEST",
+"tree_for_TID1745664": {"TID": 1745664,
 "ThreadName": "minimal_tcm",
 "nTreeLevels": 2,
 "nTreeNodesInUse": 3,
 "nMaxTreeNodes": 256,
 "nPushNodeFailures": 0,
-"nVmSizeAtCreation": 35576000,
+"nVmSizeAtCreation": 35572000,
 "scope_minimal_tcm": {"nBytesTotal": 1591,
 "nBytesSelf": 1024,
 "nWeightPercentage": "100.00",
@@ -38,5 +38,5 @@
 }
 ,"nBytesAllocBeforeInit": 73856,
 "nBytesMallocTagSelfUsage": 65560,
-"VmSizeNow": 35576000,
-"nTotalTrackedBytes": 35651447}
+"VmSizeNow": 35572000,
+"nTotalTrackedBytes": 35647447}

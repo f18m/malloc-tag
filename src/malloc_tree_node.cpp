@@ -218,9 +218,13 @@ size_t MallocTreeNode::compute_bytes_totals_recursively() // returns total bytes
 
 void MallocTreeNode::compute_node_weights_recursively(size_t rootNodeTotalBytes)
 {
-    // compute weight of this node:
-    m_nWeightTotal = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesTotal / rootNodeTotalBytes;
-    m_nWeightSelf = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesSelf / rootNodeTotalBytes;
+    if (rootNodeTotalBytes == 0) {
+        m_nWeightTotal = m_nWeightSelf = 0;
+    } else {
+        // compute weight of this node:
+        m_nWeightTotal = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesTotal / rootNodeTotalBytes;
+        m_nWeightSelf = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesSelf / rootNodeTotalBytes;
+    }
 
     // recurse:
     for (unsigned int i = 0; i < m_nChildrens; i++)

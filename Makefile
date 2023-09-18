@@ -121,6 +121,13 @@ minimal_tcmalloc_example: $(BINS)
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
 		examples/minimal_tcmalloc/minimal_tcmalloc
 
+minimal_tcmalloc_debug: $(BINS)
+	@echo "Starting example application"
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
+		gdb \
+		examples/minimal_tcmalloc/minimal_tcmalloc
 endif
 
 
@@ -182,7 +189,7 @@ examples/$(1)/%: examples/$(1)/%.o
 examples/$(1)/$(1): examples/$(1)/$(1).o $(LIBS)
 	$(CC) -o examples/$(1)/$(1) \
 		examples/$(1)/$(1).o \
-		-ldl -Lsrc -lmalloc_tag -pthread $(2)
+		 -ldl -Lsrc -lmalloc_tag -pthread $(2) 
 
 endef
 
