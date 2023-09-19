@@ -1,8 +1,13 @@
 # malloc-tag
 
 A lighweight, intrusive memory profiler that allows to categorize memory allocation inside C/C++ projects, for Linux systems.
-In short this project provides a small dynamic library (.so) containing a "malloc interposer" plus some basic "tagging facility" to instrument your code and add a tag / category to each memory allocation inside C/C++ projects. By its nature the malloc interposer provided in this project will do a minimal operation and then simply use the original glibc malloc() implementation. This allows to intercept any memory allocation done using standard malloc()/new operators even from 3rd party libraries, C++ STL library, etc.
-This library enables minimal-overhead, per-thread memory profiling.
+
+In short this project provides a small dynamic library (.so) containing a *malloc interposer* plus some basic **tagging facility** to **instrument** your code and add a tag / category to **each** memory allocation inside C/C++ projects. 
+Malloc interposition (more on that later on) allows to intercept **any memory allocation** done using standard malloc()/new operators even if that happens from inside 3rd party libraries, C++ STL library, etc.
+
+The malloc interposer provided in this project is garantueed to perform only O(1) counter updates and then simply use the original glibc malloc() implementation. In practice the per-malloc() overhead imposed by this library boils down to a few conditional jumps, a pointer deferencing and an integer sum.
+
+In summary, this library enables minimal-overhead, per-thread memory profiling. It has been designed to be integrated as "always on" profiler vs being enabled only for debugging purposes.
 
 # High-Level Design Criteria
 

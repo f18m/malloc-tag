@@ -337,6 +337,7 @@ void __malloctag_track_allocation_from_glibc_override(MallocTagGlibcPrimitive_e 
             }
             // else: this thread has its tree already available... nothing to do
 
+            // FAST PATH:
             if (g_perthread_tree && g_perthread_tree->is_ready()) {
 
                 // NOTE:
