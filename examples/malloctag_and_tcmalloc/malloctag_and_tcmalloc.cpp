@@ -55,7 +55,7 @@ int main()
             std::string key_for_inner_scope = MallocTagEngine::get_stat_key_prefix_for_thread()
                 + std::string(MAIN_THREAD_NAME) + ".OuterScope.InnerScope";
             if (mtag_stats[key_for_inner_scope + ".nCallsTo_malloc"] == 1
-                && mtag_stats[key_for_inner_scope + ".nBytesSelf"] == MALLOC_AMOUNT)
+                && mtag_stats[key_for_inner_scope + ".nBytesSelf"] >= MALLOC_AMOUNT)
                 std::cout << "SUCCESS: Malloc-tag is aware of the memory allocation" << std::endl;
             else {
                 std::cout << "FAILURE: apparently the malloc() operation has NOT been served by malloc-tag"

@@ -58,7 +58,8 @@ public:
     }
     void track_free_in_current_scope(MallocTagGlibcPrimitive_e type, size_t nBytes)
     {
-        m_pCurrentNode->track_free(type, nBytes);
+        if (!m_pCurrentNode->track_free(type, nBytes))
+            m_nFreeTrackingFailed++;
     }
 
     //------------------------------------------------------------------------------
@@ -113,6 +114,7 @@ private:
     // tree status:
     unsigned int m_nTreeNodesInUse = 0;
     unsigned int m_nTreeLevels = 0;
+    unsigned int m_nFreeTrackingFailed = 0;
 
     // tree limits:
     unsigned int m_nMaxTreeNodes = MTAG_DEFAULT_MAX_TREE_NODES;

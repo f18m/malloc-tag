@@ -120,6 +120,7 @@ public:
     // Write memory profiler stats into a file on disk;
     // if an empty string is passed, the full path will be taken from the environment variable
     // MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV, depending on the "format" argument.
+    // This API is a shorthand for collect_stats() + some file opening/writing operations.
     static bool write_stats(MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL, const std::string& fullpath = "",
         const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
 
@@ -129,17 +130,15 @@ public:
     // OS-view of memory usage and see if it roughly matches with malloctag-reported results.
     // The total memory allocations intercepted by malloctag will never match exactly the VIRT/RSS memory
     // reported by Linux for a number of reasons:
-    //  * malloctag only knows the size of newly allocated memory; whenever memory is free()d
-    //    malloctag does not know how much is free()d and thus malloctag total memory consumption will
-    //    be close to the OS-reported memory usage only for software that roughly releases all major
-    //    memory-intensive dataset at the end of the software.
-    //  * malloctag only knows when new threads are spawned (if they use malloc) but is not notified
-    //    that a thread has completed, so it cannot remove the "tree" associated with that thread from
-    //    the total tracked memory bytes
-    //  * malloctag is not aware about the internal-allocator (e.g. glibc ptmalloc) overhead and
+    //  * malloctag only knows when new threads are spawned (they are detected by the time they invoke the first malloc)
+    //    but it is not notified that a thread has completed, so it cannot remove the "tree" associated with that thread
+    //    from the total tracked memory bytes;
+    //  * malloctag is not aware about the internal-allocator (e.g. glibc dlmalloc) overhead and
     //    logic to acquire memory from the OS, specially the glibc per-thread arena mechanism.
+    //    malloctag has some heuristic to estimate the glibc per-thread consumption of VIRTUAL memory but
+    //    these heuristics are far from perfect;
     //  * some memory allocations might happen via alternative methods compared to malloc()/new,
-    //    e.g. invoking directly mmap() or sbrk() syscalls
+    //    e.g. invoking directly mmap() or sbrk() syscalls; these are not intercepted/accounted-for by malloctag.
     // Due to all considerations above, generally speaking the total memory tracked by malloc-tag
     // will be HIGHER than the VIRT memory reported by the kernel.
     //

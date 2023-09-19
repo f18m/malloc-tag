@@ -93,10 +93,16 @@ public:
         m_nBytesSelf += nBytes;
         m_nAllocationsSelf[type]++;
     }
-    void track_free(MallocTagGlibcPrimitive_e type, size_t nBytes)
+    bool track_free(MallocTagGlibcPrimitive_e type, size_t nBytes)
     {
-        m_nBytesSelf -= nBytes;
-        m_nAllocationsSelf[type]++;
+        if (m_nBytesSelf >= nBytes) {
+            m_nBytesSelf -= nBytes;
+            m_nAllocationsSelf[type]++;
+            return true;
+        }
+
+        // this is very suspicious and should never happen
+        return false;
     }
 
     void collect_stats_recursively_JSON(std::string& out);

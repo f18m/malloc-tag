@@ -322,7 +322,7 @@ std::string MallocTagEngine::malloc_info()
 // set to 1 to debug if the actual application malloc()/free() are properly hooked or not
 #define DEBUG_HOOKS 0
 
-void __malloctag_track_allocation_from_glibc_override(MallocTagGlibcPrimitive_e type, size_t size)
+void __malloctag_track_allocation_from_glibc_override(MallocTagGlibcPrimitive_e type, void* newly_allocated_memory)
 {
     if (g_perthread_malloc_hook_active) {
         if (g_registry.has_main_thread_tree()) {
@@ -337,11 +337,25 @@ void __malloctag_track_allocation_from_glibc_override(MallocTagGlibcPrimitive_e 
             }
             // else: this thread has its tree already available... nothing to do
 
-            if (g_perthread_tree && g_perthread_tree->is_ready())
+            if (g_perthread_tree && g_perthread_tree->is_ready()) {
+
+                // NOTE:
+                // the glibc internal malloc() implementation will generally return a block bigger than what has
+                // been requested by the user, in order to satisfy the request very quickly.
+                // If we used the requested-size rather than the "actual" memory block size given by
+                // malloc_usable_size(), then our memory tracking computation would be off when tracking free()
+                // operations where we are _forced_ to use malloc_usable_size() API
+                size_t size = malloc_usable_size(newly_allocated_memory);
+
                 g_perthread_tree->track_alloc_in_current_scope(type, size);
-        } else
+            }
+        } else {
+            // see note above on why we use malloc_usable_size()
+            size_t size = malloc_usable_size(newly_allocated_memory);
+
             // MallocTagEngine::init() has never been invoked... wait for that to happen
             g_bytes_allocated_before_init += size;
+        }
     }
     // else: hooks disabled: just behave as standard glibc malloc()
 }
@@ -352,7 +366,7 @@ void* malloc(size_t size)
     // always use the libc implementation to actually satisfy the malloc:
     void* result = __libc_malloc(size);
     if (result) {
-        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_MALLOC, size);
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_MALLOC, result);
     }
     // else: this software is out of memory... nothing to track
 
@@ -368,11 +382,16 @@ void* malloc(size_t size)
 
 void free(void* __ptr) __THROW
 {
+    // before releasing the memory, ask the allocator how much memory we're releasing:
+    // NOTE: it's important that we use the malloc_usable_size() return value both when INCREMENTING
+    //       (e.g. inside malloc) and DECREMENTING the stat counters
+    size_t nbytes = malloc_usable_size(__ptr);
+
     // always use the libc implementation to actually free memory:
     __libc_free(__ptr);
     if (g_perthread_malloc_hook_active)
         if (g_perthread_tree && g_perthread_tree->is_ready())
-            g_perthread_tree->track_free_in_current_scope(MTAG_GLIBC_PRIMITIVE_FREE, 0);
+            g_perthread_tree->track_free_in_current_scope(MTAG_GLIBC_PRIMITIVE_FREE, nbytes);
 
 #if DEBUG_HOOKS
     if (g_perthread_malloc_hook_active) // do logging
@@ -388,7 +407,7 @@ void* realloc(void* ptr, size_t newsize) __THROW
     // always use the libc implementation to actually satisfy the realloc:
     void* result = __libc_realloc(ptr, newsize);
     if (result) {
-        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_REALLOC, newsize);
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_REALLOC, result);
     }
     // else: this software is out of memory... nothing to track
 
@@ -407,7 +426,7 @@ void* calloc(size_t count, size_t eltsize) __THROW
     // always use the libc implementation to actually satisfy the calloc:
     void* result = __libc_calloc(count, eltsize);
     if (result) {
-        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, count * eltsize);
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, result);
     }
     // else: this software is out of memory... nothing to track
 
@@ -426,7 +445,7 @@ void* memalign(size_t alignment, size_t size) __THROW
     // always use the libc implementation to actually satisfy the calloc:
     void* result = __libc_memalign(alignment, size);
     if (result) {
-        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, size);
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, result);
     }
     // else: this software is out of memory... nothing to track
 
@@ -445,7 +464,7 @@ void* valloc(size_t size) __THROW
     // always use the libc implementation to actually satisfy the calloc:
     void* result = __libc_valloc(size);
     if (result) {
-        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, size);
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, result);
     }
     // else: this software is out of memory... nothing to track
 
@@ -464,7 +483,7 @@ void* pvalloc(size_t size) __THROW
     // always use the libc implementation to actually satisfy the calloc:
     void* result = __libc_pvalloc(size);
     if (result) {
-        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, size);
+        __malloctag_track_allocation_from_glibc_override(MTAG_GLIBC_PRIMITIVE_CALLOC, result);
     }
     // else: this software is out of memory... nothing to track
 

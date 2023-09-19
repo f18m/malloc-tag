@@ -179,6 +179,7 @@ void MallocTree::collect_stats_recursively(
         JsonUtils::append_field(out, "nTreeNodesInUse", m_nTreeNodesInUse);
         JsonUtils::append_field(out, "nMaxTreeNodes", m_nMaxTreeNodes);
         JsonUtils::append_field(out, "nPushNodeFailures", m_nPushNodeFailures);
+        JsonUtils::append_field(out, "nFreeTrackingFailed", m_nFreeTrackingFailed);
         JsonUtils::append_field(out, "nVmSizeAtCreation", m_nVmSizeAtCreation); // in bytes
 
         m_pRootNode->collect_stats_recursively_JSON(out);
