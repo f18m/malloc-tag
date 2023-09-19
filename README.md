@@ -14,9 +14,24 @@ This library enables minimal-overhead, per-thread memory profiling.
 
 # Technical Implementation
 
+## Overview
+
 A graphical overview of how malloc-tag works:
 
 ![overview_svg](docs/malloctag_overview.svg?raw=true "Malloc-tag implementation overview")
+
+You may be wondering: how is it possible to "intercept" any malloc() call done from "Your application" and route them to "MallocTag library"?
+The answer is "ELF interposition": if malloctag.so shared library is loaded by the dynamic linker BEFORE the glibc shared library is loaded,
+then the process image of "Your application" will use the malloc() defined by malloctag instead of the same identical function signature available
+inside the GNU libc.
+Check the optimal page https://maskray.me/blog/2021-05-16-elf-interposition-and-bsymbolic for a very in-deep overview of ELF interposition. 
+Focus on the following two statements while reading that page:
+
+* If a dynamic symbol is defined by multiple components, they don't conflict.
+* For a symbol lookup [...] the definition from the first component wins.
+
+
+## Internals
 
 To achieve the (high level design criterias)[#high-level-design-criteria] the following implementation choices have been made:
 
@@ -26,6 +41,7 @@ To achieve the (high level design criterias)[#high-level-design-criteria] the fo
 * per-thread enable/disable flag
 * per-thread tree of malloc categories
 * per-thread mutex to synchronize the "collector thread" (i.e. the thread using the main "malloc_collect_stats" API) and all other application threads
+
 
 # Example output
 
