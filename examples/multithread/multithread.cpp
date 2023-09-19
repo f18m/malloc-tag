@@ -134,7 +134,9 @@ int main()
         std::cout << "Wrote malloctag stats on disk as " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << " and "
                   << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
 
-    std::cout << MallocTagEngine::malloc_info() << std::endl;
+    // if you want to dig into the GNU libc malloc this can be useful:
+    // std::cout << MallocTagEngine::malloc_info() << std::endl;
+
     std::cout << "Bye!" << std::endl;
 
     return 0;

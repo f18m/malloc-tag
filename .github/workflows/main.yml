@@ -49,7 +49,7 @@ jobs:
         # Allow core dumps
         ulimit -c unlimited
         # run the example
-        make minimal_tcmalloc_example
+        make tcmalloc_example
 
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}  # Run only if something went wrong

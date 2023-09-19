@@ -39,7 +39,7 @@ int main()
 
             MallocExtension::Ownership t = MallocExtension::instance()->GetOwnership(p);
             if (t == MallocExtension::kOwned)
-                std::cout << "SUCCESS: TcMalloc has been used to carry out memory allocation" << std::endl;
+                std::cout << "SUCCESS: TcMalloc is aware of the memory allocation" << std::endl;
             else {
                 std::cout
                     << "FAILURE: apparently the malloc() operation has been served by a non-tcmalloc implementation"
@@ -49,8 +49,8 @@ int main()
 
             // check that also malloc-tag has processed that malloc() operation
             MallocTagStatMap_t mtag_stats = MallocTagEngine::collect_stats();
-            for (const auto& it : mtag_stats)
-                std::cout << it.first << "=" << it.second << std::endl;
+            // for (const auto& it : mtag_stats)
+            //    std::cout << it.first << "=" << it.second << std::endl;
 
             std::string key_for_inner_scope = MallocTagEngine::get_stat_key_prefix_for_thread()
                 + std::string(MAIN_THREAD_NAME) + ".OuterScope.InnerScope";
@@ -62,6 +62,11 @@ int main()
                           << std::endl;
                 ret_code = 1;
             }
+
+            if (ret_code == 0)
+                std::cout << "SUCCESS: both malloc-tag and tcmalloc worked correctly: malloc-tag got the malloc() "
+                             "requested, updated stats, and then passed the malloc() request to the tcmalloc library"
+                          << std::endl;
         }
     }
 

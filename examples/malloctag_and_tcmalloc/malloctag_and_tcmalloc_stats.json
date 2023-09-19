@@ -1,0 +1,42 @@
+{"PID": 1885764,
+"tmStartProfiling": "2023-09-19 @ 23:08:08 CEST",
+"tmCurrentSnapshot": "2023-09-19 @ 23:08:08 CEST",
+"tree_for_TID1885764": {"TID": 1885764,
+"ThreadName": "minimal_tcm",
+"nTreeLevels": 2,
+"nTreeNodesInUse": 3,
+"nMaxTreeNodes": 256,
+"nPushNodeFailures": 0,
+"nVmSizeAtCreation": 35576000,
+"scope_minimal_tcm": {"nBytesTotal": 1591,
+"nBytesSelf": 1024,
+"nWeightPercentage": "100.00",
+"nCallsTo_malloc": 1,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 0,
+"nestedScopes": {"scope_OuterScope": {"nBytesTotal": 567,
+"nBytesSelf": 0,
+"nWeightPercentage": "35.63",
+"nCallsTo_malloc": 0,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 0,
+"nestedScopes": {"scope_InnerScope": {"nBytesTotal": 567,
+"nBytesSelf": 567,
+"nWeightPercentage": "35.63",
+"nCallsTo_malloc": 1,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 0,
+"nestedScopes": {}
+}
+}
+}
+}
+}
+}
+,"nBytesAllocBeforeInit": 73840,
+"nBytesMallocTagSelfUsage": 65560,
+"VmSizeNow": 35576000,
+"nTotalTrackedBytes": 35651431}

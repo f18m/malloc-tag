@@ -32,7 +32,7 @@ BINS = \
 	examples/multithread/multithread
 
 ifeq ($(USE_TCMALLOC),1)
-	BINS += examples/minimal_tcmalloc/minimal_tcmalloc
+	BINS += examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
 endif
 
 LIB_OBJ = $(subst .cpp,.o,$(LIB_SRC))
@@ -114,20 +114,20 @@ multithread_strace: $(BINS)
 
 ifeq ($(USE_TCMALLOC),1)
 	
-minimal_tcmalloc_example: $(BINS)
+tcmalloc_example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
-	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
-		examples/minimal_tcmalloc/minimal_tcmalloc
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.dot \
+		examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
 
-minimal_tcmalloc_debug: $(BINS)
+tcmalloc_debug: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
-	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.dot \
 		gdb \
-		examples/minimal_tcmalloc/minimal_tcmalloc
+		examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
 endif
 
 
@@ -142,7 +142,7 @@ benchmarks:
 clean:
 	find -name *.so -exec rm {} \;
 	find -name *.o -exec rm {} \;
-	rm $(BINS)
+	rm -f $(BINS)
 
 install:
 ifndef DESTDIR
@@ -193,9 +193,11 @@ examples/$(1)/$(1): examples/$(1)/$(1).o $(LIBS)
 
 endef
 
-#$(foreach ex, $(EXAMPLE_LIST), $(eval $(call example_build_targets,$(ex))))
 
+# create rules to build each available example:
 $(eval $(call example_build_targets,minimal))
 $(eval $(call example_build_targets,multithread))
-$(eval $(call example_build_targets,minimal_tcmalloc,-ltcmalloc))
+
+# malloctag_and_tcmalloc example needs an extra library (-ltcmalloc)
+$(eval $(call example_build_targets,malloctag_and_tcmalloc,-ltcmalloc))
 
