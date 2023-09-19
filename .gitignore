@@ -1,5 +1,6 @@
 examples/minimal/minimal
 examples/multithread/multithread
+examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
 examples/*/*.o
 src/libmalloc_tag.so*
 src/*.o

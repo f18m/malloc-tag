@@ -181,7 +181,7 @@ void MallocTree::collect_stats_recursively(
         JsonUtils::append_field(out, "nPushNodeFailures", m_nPushNodeFailures);
         JsonUtils::append_field(out, "nVmSizeAtCreation", m_nVmSizeAtCreation); // in bytes
 
-        m_pRootNode->collect_json_stats_recursively(out);
+        m_pRootNode->collect_stats_recursively_JSON(out);
 
         JsonUtils::end_object(out);
         break;
@@ -204,11 +204,23 @@ void MallocTree::collect_stats_recursively(
             GraphVizUtils::start_subgraph(out, graphviz_name, labels);
         }
 
-        m_pRootNode->collect_graphviz_dot_output_recursively(out);
+        m_pRootNode->collect_stats_recursively_GRAPHVIZDOT(out);
         GraphVizUtils::end_subgraph(out); // close this digraph/subgraph
     } break;
 
     default:
         break;
     }
+}
+
+void MallocTree::collect_stats_recursively_MAP(MallocTagStatMap_t& out)
+{
+    // during the following tree traversal, we need the tree structure to be consistent across threads:
+    std::lock_guard<std::mutex> guard(m_lockTreeStructure);
+
+    // provide a unique prefix to all keys contained in this tree:
+    std::string thisNodeName = "tid" + std::to_string(m_nThreadID);
+
+    // recurse starting from root node:
+    m_pRootNode->collect_stats_recursively_MAP(out, thisNodeName /* root prefix */);
 }

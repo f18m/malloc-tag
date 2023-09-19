@@ -1,5 +1,15 @@
 # Very simple makefile to build the library and example code
 
+# Configurable flags:
+
+ifeq ($(USE_TCMALLOC),)
+# default value: assume you have a package like "gperftools-libs" installed on your system
+USE_TCMALLOC=1
+endif
+
+
+# Start of Makefile
+
 CC=g++
 CXXFLAGS_OPT= -fPIC -std=c++11 -Iinclude -O3 -pthread -Wno-attributes -Wno-unused-result
 CXXFLAGS_DBG= -fPIC -std=c++11 -Iinclude -g -O0 -pthread -Wno-attributes -Wno-unused-result
@@ -20,9 +30,10 @@ LIBS = \
 BINS = \
 	examples/minimal/minimal \
 	examples/multithread/multithread
-EXAMPLE_LIST = \
-	minimal \
-	multithread
+
+ifeq ($(USE_TCMALLOC),1)
+	BINS += examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
+endif
 
 LIB_OBJ = $(subst .cpp,.o,$(LIB_SRC))
 LIB_VER = 1
@@ -65,6 +76,13 @@ minimal_strace: $(BINS)
 		strace -e trace=%memory,%file \
 		examples/minimal/minimal
 
+minimal_debug: $(BINS)
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
+		gdb \
+		examples/minimal/minimal
+
 #
 # If you want to experiment decreasing the glibc VIRT memory usage in multithreaded apps,
 # you can add
@@ -94,6 +112,25 @@ multithread_strace: $(BINS)
 		examples/multithread/multithread
 
 
+ifeq ($(USE_TCMALLOC),1)
+	
+tcmalloc_example: $(BINS)
+	@echo "Starting example application"
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.dot \
+		examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
+
+tcmalloc_debug: $(BINS)
+	@echo "Starting example application"
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.dot \
+		gdb \
+		examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
+endif
+
+
 # build and run all examples at once
 examples: \
 	minimal_example \
@@ -105,7 +142,7 @@ benchmarks:
 clean:
 	find -name *.so -exec rm {} \;
 	find -name *.o -exec rm {} \;
-	rm $(BINS)
+	rm -f $(BINS)
 
 install:
 ifndef DESTDIR
@@ -152,10 +189,15 @@ examples/$(1)/%: examples/$(1)/%.o
 examples/$(1)/$(1): examples/$(1)/$(1).o $(LIBS)
 	$(CC) -o examples/$(1)/$(1) \
 		examples/$(1)/$(1).o \
-		-ldl -Lsrc -lmalloc_tag -pthread
+		 -ldl -Lsrc -lmalloc_tag -pthread $(2) 
 
 endef
 
-$(foreach ex, $(EXAMPLE_LIST), $(eval $(call example_build_targets,$(ex))))
 
+# create rules to build each available example:
+$(eval $(call example_build_targets,minimal))
+$(eval $(call example_build_targets,multithread))
+
+# malloctag_and_tcmalloc example needs an extra library (-ltcmalloc)
+$(eval $(call example_build_targets,malloctag_and_tcmalloc,-ltcmalloc))
 

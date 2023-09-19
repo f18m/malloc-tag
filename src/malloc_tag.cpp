@@ -157,6 +157,28 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
     return g_perthread_tree != nullptr;
 }
 
+MallocTagStatMap_t MallocTagEngine::collect_stats()
+{
+    HookDisabler doNotAccountCollectStatMemoryUsage;
+
+    MallocTagStatMap_t outMap;
+    // outMap.reserve(1024);
+    g_registry.collect_stats_MAP(outMap);
+
+    return outMap;
+}
+
+std::string MallocTagEngine::get_stat_key_prefix_for_thread(pid_t thread_id)
+{
+    // This implementation needs to be in sync with the
+    //   MallocTreeNode::collect_stats_recursively_MAP()
+    // function:
+    if (thread_id == 0)
+        thread_id = syscall(SYS_gettid);
+
+    return "tid" + std::to_string(thread_id) + ":";
+}
+
 std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format, const std::string& output_options)
 {
     HookDisabler doNotAccountCollectStatMemoryUsage;

@@ -1,5 +1,7 @@
 /*
  * malloc_tree_node.h
+ * This is a PRIVATE header. It should not be included by any application directly.
+ * This is used only during the build of malloc-tag library itself.
  *
  * Author: fmontorsi
  * Created: Aug 2023
@@ -97,8 +99,9 @@ public:
         m_nAllocationsSelf[type]++;
     }
 
-    void collect_json_stats_recursively(std::string& out);
-    void collect_graphviz_dot_output_recursively(std::string& out);
+    void collect_stats_recursively_JSON(std::string& out);
+    void collect_stats_recursively_GRAPHVIZDOT(std::string& out);
+    void collect_stats_recursively_MAP(MallocTagStatMap_t& out, const std::string& parent_kpi_prefix);
 
     size_t compute_bytes_totals_recursively();
     void compute_node_weights_recursively(size_t rootNodeTotalBytes);

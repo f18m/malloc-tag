@@ -1,5 +1,7 @@
 /*
  * output_utils.h
+ * This is a PRIVATE header. It should not be included by any application directly.
+ * This is used only during the build of malloc-tag library itself.
  *
  * Author: fmontorsi
  * Created: Sept 2023
