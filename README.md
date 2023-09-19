@@ -72,7 +72,7 @@ int main() {
 5) whenever you want a snapshot of the memory profiling results to be written, invoke the API to write results on disk:
 
 ```
-MallocTagEngine::write_stats_on_disk()
+MallocTagEngine::write_stats()
 ```
 
 This function might be placed at the very end of your main() or any other exit point. In alternative it can be hooked to a signal e.g. SIGUSR1 so that the
@@ -111,15 +111,24 @@ Then open the resulting SVG file with any suitable viewer.
 
 # Links
 
+## Useful references during malloc-tag development:
+
 * Pixar TfMallocTag: https://openusd.org/dev/api/page_tf__malloc_tag.html
 * GNU libc malloc hook alternative: https://stackoverflow.com/questions/17803456/an-alternative-for-the-deprecated-malloc-hook-functionality-of-glibc
 * Replacing glibc malloc: https://www.gnu.org/software/libc/manual/html_node/Replacing-malloc.html
+* Free-list Memory Pool in C: https://github.com/djoldman/fmpool
+
+## About GNU libc malloc, tcmalloc, jemalloc:
+
 * GNU libc malloc design: https://sourceware.org/glibc/wiki/MallocInternals
 * GNU libc memory tunables: https://sourceware.org/glibc/wiki/MallocInternals
-* Free-list Memory Pool in C: https://github.com/djoldman/fmpool
 * libtcmalloc profiler: https://gperftools.github.io/gperftools/heapprofile.html
-* https://www.brendangregg.com/FlameGraphs/memoryflamegraphs.html
-* https://www.joyfulbikeshedding.com/blog/2019-01-31-full-system-dynamic-tracing-on-linux-using-ebpf-and-bpftrace.html
+* jemalloc: https://jemalloc.net/
+
+## About memory profiling in general under Linux:
+
+* Memory flame graphs by Brendan Gregg: https://www.brendangregg.com/FlameGraphs/memoryflamegraphs.html
+* History and status of dynamic tracing in Linux: https://www.joyfulbikeshedding.com/blog/2019-01-31-full-system-dynamic-tracing-on-linux-using-ebpf-and-bpftrace.html
 
 # License
 

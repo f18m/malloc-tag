@@ -71,7 +71,7 @@ int main()
     }
 
     // dump stats in both JSON and graphviz formats
-    if (MallocTagEngine::write_stats_on_disk())
+    if (MallocTagEngine::write_stats())
         std::cout << "Wrote malloctag stats on disk as " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << " and "
                   << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
 

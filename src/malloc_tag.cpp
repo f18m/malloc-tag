@@ -192,7 +192,7 @@ std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format, const
     return stats_str;
 }
 
-bool __internal_write_stats_on_disk(
+bool __internal_write_stats(
     MallocTagOutputFormat_e format, const std::string& fullpath, const std::string& output_options)
 {
     bool bwritten = false;
@@ -227,7 +227,7 @@ bool __internal_write_stats_on_disk(
     return bwritten;
 }
 
-bool MallocTagEngine::write_stats_on_disk(
+bool MallocTagEngine::write_stats(
     MallocTagOutputFormat_e format, const std::string& fullpath, const std::string& output_options)
 {
     HookDisabler doNotAccountCollectStatMemoryUsage;
@@ -240,12 +240,12 @@ bool MallocTagEngine::write_stats_on_disk(
         // this is important to maintain coherency between the data we write in the different output files:
         // if HookDisabler goes out of scope between the first & second output generation steps, we risk
         // that the second step contains more collected data compared to the first one
-        bwritten = __internal_write_stats_on_disk(MTAG_OUTPUT_FORMAT_JSON, fullpath, output_options);
-        bwritten &= __internal_write_stats_on_disk(MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT, fullpath, output_options);
+        bwritten = __internal_write_stats(MTAG_OUTPUT_FORMAT_JSON, fullpath, output_options);
+        bwritten &= __internal_write_stats(MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT, fullpath, output_options);
         break;
 
     default:
-        bwritten = __internal_write_stats_on_disk(format, fullpath, output_options);
+        bwritten = __internal_write_stats(format, fullpath, output_options);
     }
 
     return bwritten;

@@ -120,8 +120,8 @@ public:
     // Write memory profiler stats into a file on disk;
     // if an empty string is passed, the full path will be taken from the environment variable
     // MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV, depending on the "format" argument.
-    static bool write_stats_on_disk(MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL,
-        const std::string& fullpath = "", const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
+    static bool write_stats(MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL, const std::string& fullpath = "",
+        const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
 
     // Get all virtual memory "associated" by Linux to this process.
     // This is a Linux-specific utility.

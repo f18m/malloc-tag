@@ -4,7 +4,7 @@
     This is a basic example showing how to
     * initialize the malloctag engine using MallocTagEngine::init()
     * create malloc scopes using MallocTagScope
-    * produce memory allocation stats using MallocTagEngine::write_stats_on_disk()
+    * produce memory allocation stats using MallocTagEngine::write_stats()
 */
 
 #include "malloc_tag.h"
@@ -72,7 +72,7 @@ int main()
     TopFunction();
 
     // dump stats in both JSON and graphviz formats
-    if (MallocTagEngine::write_stats_on_disk())
+    if (MallocTagEngine::write_stats())
         std::cout << "Wrote malloctag stats on disk as " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << " and "
                   << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
 
