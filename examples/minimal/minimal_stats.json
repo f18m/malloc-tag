@@ -1,7 +1,7 @@
-{"PID": 1908468,
-"tmStartProfiling": "2023-09-20 @ 00:10:27 CEST",
-"tmCurrentSnapshot": "2023-09-20 @ 00:10:27 CEST",
-"tree_for_TID1908468": {"TID": 1908468,
+{"PID": 2349966,
+"tmStartProfiling": "2023-09-21 @ 17:11:21 CEST",
+"tmCurrentSnapshot": "2023-09-21 @ 17:11:21 CEST",
+"tree_for_TID2349966": {"TID": 2349966,
 "ThreadName": "minimal",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 6,
@@ -64,7 +64,8 @@
 }
 }
 }
-,"nBytesAllocBeforeInit": 72712,
+,"nBytesAllocBeforeInit": 165520,
 "nBytesMallocTagSelfUsage": 65560,
-"VmSizeNow": 30124000,
-"nTotalTrackedBytes": 30432288}
+"vmSizeNowBytes": 30124000,
+"vmRSSNowBytes": 30124000,
+"nTotalTrackedBytes": 30522200}
