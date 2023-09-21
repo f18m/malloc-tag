@@ -187,6 +187,9 @@ public: // generic utilities, not strictly related to malloc-tag itself
     // Please note that this function will allocate memory itself (!!!)
     static size_t get_linux_vmsize_in_bytes();
 
+    // Just like get_linux_vmsize_in_bytes() but retrieves the RSS
+    static size_t get_linux_vmrss_in_bytes();
+
     // Get glibc internal allocator stats in std::string form.
     // This utility function has nothing to do with malloctag profiler and uses the glibc ::malloc_info()
     // to acquire these stats which will be in XML format and that may vary across different glibc versions, see

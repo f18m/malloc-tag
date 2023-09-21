@@ -106,7 +106,8 @@ void MallocTreeRegistry::collect_stats(
     char tmCurrentStr[64];
     strftime(tmCurrentStr, sizeof(tmCurrentStr), "%Y-%m-%d @ %H:%M:%S %Z", &current_time_tm);
 
-    size_t vmSizeNow = MallocTagEngine::get_linux_vmsize_in_bytes();
+    size_t vmSizeNowBytes = MallocTagEngine::get_linux_vmsize_in_bytes();
+    size_t vmRSSNowBytes = MallocTagEngine::get_linux_vmsize_in_bytes();
 
     switch (format) {
     case MTAG_OUTPUT_FORMAT_JSON: {
@@ -125,10 +126,11 @@ void MallocTreeRegistry::collect_stats(
         JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init);
         JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage_in_bytes());
 
-        // VmSizeNow and nTotalTrackedBytes should be similar ideally. In practice nTotalTrackedBytes>>VmSizeNow
-        // because free() operations do not reduce the value of nTotalTrackedBytes but they can potentially reduce
-        // VmSizeNow
-        JsonUtils::append_field(stats_str, "VmSizeNow", vmSizeNow);
+        // vmSizeNowBytes and nTotalTrackedBytes should be similar ideally. In practice
+        // nTotalTrackedBytes>>vmSizeNowBytes because free() operations do not reduce the value of nTotalTrackedBytes
+        // but they can potentially reduce vmSizeNowBytes
+        JsonUtils::append_field(stats_str, "vmSizeNowBytes", vmSizeNowBytes);
+        JsonUtils::append_field(stats_str, "vmRSSNowBytes", vmRSSNowBytes);
         JsonUtils::append_field(stats_str, "nTotalTrackedBytes", tot_tracked_mem_bytes, true /* is_last */);
         JsonUtils::end_document(stats_str);
     } break;
@@ -153,7 +155,8 @@ void MallocTreeRegistry::collect_stats(
             + GraphVizUtils::pretty_print_bytes(get_total_memusage_in_bytes()));
         labels.push_back("Total memory tracked by MallocTag across all threads ="
             + GraphVizUtils::pretty_print_bytes(tot_tracked_mem_bytes));
-        labels.push_back("VmSizeNow = " + GraphVizUtils::pretty_print_bytes(vmSizeNow));
+        labels.push_back("vmSizeNowBytes = " + GraphVizUtils::pretty_print_bytes(vmSizeNowBytes));
+        labels.push_back("vmRSSNowBytes = " + GraphVizUtils::pretty_print_bytes(vmRSSNowBytes));
         labels.push_back("Memory profiling session start timestamp = " + std::string(tmStartProfilingStr));
         labels.push_back("This snapshot timestamp = " + std::string(tmCurrentStr));
         labels.push_back("PID = " + std::to_string(getpid()));

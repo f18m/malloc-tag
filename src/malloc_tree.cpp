@@ -139,6 +139,9 @@ bool MallocTree::push_new_node(const char* name) // must be malloc-free
 void MallocTree::pop_last_node() // must be malloc-free
 {
     std::lock_guard<std::mutex> guard(m_lockTreeStructure);
+
+    m_pCurrentNode->track_node_leave();
+
     MallocTreeNode* n = m_pCurrentNode->get_parent();
     assert(n); // if n == NULL it means m_pCurrentNode is pointing to the tree root... cannot pop... this is a
                // logical mistake...

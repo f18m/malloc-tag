@@ -317,9 +317,10 @@ static int __parseLine(char* line)
     return atoi(p); // it will be zero on error
 }
 
-size_t MallocTagEngine::get_linux_vmsize_in_bytes()
+static size_t __parseStatusFile(const char* needle)
 {
     char line[128];
+    size_t needle_len = strlen(needle);
 
     // IMPORTANT: remember that Linux will not account memory usage separately on a thread-basis.
     //            so even if this software is multi-threaded, all files under
@@ -332,7 +333,7 @@ size_t MallocTagEngine::get_linux_vmsize_in_bytes()
     int result = -1;
 
     while (fgets(line, sizeof(line), file) != NULL) {
-        if (strncmp(line, "VmSize:", 7) == 0) {
+        if (strncmp(line, needle, needle_len) == 0) {
             result = __parseLine(line);
             break;
         }
@@ -345,6 +346,10 @@ size_t MallocTagEngine::get_linux_vmsize_in_bytes()
 
     return result;
 }
+
+size_t MallocTagEngine::get_linux_vmsize_in_bytes() { return __parseStatusFile("VmSize:"); }
+
+size_t MallocTagEngine::get_linux_vmrss_in_bytes() { return __parseStatusFile("VmRSS:"); }
 
 std::string MallocTagEngine::malloc_info()
 {

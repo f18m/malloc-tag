@@ -164,7 +164,6 @@ Apache 2.0 License
 * for multithreading, have the total referred to the GLOBAL software mem usage? or both?
 * output data in a human-friendly std::string format for always-on applications as fast debug technique
 * move malloctag_and_tcmalloc example to "tests" folder
-* introduce a MTAG_MAX_TREES limit in MallocTreeRegistry
 
 # FUTURE
 
