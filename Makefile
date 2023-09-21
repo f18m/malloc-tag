@@ -29,7 +29,8 @@ LIBS = \
 	src/libmalloc_tag.so
 BINS = \
 	examples/minimal/minimal \
-	examples/multithread/multithread
+	examples/multithread/multithread \
+	tests/unit_tests
 
 ifeq ($(USE_TCMALLOC),1)
 	BINS += examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
@@ -112,6 +113,15 @@ multithread_strace: $(BINS)
 		examples/multithread/multithread
 
 
+tests: $(BINS)
+	@echo "Starting UNIT TESTS application"
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/tests/dummystats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/tests/dummystats.dot \
+		tests/unit_tests
+
+
+
 ifeq ($(USE_TCMALLOC),1)
 	
 tcmalloc_example: $(BINS)
@@ -157,7 +167,7 @@ endif
 	@cp -fv src/libmalloc_tag.so*       $(DESTDIR)/lib/
 
 
-.PHONY: all minimal_example multithread_example examples clean install
+.PHONY: all minimal_example multithread_example examples tests clean install
 
 
 # Rules
@@ -177,6 +187,20 @@ src/libmalloc_tag.so: $(LIB_HDR) $(LIB_OBJ)
 		-ldl \
 		-o $@
 	cd src && ln -sf libmalloc_tag.so libmalloc_tag.so.$(LIB_VER) 
+
+
+# rule to COMPILE test code
+tests/%: tests/%.o
+	$(CC) -o $@ $^ -pthread 
+
+# rule to LINK test code
+TESTS_OBJECTS:=$(patsubst %.cpp,%.o,$(wildcard tests/*.cpp))
+
+tests/unit_tests: $(TESTS_OBJECTS) $(LIBS)
+	$(CC) -o tests/unit_tests \
+		$(TESTS_OBJECTS) \
+		 -ldl -Lsrc -lmalloc_tag -lgtest -pthread
+
 
 
 define example_build_targets

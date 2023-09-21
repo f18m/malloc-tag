@@ -14,7 +14,7 @@ jobs:
     # install deps
     - uses: actions/checkout@v3
     - name: install debian-packaged dependencies
-      run: sudo apt install -y jq clang-format graphviz libgoogle-perftools-dev libunwind-dev
+      run: sudo apt install -y jq clang-format graphviz libgoogle-perftools-dev libunwind-dev libgtest-dev
 
     - name: build malloc-tag
       run: make all
@@ -30,8 +30,15 @@ jobs:
         sudo chmod 777 /cores
         # Core filenames will be of the form executable.pid.timestamp:
         sudo bash -c 'echo "/cores/%e.%p.%t" > /proc/sys/kernel/core_pattern'
-        
-    # now run examples
+
+    # now run unit tests
+    - name: run unit tests
+      run: |
+        # Allow core dumps
+        ulimit -c unlimited
+        make tests
+
+    # now run examples to check they are still up to date and working
     - name: run basic example
       run: |
         # Allow core dumps

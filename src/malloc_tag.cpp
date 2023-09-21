@@ -101,6 +101,35 @@ private:
     bool m_prev_state = false;
 };
 
+class PrivateHelpers {
+public:
+    static bool EnsureTreeForThisThreadIsReady()
+    {
+        if (g_perthread_malloc_hook_active) {
+            if (g_registry.has_main_thread_tree()) {
+                // MallocTagEngine::init() has been invoked, good;
+                // it means the tree for the main-thread is ready.
+                // Let's check if the tree of _this_ thread has been initialized or not:
+                if (UNLIKELY(!g_perthread_tree || !g_perthread_tree->is_ready())) {
+                    HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+
+                    g_perthread_tree = g_registry.register_secondary_thread_tree();
+                    // NOTE: if we're out of memory, g_perthread_tree might be nullptr
+                }
+                // else: this thread has its tree already available... nothing to do
+
+                return g_perthread_tree != nullptr;
+            } else {
+                // MallocTagEngine::init() not invoked yet
+                return false;
+            }
+        } else {
+            // else: hooks disabled: do not even try to allocate the tree for this thread
+            return false;
+        }
+    }
+};
+
 //------------------------------------------------------------------------------
 // MallocTagScope
 //------------------------------------------------------------------------------
@@ -109,9 +138,9 @@ MallocTagScope::MallocTagScope(const char* tag_name)
 {
     // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
     // VERY IMPORTANT: all code running in this function must be malloc-free
-    assert(g_perthread_tree
-        && g_perthread_tree->is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
-    g_perthread_tree->push_new_node(tag_name);
+    if (PrivateHelpers::EnsureTreeForThisThreadIsReady()) {
+        m_bLastPushWasSuccessful = g_perthread_tree->push_new_node(tag_name);
+    }
 }
 
 MallocTagScope::MallocTagScope(const char* class_name, const char* function_name)
@@ -125,17 +154,21 @@ MallocTagScope::MallocTagScope(const char* class_name, const char* function_name
     strncpy(scopeName, class_name, MTAG_MAX_SCOPENAME_LEN - 1); // try to abbreviate class_name if it's too long!
     strncat(scopeName, "::", MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
     strncat(scopeName, function_name, MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
-
-    g_perthread_tree->push_new_node(scopeName);
+    if (PrivateHelpers::EnsureTreeForThisThreadIsReady()) {
+        m_bLastPushWasSuccessful = g_perthread_tree->push_new_node(scopeName);
+    }
 }
 
 MallocTagScope::~MallocTagScope()
 {
     // pop by 1 level the current per-thread cursor
     // VERY IMPORTANT: all code running in this function must be malloc-free
-    assert(g_perthread_tree
-        && g_perthread_tree->is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
-    g_perthread_tree->pop_last_node();
+    if (PrivateHelpers::EnsureTreeForThisThreadIsReady()) {
+        if (m_bLastPushWasSuccessful)
+            g_perthread_tree->pop_last_node();
+        // else: the node pointer has not been moved by last push_new_node() so we don't need to really pop the node
+        // pointer... otherwise we break the logical scoping/nesting (!!)
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -324,41 +357,25 @@ std::string MallocTagEngine::malloc_info()
 
 void __malloctag_track_allocation_from_glibc_override(MallocTagGlibcPrimitive_e type, void* newly_allocated_memory)
 {
-    if (g_perthread_malloc_hook_active) {
-        if (g_registry.has_main_thread_tree()) {
-            // MallocTagEngine::init() has been invoked, good;
-            // it means the tree for the main-thread is ready.
-            // Let's check if the tree of _this_ thread has been initialized or not:
-            if (UNLIKELY(!g_perthread_tree || !g_perthread_tree->is_ready())) {
-                HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
+    if (PrivateHelpers::EnsureTreeForThisThreadIsReady()) {
+        // FAST PATH:
 
-                g_perthread_tree = g_registry.register_secondary_thread_tree();
-                // NOTE: if we're out of memory, g_perthread_tree might be nullptr
-            }
-            // else: this thread has its tree already available... nothing to do
+        // NOTE:
+        // the glibc internal malloc() implementation will generally return a block bigger than what has
+        // been requested by the user, in order to satisfy the request very quickly.
+        // If we used the requested-size rather than the "actual" memory block size given by
+        // malloc_usable_size(), then our memory tracking computation would be off when tracking free()
+        // operations where we are _forced_ to use malloc_usable_size() API
+        size_t size = malloc_usable_size(newly_allocated_memory);
 
-            // FAST PATH:
-            if (g_perthread_tree && g_perthread_tree->is_ready()) {
+        g_perthread_tree->track_alloc_in_current_scope(type, size);
+    } else {
+        // see note above on why we use malloc_usable_size()
+        size_t size = malloc_usable_size(newly_allocated_memory);
 
-                // NOTE:
-                // the glibc internal malloc() implementation will generally return a block bigger than what has
-                // been requested by the user, in order to satisfy the request very quickly.
-                // If we used the requested-size rather than the "actual" memory block size given by
-                // malloc_usable_size(), then our memory tracking computation would be off when tracking free()
-                // operations where we are _forced_ to use malloc_usable_size() API
-                size_t size = malloc_usable_size(newly_allocated_memory);
-
-                g_perthread_tree->track_alloc_in_current_scope(type, size);
-            }
-        } else {
-            // see note above on why we use malloc_usable_size()
-            size_t size = malloc_usable_size(newly_allocated_memory);
-
-            // MallocTagEngine::init() has never been invoked... wait for that to happen
-            g_bytes_allocated_before_init += size;
-        }
+        // MallocTagEngine::init() has never been invoked... wait for that to happen
+        g_bytes_allocated_before_init += size;
     }
-    // else: hooks disabled: just behave as standard glibc malloc()
 }
 
 extern "C" {
