@@ -8,6 +8,19 @@
 
 int main(int argc, char** argv)
 {
+    // as soon as main() is entered, start malloc tag engine:
+    MallocTagEngine::init(10 /* just 10 nodes in this test! */, 3 /* just 3 levels in this test! */);
+
     ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    int ret = RUN_ALL_TESTS();
+
+    // dump stats in both JSON and graphviz formats... they might be useful to debug unit test failures
+    if (MallocTagEngine::write_stats())
+        std::cout << "Wrote malloctag stats on disk as " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << " and "
+                  << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
+
+    // decomment this is you want to have the time to look at this process still running with e.g. "top"
+    // sleep(100000);
+
+    return ret;
 }

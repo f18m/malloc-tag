@@ -5,7 +5,7 @@
 #include "malloc_tag.h"
 #include <iostream>
 #include <string.h>
-#include <unistd.h>
+#include <thread>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -46,18 +46,12 @@ void Level5()
     malloc(MALLOC_AT_LEVEL5); // this malloc will be accounted on the last-available scope, which is "Level3"
 }
 
-TEST(MallocTagTestsuite, TooManyLevels)
+void TooManyLevels_thread()
 {
-    int ret_code = 0;
-
-    // as soon as main() is entered, start malloc tag engine:
-    MallocTagEngine::init(MTAG_DEFAULT_MAX_TREE_NODES, 3 /* just 3 levels in this test! */);
-
-    // run some dummy memory allocations
+    // push levels into the tree of this thread:
     Level1();
 
     MallocTagStatMap_t mtag_stats = MallocTagEngine::collect_stats();
-
     // decomment to debug this unit test:
     // for (const auto& it : mtag_stats)
     //    std::cout << it.first << "=" << it.second << std::endl;
@@ -74,12 +68,12 @@ TEST(MallocTagTestsuite, TooManyLevels)
     k = MallocTagEngine::get_stat_key_prefix_for_thread() + "unit_tests.Level1.Level2";
     EXPECT_EQ(mtag_stats[k + ".nCallsTo_malloc"], 1);
     EXPECT_GE(mtag_stats[k + ".nBytesSelf"], MALLOC_AT_LEVEL2);
+}
 
-    // dump stats in both JSON and graphviz formats
-    if (MallocTagEngine::write_stats())
-        std::cout << "Wrote malloctag stats on disk as " << getenv(MTAG_STATS_OUTPUT_JSON_ENV) << " and "
-                  << getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV) << std::endl;
-
-    // decomment this is you want to have the time to look at this process still running with e.g. "top"
-    // sleep(100000);
+TEST(MallocTagTestsuite, TooManyLevels)
+{
+    // to ensure each unit test is as isolated as possible, execute it in its own thread context,
+    // so the malloc()s done by other unit tests will not interfere with the malloc tree of this unit test
+    std::thread isolated_thread(TooManyLevels_thread);
+    isolated_thread.join();
 }

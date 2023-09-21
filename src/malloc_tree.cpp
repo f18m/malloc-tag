@@ -217,4 +217,10 @@ void MallocTree::collect_stats_recursively_MAP(MallocTagStatMap_t& out)
 
     // recurse starting from root node:
     m_pRootNode->collect_stats_recursively_MAP(out, thisNodeName /* root prefix */);
+
+    // add general tree attributes to the map:
+    out[thisNodeName + ":.nTreeNodesInUse"] = m_nTreeNodesInUse;
+    out[thisNodeName + ":.nMaxTreeNodes"] = m_nMaxTreeNodes;
+    out[thisNodeName + ":.nPushNodeFailures"] = m_nPushNodeFailures;
+    out[thisNodeName + ":.nFreeTrackingFailed"] = m_nFreeTrackingFailed;
 }
