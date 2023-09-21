@@ -137,6 +137,11 @@ int main()
     // if you want to dig into the GNU libc malloc this can be useful:
     // std::cout << MallocTagEngine::malloc_info() << std::endl;
 
+    std::cout << "Human-friendly dump on stdout:" << std::endl;
+
+    std::string bigstr = MallocTagEngine::collect_stats(MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE);
+    std::cout << bigstr << std::endl;
+
     std::cout << "Bye!" << std::endl;
 
     return 0;

@@ -166,6 +166,16 @@ void MallocTree::collect_stats_recursively(
     // do a last recursive walk to encode all stats in JSON/Graphviz/etc format:
 
     switch (format) {
+    case MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE:
+        out += "** Thread [" + m_pRootNode->get_node_name() + "] with TID=" + std::to_string(m_nThreadID) + "\n";
+        if (m_nPushNodeFailures) {
+            out += "  WARNING: NOT ENOUGH NODES AVAILABLE FOR THE FULL TREE, RESULTS WILL BE INACCURATE/MISLEADING\n";
+            out += "  TreeNodesInUse/Max=" + std::to_string(m_nTreeNodesInUse) + "/" + std::to_string(m_nMaxTreeNodes);
+        }
+
+        m_pRootNode->collect_stats_recursively_HUMANFRIENDLY(out);
+        break;
+
     case MTAG_OUTPUT_FORMAT_JSON:
         JsonUtils::start_object(out, "tree_for_TID" + std::to_string(m_nThreadID));
 

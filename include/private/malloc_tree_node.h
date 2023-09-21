@@ -110,6 +110,7 @@ public:
 
     void collect_stats_recursively_JSON(std::string& out);
     void collect_stats_recursively_GRAPHVIZDOT(std::string& out);
+    void collect_stats_recursively_HUMANFRIENDLY(std::string& out);
     void collect_stats_recursively_MAP(MallocTagStatMap_t& out, const std::string& parent_kpi_prefix);
 
     size_t compute_bytes_totals_recursively();
@@ -128,6 +129,13 @@ public:
     // IMPORTANT: total bytes will be zero unless compute_bytes_totals_recursively() has been invoked
     // previously on this tree node
     size_t get_total_bytes() const { return m_nBytesTotal; }
+
+    size_t get_avg_self_bytes_per_visit() const
+    {
+        if (m_nTimesEnteredAndExited)
+            return m_nBytesSelf / m_nTimesEnteredAndExited;
+        return 0;
+    }
 
     float get_weight_percentage() const
     {

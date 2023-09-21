@@ -110,6 +110,19 @@ void MallocTreeRegistry::collect_stats(
     size_t vmRSSNowBytes = MallocTagEngine::get_linux_vmsize_in_bytes();
 
     switch (format) {
+    case MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE: {
+        stats_str += "Started profiling on " + std::string(tmStartProfilingStr) + "\n";
+        stats_str += "This snapshot done on " + std::string(tmCurrentStr) + "\n";
+        stats_str += "Process VmSize=" + GraphVizUtils::pretty_print_bytes(vmSizeNowBytes) + "\n";
+        stats_str += "Process VmRSS=" + GraphVizUtils::pretty_print_bytes(vmRSSNowBytes) + "\n";
+
+        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
+        for (size_t i = 0; i < num_trees; i++) {
+            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
+            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
+        }
+    } break;
+
     case MTAG_OUTPUT_FORMAT_JSON: {
         JsonUtils::start_document(stats_str);
         JsonUtils::append_field(stats_str, "PID", getpid());

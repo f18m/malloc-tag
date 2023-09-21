@@ -130,6 +130,39 @@ void MallocTreeNode::collect_stats_recursively_JSON(std::string& out)
     JsonUtils::end_object(out); // close the whole node object
 }
 
+#define MINIMAL_BYTES_TOTAL_THRESHOLD 1024
+#define MINIMAL_WEIGHT_PERC_THRESHOLD 1
+
+void MallocTreeNode::collect_stats_recursively_HUMANFRIENDLY(std::string& out)
+{
+    std::string b((m_nTreeLevel)*2, ' ');
+    std::string i((m_nTreeLevel + 1) * 2, ' ');
+
+    float w = get_weight_percentage();
+
+    // try not to be too verbose:
+    out += b + "scope_" + get_node_name() + "\n";
+    if (m_nBytesTotal >= MINIMAL_BYTES_TOTAL_THRESHOLD && w >= MINIMAL_WEIGHT_PERC_THRESHOLD) {
+        out += i + "nBytesTotal/Self=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + "/"
+            + GraphVizUtils::pretty_print_bytes(m_nBytesSelf) + "\n";
+        out += i + "nTimesEnteredAndExited=" + std::to_string(m_nTimesEnteredAndExited) + "\n";
+        out += i + "nBytesSelfPerVisit=" + GraphVizUtils::pretty_print_bytes(get_avg_self_bytes_per_visit()) + "\n";
+        out += i + "nWeightPercentage=" + get_weight_percentage_str();
+        if (w >= 70) {
+            if (m_nBytesTotal != m_nBytesSelf)
+                out += "\t\t\t<<<- hot path";
+            else
+                out += "\t\t\t<<<- hot leaf";
+        }
+        out += "\n";
+
+        for (unsigned int i = 0; i < m_nChildrens; i++)
+            m_pChildren[i]->collect_stats_recursively_HUMANFRIENDLY(out);
+    } else {
+        out += i + "[hidden: below threshold of " + std::to_string(MINIMAL_BYTES_TOTAL_THRESHOLD) + "bytes (total)]\n";
+    }
+}
+
 void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
 {
     std::string thisNodeName = get_node_name();
@@ -147,7 +180,8 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
         weight = "total=self=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " (" + get_weight_percentage_str()
             + "%)";
 
-    weight += "\\nentered+leaved=" + std::to_string(m_nTimesEnteredAndExited) + "times";
+    weight += "\\nvisited times=" + std::to_string(m_nTimesEnteredAndExited);
+    weight += "\\nself memory per visit=" + GraphVizUtils::pretty_print_bytes(get_avg_self_bytes_per_visit());
 
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
         if (m_nAllocationsSelf[i])

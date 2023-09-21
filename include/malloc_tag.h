@@ -96,6 +96,7 @@ void* pvalloc(size_t __size) __THROW __attribute_malloc__;
 enum MallocTagOutputFormat_e {
     MTAG_OUTPUT_FORMAT_JSON,
     MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT,
+    MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE,
 
     MTAG_OUTPUT_FORMAT_ALL
 };

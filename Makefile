@@ -39,6 +39,9 @@ endif
 LIB_OBJ = $(subst .cpp,.o,$(LIB_SRC))
 LIB_VER = 1
 
+SHOW_JSON=0
+SHOW_DOT=0
+
 
 # Targets
 
@@ -60,14 +63,19 @@ minimal_example: $(BINS)
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
 		examples/minimal/minimal
+	@dot -Tsvg -O $(PWD)/examples/minimal/minimal_stats.dot
+ifeq ($(SHOW_JSON),1)
 	@echo
 	@echo "JSON of output stats:"
 	@jq . $(PWD)/examples/minimal/minimal_stats.json
 	@echo
+endif
+ifeq ($(SHOW_DOT),1)
+	@echo
 	@echo "Graphviz DOT output stats (copy-paste that into https://dreampuf.github.io/):"
 	@cat $(PWD)/examples/minimal/minimal_stats.dot
 	@echo
-	@dot -Tsvg -O $(PWD)/examples/minimal/minimal_stats.dot
+endif
 
 # stracing is Always a Good Thing to learn more about basic things like e.g. dynamic linker, mmap(), brk(), etc
 minimal_strace: $(BINS)
@@ -96,20 +104,31 @@ multithread_example: $(BINS)
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
 		examples/multithread/multithread
+	@dot -Tsvg -O $(PWD)/examples/multithread/multithread_stats.dot
+ifeq ($(SHOW_JSON),1)
 	@echo
 	@echo "JSON of output stats:"
 	@jq . $(PWD)/examples/multithread/multithread_stats.json
 	@echo
+endif
+ifeq ($(SHOW_DOT),1)
+	@echo
 	@echo "Graphviz DOT output stats (copy-paste that into https://dreampuf.github.io/):"
 	@cat $(PWD)/examples/multithread/multithread_stats.dot
 	@echo
-	@dot -Tsvg -O $(PWD)/examples/multithread/multithread_stats.dot
+endif
 
 multithread_strace: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
 		strace -e trace=%memory,%file -t -f \
+		examples/multithread/multithread
+multithread_debug: $(BINS)
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
+		gdb \
 		examples/multithread/multithread
 
 
@@ -150,7 +169,7 @@ benchmarks:
 	@echo TODO
 
 clean:
-	find -name *.so -exec rm {} \;
+	find -name *.so* -exec rm {} \;
 	find -name *.o -exec rm {} \;
 	rm -f $(BINS)
 
