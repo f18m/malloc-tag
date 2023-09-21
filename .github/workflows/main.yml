@@ -14,7 +14,7 @@ jobs:
     # install deps
     - uses: actions/checkout@v3
     - name: install debian-packaged dependencies
-      run: sudo apt install -y jq clang-format graphviz libgoogle-perftools-dev libunwind-dev
+      run: sudo apt install -y jq clang-format graphviz libgoogle-perftools-dev libunwind-dev libgtest-dev
 
     - name: build malloc-tag
       run: make all

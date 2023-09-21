@@ -163,6 +163,7 @@ Apache 2.0 License
 * install signal hook on initialization
 * for multithreading, have the total referred to the GLOBAL software mem usage? or both?
 * output data in a human-friendly std::string format for always-on applications as fast debug technique
+* move malloctag_and_tcmalloc example to "tests" folder
 
 # FUTURE
 
