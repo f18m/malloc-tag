@@ -90,6 +90,7 @@ void MallocTreeNode::collect_stats_recursively_MAP(MallocTagStatMap_t& out, cons
     // provide a programmer-friendly way to get stats out of a "flat dictionary":
     out[fullName + ".nBytesTotal"] = m_nBytesTotal;
     out[fullName + ".nBytesSelf"] = m_nBytesSelf;
+    out[fullName + ".nTimesEnteredAndExited"] = m_nTimesEnteredAndExited;
 
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++) {
         std::string kpiName = fullName + ".nCallsTo_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i);
@@ -109,6 +110,7 @@ void MallocTreeNode::collect_stats_recursively_JSON(std::string& out)
 
     JsonUtils::append_field(out, "nBytesTotal", m_nBytesTotal);
     JsonUtils::append_field(out, "nBytesSelf", m_nBytesSelf);
+    JsonUtils::append_field(out, "nTimesEnteredAndExited", m_nTimesEnteredAndExited);
     JsonUtils::append_field(out, "nWeightPercentage", get_weight_percentage_str());
 
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
@@ -144,6 +146,8 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
         // shorten the label:
         weight = "total=self=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " (" + get_weight_percentage_str()
             + "%)";
+
+    weight += "\\nentered+leaved=" + std::to_string(m_nTimesEnteredAndExited) + "times";
 
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
         if (m_nAllocationsSelf[i])

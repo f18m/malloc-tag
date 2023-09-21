@@ -68,6 +68,7 @@ public:
     {
         m_nBytesTotal = 0;
         m_nBytesSelf = 0;
+        m_nTimesEnteredAndExited = 0;
         for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
             m_nAllocationsSelf[i] = 0;
         m_nWeightTotal = 0;
@@ -104,6 +105,8 @@ public:
         // this is very suspicious and should never happen
         return false;
     }
+
+    void track_node_leave() { m_nTimesEnteredAndExited++; }
 
     void collect_stats_recursively_JSON(std::string& out);
     void collect_stats_recursively_GRAPHVIZDOT(std::string& out);
@@ -166,6 +169,7 @@ private:
     size_t m_nBytesTotal; // Allocated bytes by this node and ALL its descendant nodes. Computed at "stats collection
                           // time".
     size_t m_nBytesSelf; // Allocated bytes only for THIS node.
+    size_t m_nTimesEnteredAndExited; // How many times this malloc tree node has
     size_t m_nAllocationsSelf[MTAG_GLIBC_PRIMITIVE_MAX]; // The number of allocations for this node.
     unsigned int m_nTreeLevel; // How deep is located this node in the tree?
     size_t m_nWeightTotal; // Weight of this node expressed as MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
