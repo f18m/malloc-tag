@@ -75,11 +75,9 @@ cd malloc-tag
 make && make install
 ```
 
-2) add "-lmalloc_tag" to your C/C++ project linker flags in order to link against malloc-tag library
+2) add "-lmalloc_tag" to your C/C++ project linker flags in order to link against malloc-tag library (see caveat about tcmalloc below)
 
-3) if your C/C++ project is using tcmalloc or jemalloc: disable them... malloc-tag has been tested only with glibc stock allocator
-
-4) add malloctag initialization as close as possible to the entrypoint of your application, e.g. as first instruction in your `main()`, using:
+3) add malloctag initialization as close as possible to the entrypoint of your application, e.g. as first instruction in your `main()`, using:
 
 ```
 #include <malloc_tag.h>
@@ -90,7 +88,7 @@ int main() {
 }
 ```
 
-5) whenever you want a snapshot of the memory profiling results to be written, invoke the API to write results on disk:
+4) whenever you want a snapshot of the memory profiling results to be written, invoke the API to write results on disk:
 
 ```
 MallocTagEngine::write_stats()
@@ -99,7 +97,7 @@ MallocTagEngine::write_stats()
 This function might be placed at the very end of your main() or any other exit point. In alternative it can be hooked to a signal e.g. SIGUSR1 so that the
 you will be able to write the statistics whenever you want at runtime.
 
-6) optional: start by adding a few instances of MallocTagScope to "tag" the parts of your application which you believe are the most memory-hungry portions:
+5) optional: start by adding a few instances of MallocTagScope to "tag" the parts of your application which you believe are the most memory-hungry portions:
 
 ```
 MallocTagScope nestedMallocScope("someInterestingPart");
@@ -120,6 +118,15 @@ dot -Tsvg -O ${MTAG_STATS_OUTPUT_GRAPHVIZ_DOT}
 ```
 
 Then open the resulting SVG file with any suitable viewer.
+
+
+## TcMalloc integration
+
+If your C/C++ project is using [tcmalloc](https://github.com/google/tcmalloc) that's fine.
+malloc-tag has been tested together with tcmalloc with the caveat that the "-lmalloc_tag" library must be provided to the linker BEFORE the "-ltcmalloc" library is provided. 
+
+As explained in the (Overview)[#overview] section
+this will work thanks to ELF interposition: the malloc() imeplementation of malloc-tag will be used and will use the "tcmalloc" malloc() to carry out the actual memory allocation.
 
 
 # Environment variables
