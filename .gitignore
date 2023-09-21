@@ -4,4 +4,7 @@ examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
 examples/*/*.o
 src/libmalloc_tag.so*
 src/*.o
-
+tests/*.o
+tests/*.json
+tests/*.dot
+tests/unit_tests

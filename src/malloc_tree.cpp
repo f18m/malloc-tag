@@ -89,13 +89,12 @@ bool MallocTree::init(
     return true;
 }
 
-void MallocTree::push_new_node(const char* name) // must be malloc-free
+bool MallocTree::push_new_node(const char* name) // must be malloc-free
 {
     if (UNLIKELY(m_pCurrentNode->get_tree_level() == m_nMaxTreeLevels)) {
         // reached max depth level... cannot push anymore
         m_nPushNodeFailures++;
-        m_bLastPushWasSuccessful = false;
-        return;
+        return false; // do not invoke pop_last_node() since this push has failed
     }
 
     // from this point onward, we need to be able to read the tree structure (our children)
@@ -106,8 +105,7 @@ void MallocTree::push_new_node(const char* name) // must be malloc-free
     if (n) {
         // this branch of the tree already exists, just move the cursor:
         m_pCurrentNode = n;
-        m_bLastPushWasSuccessful = true;
-        return;
+        return true;
     }
 
     // this branch of the tree needs to be created:
@@ -115,8 +113,7 @@ void MallocTree::push_new_node(const char* name) // must be malloc-free
     if (UNLIKELY(!n)) {
         // memory pool is full... memory profiling results will be INCOMPLETE and possibly MISLEADING:
         m_nPushNodeFailures++;
-        m_bLastPushWasSuccessful = false;
-        return;
+        return false; // do not invoke pop_last_node() since this push has failed
     }
 
     m_nTreeNodesInUse++; // successfully obtained a new node from the mempool
@@ -129,27 +126,23 @@ void MallocTree::push_new_node(const char* name) // must be malloc-free
 
         // and record this failure:
         m_nPushNodeFailures++;
-        m_bLastPushWasSuccessful = false;
-        return;
+        return false; // do not invoke pop_last_node() since this push has failed
     }
 
     // new node ready, move the cursor:
     m_pCurrentNode = n;
-    m_bLastPushWasSuccessful = true;
     m_nTreeLevels = std::max(m_nTreeLevels, m_pCurrentNode->get_tree_level());
+
+    return true;
 }
 
 void MallocTree::pop_last_node() // must be malloc-free
 {
-    if (m_bLastPushWasSuccessful) {
-        std::lock_guard<std::mutex> guard(m_lockTreeStructure);
-        MallocTreeNode* n = m_pCurrentNode->get_parent();
-        assert(n); // if n == NULL it means m_pCurrentNode is pointing to the tree root... cannot pop... this is a
-                   // logical mistake...
-        m_pCurrentNode = n;
-    }
-    // else: the node pointer has not been moved by last push_new_node() so we don't need to really pop the node
-    // pointer
+    std::lock_guard<std::mutex> guard(m_lockTreeStructure);
+    MallocTreeNode* n = m_pCurrentNode->get_parent();
+    assert(n); // if n == NULL it means m_pCurrentNode is pointing to the tree root... cannot pop... this is a
+               // logical mistake...
+    m_pCurrentNode = n;
 }
 
 void MallocTree::collect_stats_recursively(

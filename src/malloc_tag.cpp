@@ -111,7 +111,8 @@ MallocTagScope::MallocTagScope(const char* tag_name)
     // VERY IMPORTANT: all code running in this function must be malloc-free
     assert(g_perthread_tree
         && g_perthread_tree->is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
-    g_perthread_tree->push_new_node(tag_name);
+
+    m_bLastPushWasSuccessful = g_perthread_tree->push_new_node(tag_name);
 }
 
 MallocTagScope::MallocTagScope(const char* class_name, const char* function_name)
@@ -126,7 +127,7 @@ MallocTagScope::MallocTagScope(const char* class_name, const char* function_name
     strncat(scopeName, "::", MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
     strncat(scopeName, function_name, MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
 
-    g_perthread_tree->push_new_node(scopeName);
+    m_bLastPushWasSuccessful = g_perthread_tree->push_new_node(scopeName);
 }
 
 MallocTagScope::~MallocTagScope()
@@ -135,7 +136,11 @@ MallocTagScope::~MallocTagScope()
     // VERY IMPORTANT: all code running in this function must be malloc-free
     assert(g_perthread_tree
         && g_perthread_tree->is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
-    g_perthread_tree->pop_last_node();
+
+    if (m_bLastPushWasSuccessful)
+        g_perthread_tree->pop_last_node();
+    // else: the node pointer has not been moved by last push_new_node() so we don't need to really pop the node
+    // pointer... otherwise we break the logical scoping/nesting (!!)
 }
 
 //------------------------------------------------------------------------------

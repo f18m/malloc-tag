@@ -25,12 +25,36 @@
 // Constants
 //------------------------------------------------------------------------------
 
+/*
+    For most of the MallocTagEngine functions will accept either explicit parameters or, if these are not provided,
+    the values will be read from the following environment variables.
+    This is handy for quick tests since there is no need to recompile the software: you just change a value of an env
+   var and relaunch the software.
+*/
 #define MTAG_STATS_OUTPUT_JSON_ENV "MTAG_STATS_OUTPUT_JSON"
 #define MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV "MTAG_STATS_OUTPUT_GRAPHVIZ_DOT"
 
+/*
+    Each MallocTree used to track allocations done by a specific thread context will be able to handle only a
+    certain number of "memory allocation scopes", since each scope translates to 1node inside the tree.
+    By default a MallocTree will support up to MTAG_DEFAULT_MAX_TREE_NODES nodes.
+    There is no dynamic growth of the MallocTree in order to avoid corner cases where e.g. MallocTagScope tries
+    to push a crazy number of nodes in the tree and malloc-tag ends up eating a lot of memory. malloc-tag is
+    designed to be a "lightweight" memory profiler and its own memory consumption should be minimal.
+*/
 #define MTAG_DEFAULT_MAX_TREE_NODES 256
-#define MTAG_DEFAULT_MAX_TREE_LEVELS 4
 
+/*
+    The max number of tree levels is a safety threshold to avoid corner cases like e.g. in case a MallocTagScope
+    is used inside a recursive function that invokes itself thousands of time.
+    This limit is artificial: the only true limit for malloc-tag is the number of pre-allocated nodes
+    (see MTAG_DEFAULT_MAX_TREE_NODES).
+*/
+#define MTAG_DEFAULT_MAX_TREE_LEVELS 256
+
+/*
+    Output options supported by MallocTagEngine::write_stats()
+*/
 #define MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE "uniquetree"
 
 //------------------------------------------------------------------------------
@@ -168,4 +192,7 @@ public:
 
     // pop by 1 level the current per-thread cursor
     ~MallocTagScope();
+
+private:
+    bool m_bLastPushWasSuccessful;
 };

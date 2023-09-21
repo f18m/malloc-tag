@@ -50,7 +50,7 @@ public:
     // Malloc "scope" manipulation API
     //------------------------------------------------------------------------------
 
-    void push_new_node(const char* name); // must be malloc-free
+    bool push_new_node(const char* name); // must be malloc-free; if false is returned do NOT invoke pop_last_node()
     void pop_last_node(); // must be malloc-free
     void track_alloc_in_current_scope(MallocTagGlibcPrimitive_e type, size_t nBytes)
     {
@@ -109,7 +109,6 @@ private:
 
     // last push status:
     unsigned int m_nPushNodeFailures = 0;
-    bool m_bLastPushWasSuccessful = false;
 
     // tree status:
     unsigned int m_nTreeNodesInUse = 0;
