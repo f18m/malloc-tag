@@ -15,9 +15,6 @@
 
 void TooManyNodes_thread()
 {
-    malloc(1); // FIXME: we need at least 1 malloc in the new thread to initialize malloc-tag (!!!) before first
-               // MallocTagScope is created
-
     // push nodes into the tree for this thread
     for (unsigned int i = 0; i < 20; i++) {
         MallocTagScope m(("dummy" + std::to_string(i)).c_str());
