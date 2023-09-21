@@ -22,7 +22,7 @@
 #include <cstring>
 #include <unistd.h>
 
-#define MAX_THREADS 128
+#define MTAG_MAX_TREES 128
 
 //------------------------------------------------------------------------------
 // MallocTreeRegistry
@@ -38,7 +38,7 @@ public:
     MallocTree* register_main_tree(size_t max_tree_nodes, size_t max_tree_levels); // triggers some mallocs!
     MallocTree* register_secondary_thread_tree(); // triggers some mallocs!
 
-    size_t get_total_memusage(); // FIXME: rename to get_total_memusage_in_bytes()
+    size_t get_total_memusage_in_bytes();
 
     bool has_main_thread_tree() { return m_nMallocTrees > 0; }
 
@@ -55,7 +55,7 @@ public:
 protected:
 private:
     // the registry is the OWNER of m_nMallocTrees whose pointers get stored in m_pMallocTreeRegistry[]
-    MallocTree* m_pMallocTreeRegistry[MAX_THREADS];
+    MallocTree* m_pMallocTreeRegistry[MTAG_MAX_TREES];
     std::atomic_uint m_nMallocTrees;
 
     // records the time the memory profiling has started:

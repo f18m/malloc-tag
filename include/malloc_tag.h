@@ -116,8 +116,9 @@ public:
     // The main API to collect all results in JSON/GRAPHVIZ-DOT format
     // NOTE: invoking this function will indeed trigger several memory allocation on its own (!!!);
     //       such memory allocations are EXCLUDED from the stats collected by MallocTagEngine
-    static std::string collect_stats(
-        MallocTagOutputFormat_e format, const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
+    static std::string collect_stats( // fn
+        MallocTagOutputFormat_e format, // fn
+        const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
 
     // Another API to collect all stats in form of a flat map/dictionary.
     // This API provides a machine-friendly structured view on all the memory allocation stats for all the trees
@@ -139,15 +140,29 @@ public:
     // Returns the prefix of the keys contained in the MallocTagStatMap_t that are associated with a particular
     // thread of this application. If the provided thread_id is zero, the prefix for current thread is returned.
     // Concatenate the returned string with "." and the name of a KPI to access MallocTagStatMap_t contents.
+    // This API is meant to be used in tandem with the collect_stats() returning a MallocTagStatMap_t type.
     static std::string get_stat_key_prefix_for_thread(pid_t thread_id = 0);
 
     // Write memory profiler stats into a file on disk;
     // if an empty string is passed, the full path will be taken from the environment variable
     // MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV, depending on the "format" argument.
     // This API is a shorthand for collect_stats() + some file opening/writing operations.
-    static bool write_stats(MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL, const std::string& fullpath = "",
+    static bool write_stats( // fn
+        MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL, // fn
+        const std::string& fullpath = "", // fn
         const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
 
+    // This API returns one of the limits associated to the malloc-tag implementation.
+    // This API takes a string to make sure no ABI will be broken if in future new limits are added (or old ones are
+    // removed). A return value of zero means the provided string is invalid. Available limit names are:
+    //
+    // "max_trees"
+    // "max_tree_nodes"
+    // "max_tree_levels"
+    // "max_node_siblings"
+    static size_t get_limit(const std::string& limit_name);
+
+public: // generic utilities, not strictly related to malloc-tag itself
     // Get all virtual memory "associated" by Linux to this process.
     // This is a Linux-specific utility.
     // This utility function has nothing to do with malloctag profiler but it can be used to get the

@@ -96,6 +96,9 @@ public:
         return 0;
     }
 
+    size_t get_max_nodes() const { return m_nMaxTreeNodes; }
+    size_t get_max_levels() const { return m_nMaxTreeLevels; }
+
 private:
     fmpool_t(MallocTreeNode) * m_pNodePool = NULL;
     MallocTreeNode* m_pRootNode = NULL; // created by the init()
