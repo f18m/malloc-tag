@@ -13,11 +13,26 @@
 #define MALLOC_AT_LEVEL2 26
 #define MALLOC_AT_LEVEL5 1999
 
+void Push10Nodes(int prefix)
+{
+    for (unsigned int i = 0; i < 10; i++) {
+        MallocTagScope m(("dummy" + std::to_string(prefix) + "/" + std::to_string(i)).c_str());
+    }
+}
+
 void TooManyNodes_thread()
 {
+    size_t max_nodes = MallocTagEngine::get_limit("max_tree_nodes");
+    EXPECT_GT(max_nodes, 0);
+
     // push nodes into the tree for this thread
-    for (unsigned int i = 0; i < 20; i++) {
+    // but do that distributing the nodes in a 2-level hierarchy to avoid
+    // - hitting the limit on max_siblings
+    // - hitting the limit on max_tree_levels
+    // since here we want to test the max_nodes limit
+    for (unsigned int i = 0; i < max_nodes / 10; i++) {
         MallocTagScope m(("dummy" + std::to_string(i)).c_str());
+        Push10Nodes(i);
     }
 
     MallocTagStatMap_t mtag_stats = MallocTagEngine::collect_stats();
@@ -30,11 +45,11 @@ void TooManyNodes_thread()
 
     // CHECK1: number of reported nodes is exactly 10 (see main.cpp)
     std::string k = MallocTagEngine::get_stat_key_prefix_for_thread();
-    EXPECT_EQ(mtag_stats[k + ".nTreeNodesInUse"], 10);
+    EXPECT_EQ(mtag_stats[k + ".nTreeNodesInUse"], max_nodes);
 
-    // CHECK2: the last entry in the tree should be "dummy8", there should be no "dummy9"
-    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.dummy8.nBytesSelf") != mtag_stats.end());
-    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.dummy9.nBytesSelf") == mtag_stats.end());
+    // CHECK2: the last entry in the tree should be "dummy4", there should be no "dummy5"
+    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.dummy4.nBytesSelf") != mtag_stats.end());
+    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.dummy5.nBytesSelf") == mtag_stats.end());
 }
 
 TEST(MallocTagTestsuite, TooManyNodes)

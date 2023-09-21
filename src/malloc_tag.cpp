@@ -225,7 +225,7 @@ std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format, const
     return stats_str;
 }
 
-bool __internal_write_stats(
+static bool __internal_write_stats(
     MallocTagOutputFormat_e format, const std::string& fullpath, const std::string& output_options)
 {
     bool bwritten = false;
@@ -284,7 +284,29 @@ bool MallocTagEngine::write_stats(
     return bwritten;
 }
 
-int parseLine(char* line)
+size_t MallocTagEngine::get_limit(const std::string& limit_name)
+{
+    if (limit_name == "max_trees")
+        return MTAG_MAX_TREES; // this is fixed and cannot be changed right now
+    if (limit_name == "max_tree_nodes") {
+        MallocTree* p = g_registry.get_main_thread_tree();
+        if (p)
+            return p->get_max_nodes();
+        // else MallocTagEngine::init() has not been invoked yet... return 0
+    }
+    if (limit_name == "max_tree_levels") {
+        MallocTree* p = g_registry.get_main_thread_tree();
+        if (p)
+            return p->get_max_levels();
+        // else MallocTagEngine::init() has not been invoked yet... return 0
+    }
+    if (limit_name == "max_node_siblings")
+        return MTAG_MAX_CHILDREN_PER_NODE; // this is fixed and cannot be changed right now
+
+    return 0;
+}
+
+static int __parseLine(char* line)
 {
     // This assumes that a digit will be found and the line ends in " Kb".
     int i = strlen(line);
@@ -311,7 +333,7 @@ size_t MallocTagEngine::get_linux_vmsize_in_bytes()
 
     while (fgets(line, sizeof(line), file) != NULL) {
         if (strncmp(line, "VmSize:", 7) == 0) {
-            result = parseLine(line);
+            result = __parseLine(line);
             break;
         }
     }
@@ -355,7 +377,8 @@ std::string MallocTagEngine::malloc_info()
 // set to 1 to debug if the actual application malloc()/free() are properly hooked or not
 #define DEBUG_HOOKS 0
 
-void __malloctag_track_allocation_from_glibc_override(MallocTagGlibcPrimitive_e type, void* newly_allocated_memory)
+static void __malloctag_track_allocation_from_glibc_override(
+    MallocTagGlibcPrimitive_e type, void* newly_allocated_memory)
 {
     if (PrivateHelpers::EnsureTreeForThisThreadIsReady()) {
         // FAST PATH:

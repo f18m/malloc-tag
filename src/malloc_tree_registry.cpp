@@ -53,7 +53,7 @@ MallocTree* MallocTreeRegistry::register_secondary_thread_tree()
 {
     // thread-safe code
     size_t reservedIdx = m_nMallocTrees.fetch_add(1);
-    if (reservedIdx >= MAX_THREADS) {
+    if (reservedIdx >= MTAG_MAX_TREES) {
         // we have reached the max number of trees/threads for this application!
         return nullptr;
     }
@@ -69,7 +69,7 @@ MallocTree* MallocTreeRegistry::register_secondary_thread_tree()
     return t;
 }
 
-size_t MallocTreeRegistry::get_total_memusage()
+size_t MallocTreeRegistry::get_total_memusage_in_bytes()
 {
     // this code is thread-safe because trees can only get registered, never removed:
     size_t num_trees = m_nMallocTrees.load();
@@ -123,7 +123,7 @@ void MallocTreeRegistry::collect_stats(
         }
 
         JsonUtils::append_field(stats_str, "nBytesAllocBeforeInit", g_bytes_allocated_before_init);
-        JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage());
+        JsonUtils::append_field(stats_str, "nBytesMallocTagSelfUsage", get_total_memusage_in_bytes());
 
         // VmSizeNow and nTotalTrackedBytes should be similar ideally. In practice nTotalTrackedBytes>>VmSizeNow
         // because free() operations do not reduce the value of nTotalTrackedBytes but they can potentially reduce
@@ -149,8 +149,8 @@ void MallocTreeRegistry::collect_stats(
         std::vector<std::string> labels;
         labels.push_back("Memory allocated before MallocTag initialization = "
             + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
-        labels.push_back(
-            "Memory allocated by MallocTag itself =" + GraphVizUtils::pretty_print_bytes(get_total_memusage()));
+        labels.push_back("Memory allocated by MallocTag itself ="
+            + GraphVizUtils::pretty_print_bytes(get_total_memusage_in_bytes()));
         labels.push_back("Total memory tracked by MallocTag across all threads ="
             + GraphVizUtils::pretty_print_bytes(tot_tracked_mem_bytes));
         labels.push_back("VmSizeNow = " + GraphVizUtils::pretty_print_bytes(vmSizeNow));
