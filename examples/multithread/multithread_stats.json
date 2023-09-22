@@ -1,14 +1,14 @@
-{"PID": 2514264,
-"tmStartProfiling": "2023-09-22 @ 11:11:09 CEST",
-"tmCurrentSnapshot": "2023-09-22 @ 11:11:09 CEST",
-"tree_for_TID2514264": {"TID": 2514264,
+{"PID": 2524536,
+"tmStartProfiling": "2023-09-22 @ 11:52:28 CEST",
+"tmCurrentSnapshot": "2023-09-22 @ 11:52:28 CEST",
+"tree_for_TID2524536": {"TID": 2524536,
 "ThreadName": "multithread",
 "nTreeLevels": 0,
 "nTreeNodesInUse": 1,
 "nMaxTreeNodes": 256,
 "nPushNodeFailures": 0,
 "nFreeTrackingFailed": 0,
-"nVmSizeAtCreation": 20428000,
+"nVmSizeAtCreation": 20432000,
 "scope_multithread": {"nBytesTotalAllocated": 6712,
 "nBytesSelfAllocated": 6712,
 "nBytesSelfFreed": 4608,
@@ -21,71 +21,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID2514265": {"TID": 2514265,
-"ThreadName": "ExampleThr/0",
-"nTreeLevels": 3,
-"nTreeNodesInUse": 5,
-"nMaxTreeNodes": 256,
-"nPushNodeFailures": 0,
-"nFreeTrackingFailed": 0,
-"nVmSizeAtCreation": 136388608,
-"scope_ExampleThr/0": {"nBytesTotalAllocated": 144168,
-"nBytesSelfAllocated": 40,
-"nBytesSelfFreed": 64,
-"nTimesEnteredAndExited": 0,
-"nWeightPercentage": "100.00",
-"nCallsTo_malloc": 1,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 3,
-"nestedScopes": {"scope_ExampleThread": {"nBytesTotalAllocated": 144128,
-"nBytesSelfAllocated": 24,
-"nBytesSelfFreed": 0,
-"nTimesEnteredAndExited": 1,
-"nWeightPercentage": "99.97",
-"nCallsTo_malloc": 1,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 0,
-"nestedScopes": {"scope_FuncA": {"nBytesTotalAllocated": 72104,
-"nBytesSelfAllocated": 104,
-"nBytesSelfFreed": 0,
-"nTimesEnteredAndExited": 1,
-"nWeightPercentage": "50.01",
-"nCallsTo_malloc": 1,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 0,
-"nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 72000,
-"nBytesSelfAllocated": 72000,
-"nBytesSelfFreed": 72000,
-"nTimesEnteredAndExited": 1,
-"nWeightPercentage": "49.94",
-"nCallsTo_malloc": 1000,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 1000,
-"nestedScopes": {}
-}
-}
-}
-,"scope_FuncB": {"nBytesTotalAllocated": 72000,
-"nBytesSelfAllocated": 72000,
-"nBytesSelfFreed": 72000,
-"nTimesEnteredAndExited": 1,
-"nWeightPercentage": "49.94",
-"nCallsTo_malloc": 1000,
-"nCallsTo_realloc": 0,
-"nCallsTo_calloc": 0,
-"nCallsTo_free": 1000,
-"nestedScopes": {}
-}
-}
-}
-}
-}
-}
-,"tree_for_TID2514266": {"TID": 2514266,
+,"tree_for_TID2524538": {"TID": 2524538,
 "ThreadName": "ExampleThr/1",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 5,
@@ -149,7 +85,71 @@
 }
 }
 }
-,"tree_for_TID2514267": {"TID": 2514267,
+,"tree_for_TID2524537": {"TID": 2524537,
+"ThreadName": "ExampleThr/0",
+"nTreeLevels": 3,
+"nTreeNodesInUse": 5,
+"nMaxTreeNodes": 256,
+"nPushNodeFailures": 0,
+"nFreeTrackingFailed": 0,
+"nVmSizeAtCreation": 136388608,
+"scope_ExampleThr/0": {"nBytesTotalAllocated": 144168,
+"nBytesSelfAllocated": 40,
+"nBytesSelfFreed": 64,
+"nTimesEnteredAndExited": 0,
+"nWeightPercentage": "100.00",
+"nCallsTo_malloc": 1,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 3,
+"nestedScopes": {"scope_ExampleThread": {"nBytesTotalAllocated": 144128,
+"nBytesSelfAllocated": 24,
+"nBytesSelfFreed": 0,
+"nTimesEnteredAndExited": 1,
+"nWeightPercentage": "99.97",
+"nCallsTo_malloc": 1,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 0,
+"nestedScopes": {"scope_FuncA": {"nBytesTotalAllocated": 72104,
+"nBytesSelfAllocated": 104,
+"nBytesSelfFreed": 0,
+"nTimesEnteredAndExited": 1,
+"nWeightPercentage": "50.01",
+"nCallsTo_malloc": 1,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 0,
+"nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 72000,
+"nBytesSelfAllocated": 72000,
+"nBytesSelfFreed": 72000,
+"nTimesEnteredAndExited": 1,
+"nWeightPercentage": "49.94",
+"nCallsTo_malloc": 1000,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 1000,
+"nestedScopes": {}
+}
+}
+}
+,"scope_FuncB": {"nBytesTotalAllocated": 72000,
+"nBytesSelfAllocated": 72000,
+"nBytesSelfFreed": 72000,
+"nTimesEnteredAndExited": 1,
+"nWeightPercentage": "49.94",
+"nCallsTo_malloc": 1000,
+"nCallsTo_realloc": 0,
+"nCallsTo_calloc": 0,
+"nCallsTo_free": 1000,
+"nestedScopes": {}
+}
+}
+}
+}
+}
+}
+,"tree_for_TID2524539": {"TID": 2524539,
 "ThreadName": "NonInstrThr",
 "nTreeLevels": 0,
 "nTreeNodesInUse": 1,
@@ -169,7 +169,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID2514268": {"TID": 2514268,
+,"tree_for_TID2524540": {"TID": 2524540,
 "ThreadName": "YetAnThr/2",
 "nTreeLevels": 2,
 "nTreeNodesInUse": 3,
@@ -211,8 +211,8 @@
 }
 }
 }
-,"nBytesAllocBeforeInit": 465416,
-"nBytesMallocTagSelfUsage": 348280,
-"vmSizeNowBytes": 241624000,
-"vmRSSNowBytes": 241624000,
-"nTotalTrackedBytes": 567270760}
+,"nBytesAllocBeforeInit": 475656,
+"nBytesMallocTagSelfUsage": 358520,
+"vmSizeNowBytes": 241628000,
+"vmRSSNowBytes": 4412000,
+"nTotalTrackedBytes": 566445992}
