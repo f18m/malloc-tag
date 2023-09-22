@@ -94,8 +94,24 @@ void* pvalloc(size_t __size) __THROW __attribute_malloc__;
 //------------------------------------------------------------------------------
 
 enum MallocTagOutputFormat_e {
+    /*
+        JSON is good for machine-friendly output.
+        Use this if you want to post-process the data with some other script.
+    */
     MTAG_OUTPUT_FORMAT_JSON,
+
+    /*
+        Graphviz DOT is great for human inspection, but has the downside that you will probably need to
+        collect the .dot file and do the ".dot->.svg" conversion on a possibly different machine and then
+        open the SVG file on a machine with a desktop system (graphics), which is not often possible if
+        the software integrating malloc-tag is running on e.g. an headless server.
+    */
     MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT,
+
+    /*
+        Humanfriendly tree output is meant to be a quick way for a human to debug/troubleshoot memory usage
+        also on headless servers, that have no possibility to render an SVG file
+    */
     MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE,
 
     MTAG_OUTPUT_FORMAT_ALL
