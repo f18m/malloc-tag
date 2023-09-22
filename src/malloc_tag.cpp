@@ -142,33 +142,34 @@ public:
 
 MallocTagScope::MallocTagScope(const char* tag_name)
 {
-    // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
     // VERY IMPORTANT: all code running in this function must be malloc-free
+
     if (PrivateHelpers::EnsureTreeForThisThreadIsReady()) {
+        // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
         m_bLastPushWasSuccessful = g_perthread_tree->push_new_node(tag_name);
     }
 }
 
 MallocTagScope::MallocTagScope(const char* class_name, const char* function_name)
 {
-    // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
     // VERY IMPORTANT: all code running in this function must be malloc-free
-    assert(g_perthread_tree
-        && g_perthread_tree->is_ready()); // it's a logical mistake to use MallocTagScope before MallocTagEngine::init()
 
-    char scopeName[MTAG_MAX_SCOPENAME_LEN] = { '\0' };
-    strncpy(scopeName, class_name, MTAG_MAX_SCOPENAME_LEN - 1); // try to abbreviate class_name if it's too long!
-    strncat(scopeName, "::", MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
-    strncat(scopeName, function_name, MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
     if (PrivateHelpers::EnsureTreeForThisThreadIsReady()) {
+        char scopeName[MTAG_MAX_SCOPENAME_LEN] = { '\0' };
+        strncpy(scopeName, class_name, MTAG_MAX_SCOPENAME_LEN - 1); // try to abbreviate class_name if it's too long!
+        strncat(scopeName, "::", MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
+        strncat(scopeName, function_name, MTAG_MAX_SCOPENAME_LEN - strlen(scopeName) - 1);
+
+        // advance the per-thread cursor inside the malloc tree by 1 more level, adding the "tag_name" level
         m_bLastPushWasSuccessful = g_perthread_tree->push_new_node(scopeName);
     }
 }
 
 MallocTagScope::~MallocTagScope()
 {
-    // pop by 1 level the current per-thread cursor
     // VERY IMPORTANT: all code running in this function must be malloc-free
+
+    // pop by 1 level the current per-thread cursor
     if (PrivateHelpers::EnsureTreeForThisThreadIsReady()) {
         if (m_bLastPushWasSuccessful)
             g_perthread_tree->pop_last_node();
