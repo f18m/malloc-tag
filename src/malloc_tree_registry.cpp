@@ -168,16 +168,16 @@ void MallocTreeRegistry::collect_stats(
 
         // use labels to convey extra info:
         std::vector<std::string> labels;
-        labels.push_back("Memory allocated before MallocTag initialization = "
-            + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
-        labels.push_back("Memory allocated by MallocTag itself ="
-            + GraphVizUtils::pretty_print_bytes(get_total_memusage_in_bytes()));
-        labels.push_back("Total memory allocated across all threads ="
-            + GraphVizUtils::pretty_print_bytes(nTotalBytesAllocatedFromAllTrees));
-        labels.push_back("vmSizeNowBytes = " + GraphVizUtils::pretty_print_bytes(vmSizeNowBytes));
-        labels.push_back("vmRSSNowBytes = " + GraphVizUtils::pretty_print_bytes(vmRSSNowBytes));
-        labels.push_back("Memory profiling session start timestamp = " + std::string(tmStartProfilingStr));
-        labels.push_back("This snapshot timestamp = " + std::string(tmCurrentStr));
+        labels.push_back("Whole process stats");
+        labels.push_back(
+            "allocated_mem_before_malloctag_init=" + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
+        labels.push_back(
+            "allocated_mem_by_malloctag_itself=" + GraphVizUtils::pretty_print_bytes(get_total_memusage_in_bytes()));
+        labels.push_back("allocated_mem=" + GraphVizUtils::pretty_print_bytes(nTotalBytesAllocatedFromAllTrees));
+        labels.push_back("vm_size_now=" + GraphVizUtils::pretty_print_bytes(vmSizeNowBytes));
+        labels.push_back("vm_rss_now=" + GraphVizUtils::pretty_print_bytes(vmRSSNowBytes));
+        labels.push_back("malloctag_start_ts=" + std::string(tmStartProfilingStr));
+        labels.push_back("this_snapshot_ts=" + std::string(tmCurrentStr));
         std::string mainNode = "Process " + std::to_string(getpid());
         GraphVizUtils::append_node(stats_str, mainNode, labels);
 

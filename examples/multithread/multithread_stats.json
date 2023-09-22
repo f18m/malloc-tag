@@ -1,7 +1,7 @@
-{"PID": 2537704,
-"tmStartProfiling": "2023-09-22 @ 12:48:13 CEST",
-"tmCurrentSnapshot": "2023-09-22 @ 12:48:13 CEST",
-"tree_for_TID2537704": {"TID": 2537704,
+{"PID": 2544122,
+"tmStartProfiling": "2023-09-22 @ 13:23:39 CEST",
+"tmCurrentSnapshot": "2023-09-22 @ 13:23:39 CEST",
+"tree_for_TID2544122": {"TID": 2544122,
 "ThreadName": "multithread",
 "nTreeLevels": 0,
 "nTreeNodesInUse": 1,
@@ -21,7 +21,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID2537705": {"TID": 2537705,
+,"tree_for_TID2544123": {"TID": 2544123,
 "ThreadName": "ExampleThr/0",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 5,
@@ -85,7 +85,7 @@
 }
 }
 }
-,"tree_for_TID2537706": {"TID": 2537706,
+,"tree_for_TID2544124": {"TID": 2544124,
 "ThreadName": "ExampleThr/1",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 5,
@@ -149,7 +149,7 @@
 }
 }
 }
-,"tree_for_TID2537707": {"TID": 2537707,
+,"tree_for_TID2544125": {"TID": 2544125,
 "ThreadName": "NonInstrThr",
 "nTreeLevels": 0,
 "nTreeNodesInUse": 1,
@@ -169,7 +169,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID2537708": {"TID": 2537708,
+,"tree_for_TID2544126": {"TID": 2544126,
 "ThreadName": "YetAnThr/2",
 "nTreeLevels": 2,
 "nTreeNodesInUse": 3,
@@ -214,5 +214,5 @@
 ,"nBytesAllocBeforeInit": 475656,
 "nBytesMallocTagSelfUsage": 358520,
 "vmSizeNowBytes": 241628000,
-"vmRSSNowBytes": 4504000,
+"vmRSSNowBytes": 3104000,
 "nTotalTrackedBytes": 566445992}
