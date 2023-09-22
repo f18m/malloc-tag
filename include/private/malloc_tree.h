@@ -68,8 +68,11 @@ public:
     // will be accessing these functions
     //------------------------------------------------------------------------------
 
-    void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format, const std::string& output_options);
+    void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format, const std::string& output_options,
+        size_t nTotalAllocatedBytes);
     void collect_stats_recursively_MAP(MallocTagStatMap_t& out);
+
+    void collect_allocated_freed_recursively(size_t* allocated, size_t* freed);
 
     size_t get_total_allocated_bytes_tracked() const
     {

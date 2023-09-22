@@ -266,17 +266,17 @@ void MallocTreeNode::compute_bytes_totals_recursively(size_t* totAlloc, size_t* 
     *totFreed += m_nBytesTotalFreed;
 }
 
-void MallocTreeNode::compute_node_weights_recursively(size_t rootNodeTotalBytes)
+void MallocTreeNode::compute_node_weights_recursively(size_t allTreesTotalAllocatedBytes)
 {
-    if (rootNodeTotalBytes == 0) {
+    if (allTreesTotalAllocatedBytes == 0) {
         m_nWeightTotal = m_nWeightSelf = 0;
     } else {
         // compute weight of this node:
-        m_nWeightTotal = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesTotalAllocated / rootNodeTotalBytes;
-        m_nWeightSelf = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesSelfAllocated / rootNodeTotalBytes;
+        m_nWeightTotal = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesTotalAllocated / allTreesTotalAllocatedBytes;
+        m_nWeightSelf = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesSelfAllocated / allTreesTotalAllocatedBytes;
     }
 
     // recurse:
     for (unsigned int i = 0; i < m_nChildrens; i++)
-        m_pChildren[i]->compute_node_weights_recursively(rootNodeTotalBytes);
+        m_pChildren[i]->compute_node_weights_recursively(allTreesTotalAllocatedBytes);
 }

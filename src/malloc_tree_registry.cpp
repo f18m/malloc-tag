@@ -109,11 +109,17 @@ void MallocTreeRegistry::collect_stats(
     size_t vmSizeNowBytes = MallocTagEngine::get_linux_vmsize_in_bytes();
     size_t vmRSSNowBytes = MallocTagEngine::get_linux_vmrss_in_bytes();
 
-    /*
-        for (size_t i = 0; i < num_trees; i++) {
-            m_pRootNode->compute_bytes_totals_recursively();
-        }
-    */
+    // IMPORTANT:
+    // To collect total allocated/freed across all trees/threads, the collect_allocated_freed_recursively() will
+    // grab a lock and then release it.
+    // By the time we have finished accumulating these stats across all threads, probably some tree has already
+    // been updated by another thread. So what we get is an APPROXIMATED count of total ALLOCATED/FREED.
+    // This is fast to obtain and good enough for our purposes.
+    size_t nTotalBytesAllocatedFromAllTrees = 0;
+    size_t nTotalBytesFreedFromAllTrees = 0;
+    for (size_t i = 0; i < num_trees; i++)
+        m_pMallocTreeRegistry[i]->collect_allocated_freed_recursively(
+            &nTotalBytesAllocatedFromAllTrees, &nTotalBytesFreedFromAllTrees);
 
     switch (format) {
     case MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE: {
@@ -124,7 +130,8 @@ void MallocTreeRegistry::collect_stats(
 
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
-            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
+            m_pMallocTreeRegistry[i]->collect_stats_recursively(
+                stats_str, format, output_options, nTotalBytesAllocatedFromAllTrees);
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
         }
     } break;
@@ -137,7 +144,8 @@ void MallocTreeRegistry::collect_stats(
 
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
-            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
+            m_pMallocTreeRegistry[i]->collect_stats_recursively(
+                stats_str, format, output_options, nTotalBytesAllocatedFromAllTrees);
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
             stats_str += ",";
         }
@@ -161,7 +169,8 @@ void MallocTreeRegistry::collect_stats(
         }
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
-            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
+            m_pMallocTreeRegistry[i]->collect_stats_recursively(
+                stats_str, format, output_options, nTotalBytesAllocatedFromAllTrees);
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
             stats_str += "\n";
         }

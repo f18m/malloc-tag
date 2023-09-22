@@ -111,7 +111,7 @@ public:
     void collect_stats_recursively_MAP(MallocTagStatMap_t& out, const std::string& parent_kpi_prefix);
 
     void compute_bytes_totals_recursively(size_t* totAlloc, size_t* totFreed);
-    void compute_node_weights_recursively(size_t rootNodeTotalBytes);
+    void compute_node_weights_recursively(size_t allTreesTotalAllocatedBytes);
 
     //------------------------------------------------------------------------------
     // Getters

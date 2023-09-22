@@ -148,24 +148,31 @@ void MallocTree::pop_last_node() // must be malloc-free
     m_pCurrentNode = n;
 }
 
+void MallocTree::collect_allocated_freed_recursively(size_t* allocated, size_t* freed)
+{
+    // during the following tree traversal, we need the tree structure to be consistent across threads:
+    std::lock_guard<std::mutex> guard(m_lockTreeStructure);
+
+    // while we hold the lock we can traverse the tree:
+    m_pRootNode->compute_bytes_totals_recursively(allocated, freed);
+}
+
 void MallocTree::collect_stats_recursively(
-    std::string& out, MallocTagOutputFormat_e format, const std::string& output_options)
+    std::string& out, MallocTagOutputFormat_e format, const std::string& output_options, size_t nTotalAllocatedBytes)
 {
     // during the following tree traversal, we need the tree structure to be consistent across threads:
     std::lock_guard<std::mutex> guard(m_lockTreeStructure);
 
     // NOTE: order is important:
 
-    // STEP1: compute "bytes total" across the whole tree
-    size_t allocated = 0, freed = 0;
-    m_pRootNode->compute_bytes_totals_recursively(&allocated, &freed);
+    // STEP1: compute "bytes total" across the whole tree -- this is done by MallocTreeRegistry across all trees
 
     // STEP2: compute node weigth across the whole tree:
-    m_pRootNode->compute_node_weights_recursively(m_pRootNode->get_total_allocated_bytes());
+    m_pRootNode->compute_node_weights_recursively(nTotalAllocatedBytes);
 
+    // STEP3:
     // now, till we hold the lock which garantuees that the total bytes / node weights just computed are still accurate,
     // do a last recursive walk to encode all stats in JSON/Graphviz/etc format:
-
     switch (format) {
     case MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE:
         out += "** Thread [" + m_pRootNode->get_node_name() + "] with TID=" + std::to_string(m_nThreadID) + "\n";
