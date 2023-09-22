@@ -125,7 +125,7 @@ Then open the resulting SVG file with any suitable viewer.
 If your C/C++ project is using [tcmalloc](https://github.com/google/tcmalloc) that's fine.
 malloc-tag has been tested together with tcmalloc with the caveat that the "-lmalloc_tag" library must be provided to the linker BEFORE the "-ltcmalloc" library is provided. 
 
-As explained in the (Overview)[#overview] section
+As explained in the [Overview](#overview) section
 this will work thanks to ELF interposition: the malloc() imeplementation of malloc-tag will be used and will use the "tcmalloc" malloc() to carry out the actual memory allocation.
 
 
