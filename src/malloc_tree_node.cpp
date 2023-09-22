@@ -175,33 +175,33 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
     // for each node provide an overall view of
     // - total memory usage accounted for this node (both in bytes and as percentage)
     // - self memory usage (both in bytes and as percentage)
-    std::string weight;
+    std::string info;
     if (m_nBytesSelfAllocated != m_nBytesTotalAllocated)
-        weight = "total_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotalAllocated) + " ("
+        info = "total_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotalAllocated) + " ("
             + get_total_weight_percentage_str() + "%)\\nself_alloc="
-            + GraphVizUtils::pretty_print_bytes(m_nBytesSelfAllocated) + " (" + get_self_weight_percentage_str()
-            + "%)\\nself_freed=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelfFreed);
+            + GraphVizUtils::pretty_print_bytes(m_nBytesSelfAllocated) + " (" + get_self_weight_percentage_str() + "%)";
     else
         // shorten the label:
-        weight = "total_alloc=self_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotalAllocated) + " ("
+        info = "total_alloc=self_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotalAllocated) + " ("
             + get_total_weight_percentage_str() + "%)";
 
-    weight += "\\nvisited times=" + std::to_string(m_nTimesEnteredAndExited);
-    weight += "\\nself memory per visit=" + GraphVizUtils::pretty_print_bytes(get_avg_self_bytes_alloc_per_visit());
+    info += "\\nself_freed=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelfFreed);
+    info += "\\nvisited_times=" + std::to_string(m_nTimesEnteredAndExited);
+    info += "\\nself_alloc_per_visit=" + GraphVizUtils::pretty_print_bytes(get_avg_self_bytes_alloc_per_visit());
 
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
         if (m_nAllocationsSelf[i])
-            weight += "\\nnum_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i)
+            info += "\\nnum_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i)
                 + "_self=" + std::to_string(m_nAllocationsSelf[i]);
 
     // write a description of this node:
     std::string thisNodeLabel, thisNodeShape;
     if (m_pParent == NULL) {
         // for root node, provide a more verbose label
-        thisNodeLabel = "thread=" + thisNodeName + "\\nTID=" + std::to_string(m_nThreadID) + "\\n" + weight;
+        thisNodeLabel = "thread=" + thisNodeName + "\\nTID=" + std::to_string(m_nThreadID) + "\\n" + info;
         thisNodeShape = "box"; // to differentiate from all other nodes
     } else {
-        thisNodeLabel = "scope=" + thisNodeName + "\\n" + weight;
+        thisNodeLabel = "scope=" + thisNodeName + "\\n" + info;
     }
 
     // calculate the fillcolor in a range from 0-9 based on the "self" memory usage:

@@ -1,23 +1,23 @@
 digraph MallocTree {
  node [colorscheme=reds9 style=filled]
- subgraph cluster_TID2512289 {
+ subgraph cluster_TID2514292 {
   node [colorscheme=reds9 style=filled]
   labelloc="b"
-  label="TID=2512289\nnPushNodeFailures=0\nnTreeNodesInUse/Max=6/256\n"
-  "2512289_minimal" [label="thread=minimal\nTID=2512289\ntotal_alloc=10MB (100.00%)\nself_alloc=1kB (0.01%)\nself_freed=0B\nvisited times=0\nself memory per visit=0B\nnum_malloc_self=1" shape=box fillcolor=1 fontsize=9]
-  "2512289_minimal" -> "2512289_TopFunc"
-  "2512289_TopFunc" [label="scope=TopFunc\ntotal_alloc=10MB (99.98%)\nself_alloc=24B (0.00%)\nself_freed=0B\nvisited times=1\nself memory per visit=24B\nnum_malloc_self=1" fillcolor=1 fontsize=9]
-  "2512289_TopFunc" -> "2512289_FuncA"
-  "2512289_TopFunc" -> "2512289_FuncB"
-  "2512289_TopFunc" -> "2512289_FuncC"
-  "2512289_FuncA" [label="scope=FuncA\ntotal_alloc=808B (0.00%)\nself_alloc=304B (0.00%)\nself_freed=200B\nvisited times=1\nself memory per visit=304B\nnum_malloc_self=1\nnum_realloc_self=1\nnum_free_self=1" fillcolor=1 fontsize=9]
-  "2512289_FuncA" -> "2512289_FuncB"
-  "2512289_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nvisited times=1\nself memory per visit=504B\nnum_malloc_self=1\nnum_free_self=1" fillcolor=1 fontsize=9]
-  "2512289_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nvisited times=1\nself memory per visit=504B\nnum_malloc_self=1\nnum_free_self=1" fillcolor=1 fontsize=9]
-  "2512289_FuncC" [label="scope=FuncC\ntotal_alloc=self_alloc=10MB (99.97%)\nvisited times=1\nself memory per visit=10MB\nnum_malloc_self=1" fillcolor=7 fontsize=20]
+  label="TID=2514292\nnPushNodeFailures=0\nnTreeNodesInUse/Max=6/256\n"
+  "2514292_minimal" [label="thread=minimal\nTID=2514292\ntotal_alloc=10MB (100.00%)\nself_alloc=1kB (0.01%)\nself_freed=0B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1" shape=box fillcolor=1 fontsize=9]
+  "2514292_minimal" -> "2514292_TopFunc"
+  "2514292_TopFunc" [label="scope=TopFunc\ntotal_alloc=10MB (99.98%)\nself_alloc=24B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=24B\nnum_malloc_self=1" fillcolor=1 fontsize=9]
+  "2514292_TopFunc" -> "2514292_FuncA"
+  "2514292_TopFunc" -> "2514292_FuncB"
+  "2514292_TopFunc" -> "2514292_FuncC"
+  "2514292_FuncA" [label="scope=FuncA\ntotal_alloc=808B (0.00%)\nself_alloc=304B (0.00%)\nself_freed=200B\nvisited_times=1\nself_alloc_per_visit=304B\nnum_malloc_self=1\nnum_realloc_self=1\nnum_free_self=1" fillcolor=1 fontsize=9]
+  "2514292_FuncA" -> "2514292_FuncB"
+  "2514292_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nself_freed=504B\nvisited_times=1\nself_alloc_per_visit=504B\nnum_malloc_self=1\nnum_free_self=1" fillcolor=1 fontsize=9]
+  "2514292_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nself_freed=504B\nvisited_times=1\nself_alloc_per_visit=504B\nnum_malloc_self=1\nnum_free_self=1" fillcolor=1 fontsize=9]
+  "2514292_FuncC" [label="scope=FuncC\ntotal_alloc=self_alloc=10MB (99.97%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=10MB\nnum_malloc_self=1" fillcolor=7 fontsize=20]
  }
 
  labelloc="b"
- label="Memory allocated before MallocTag initialization = 196kB\nMemory allocated by MallocTag itself =69kB\nTotal memory tracked by MallocTag across all threads =30MB\nvmSizeNowBytes = 30MB\nvmRSSNowBytes = 30MB\nMemory profiling session start timestamp = 2023-09-22 @ 10:59:58 CEST\nThis snapshot timestamp = 2023-09-22 @ 10:59:58 CEST\nPID = 2512289\n"
+ label="Memory allocated before MallocTag initialization = 196kB\nMemory allocated by MallocTag itself =69kB\nTotal memory tracked by MallocTag across all threads =30MB\nvmSizeNowBytes = 30MB\nvmRSSNowBytes = 30MB\nMemory profiling session start timestamp = 2023-09-22 @ 11:11:12 CEST\nThis snapshot timestamp = 2023-09-22 @ 11:11:12 CEST\nPID = 2514292\n"
 }
 
