@@ -9,7 +9,8 @@
 int main(int argc, char** argv)
 {
     // as soon as main() is entered, start malloc tag engine:
-    MallocTagEngine::init(50 /* just 50 nodes in this test! */, 3 /* just 3 levels in this test! */);
+    MallocTagEngine::init(
+        50 /* just 50 nodes in this test! */, 3 /* just 3 levels in this test! */, 1 /* 1sec of snapshot interval */);
 
     ::testing::InitGoogleTest(&argc, argv);
     int ret = RUN_ALL_TESTS();

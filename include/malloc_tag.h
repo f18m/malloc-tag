@@ -22,17 +22,23 @@
 #include <string>
 
 //------------------------------------------------------------------------------
-// Constants
+// Environment variables
 //------------------------------------------------------------------------------
 
 /*
     For most of the MallocTagEngine functions will accept either explicit parameters or, if these are not provided,
     the values will be read from the following environment variables.
     This is handy for quick tests since there is no need to recompile the software: you just change a value of an env
-   var and relaunch the software.
+    var and relaunch the software.
 */
 #define MTAG_STATS_OUTPUT_JSON_ENV "MTAG_STATS_OUTPUT_JSON"
 #define MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV "MTAG_STATS_OUTPUT_GRAPHVIZ_DOT"
+#define MTAG_SNAPSHOT_OUTPUT_PREFIX_ENV "MTAG_SNAPSHOT_OUTPUT_PREFIX_FILE_PATH"
+#define MTAG_SNAPSHOT_INTERVAL_ENV "MTAG_SNAPSHOT_INTERVAL_SEC"
+
+//------------------------------------------------------------------------------
+// Constants
+//------------------------------------------------------------------------------
 
 /*
     Each MallocTree used to track allocations done by a specific thread context will be able to handle only a
@@ -51,6 +57,11 @@
     (see MTAG_DEFAULT_MAX_TREE_NODES).
 */
 #define MTAG_DEFAULT_MAX_TREE_LEVELS 256
+
+/*
+    See MallocTagEngine::set_snapshot_interval() API
+*/
+#define MTAG_SNAPSHOT_DISABLED 0
 
 //------------------------------------------------------------------------------
 // glibc overrides
@@ -118,14 +129,36 @@ class MallocTagEngine {
 public:
     MallocTagEngine() { }
 
+public: // basic API
     // The main API to initialize malloc-tag.
     // Call this function from the main thread, possibly as first thing inside the "main()" function
     // and before your software starts launching threads.
     static bool init( // fn
         size_t max_tree_nodes = MTAG_DEFAULT_MAX_TREE_NODES, // fn
-        size_t max_tree_levels = MTAG_DEFAULT_MAX_TREE_LEVELS);
+        size_t max_tree_levels = MTAG_DEFAULT_MAX_TREE_LEVELS,
+        unsigned int snapshot_interval_sec = MTAG_SNAPSHOT_DISABLED);
 
-    // The main API to collect all results in JSON/GRAPHVIZ-DOT format
+    // Write memory profiler stats into a file on disk;
+    // if an empty string is passed, the full path will be taken from the environment variable
+    // MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV, depending on the "format" argument.
+    // This API is a shorthand for collect_stats() + some file opening/writing operations.
+    static bool write_stats( // fn
+        MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL, // fn
+        const std::string& fullpath = "", // fn
+        const std::string& output_options = ""); // no options supported for the time being
+
+    // This API returns one of the limits associated to the malloc-tag implementation.
+    // This API takes a string to make sure no ABI will be broken if in future new limits are added (or old ones are
+    // removed). A return value of zero means the provided string is invalid. Available limit names are:
+    //
+    // "max_trees"
+    // "max_tree_nodes"
+    // "max_tree_levels"
+    // "max_node_siblings"
+    static size_t get_limit(const std::string& limit_name);
+
+public: // advanced-users API
+    // API to collect all results in JSON/GRAPHVIZ-DOT format
     // NOTE: invoking this function will indeed trigger several memory allocation on its own (!!!);
     //       such memory allocations are EXCLUDED from the stats collected by MallocTagEngine
     static std::string collect_stats( // fn
@@ -155,24 +188,24 @@ public:
     // This API is meant to be used in tandem with the collect_stats() returning a MallocTagStatMap_t type.
     static std::string get_stat_key_prefix_for_thread(pid_t thread_id = 0);
 
-    // Write memory profiler stats into a file on disk;
-    // if an empty string is passed, the full path will be taken from the environment variable
-    // MTAG_STATS_OUTPUT_JSON_ENV or MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV, depending on the "format" argument.
-    // This API is a shorthand for collect_stats() + some file opening/writing operations.
-    static bool write_stats( // fn
-        MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL, // fn
-        const std::string& fullpath = "", // fn
-        const std::string& output_options = ""); // no options supported for the time being
+public: // snapshot API
+    // Set the interval time between two snapshots
+    // If 0 is provided as time interval, snapshotting is disabled: write_snapshot_if_needed() will stop writing on
+    // disk.
+    static void set_snapshot_interval(unsigned int secs);
 
-    // This API returns one of the limits associated to the malloc-tag implementation.
-    // This API takes a string to make sure no ABI will be broken if in future new limits are added (or old ones are
-    // removed). A return value of zero means the provided string is invalid. Available limit names are:
-    //
-    // "max_trees"
-    // "max_tree_nodes"
-    // "max_tree_levels"
-    // "max_node_siblings"
-    static size_t get_limit(const std::string& limit_name);
+    // An API to write time-interval-based snapshots of statistics on disk.
+    // The application is supposed to invoke this function "frequently enough" from a suitable thread context.
+    // Every N secs, this function will invoke write_stats() API to write on disk JSON/Graphviz memory profiler output,
+    // using filenames in the format:
+    //    <snapshot filename prefix>.0000.json
+    //    <snapshot filename prefix>.0001.json
+    //    ...
+    // (and similarly for .dot files). The "snapshot filename prefix" can be provided as an argument or it will be
+    // loaded from env vars, see MTAG_SNAPSHOT_OUTPUT_PREFIX_ENV.
+    // Returns true if the snapshot has been written.
+    static bool write_snapshot_if_needed(
+        MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL, const std::string& snapshot_filename_prefix = "");
 
 public: // generic utilities, not strictly related to malloc-tag itself
     // Get all virtual memory "associated" by Linux to this process.
