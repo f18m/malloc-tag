@@ -7,7 +7,12 @@ Malloc interposition (more on that later on) allows to intercept **any memory al
 
 The malloc interposer provided in this project is garantueed to perform only O(1) counter updates and then simply use the original glibc malloc() implementation. In practice the per-malloc() overhead imposed by this library boils down to a few conditional jumps, a pointer deferencing and an integer sum.
 
-In summary, this library enables minimal-overhead, per-thread memory profiling. It has been designed to be integrated as "always on" profiler vs being enabled only for debugging purposes.
+In summary, this library enables **minimal-overhead, per-thread memory profiling**. It has been designed to be integrated as **"always on" profiler** vs being enabled only for debugging purposes. The target is to enable developers to answer questions like:
+
+* Why your application is using so much memory?
+* In which part of the code should you focus your attention to decrease the memory footprint of your application?
+* Is there a thread/part of the code allocating abnormal amounts of memory? 
+ 
 
 # High-Level Design Criteria
 
