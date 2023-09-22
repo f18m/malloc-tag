@@ -71,12 +71,12 @@ public:
     void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format, const std::string& output_options);
     void collect_stats_recursively_MAP(MallocTagStatMap_t& out);
 
-    size_t get_total_bytes_tracked() const
+    size_t get_total_allocated_bytes_tracked() const
     {
         // call this function only after collect_stats_recursively() API.
         // the result will be an approximated result: it will report the total memory accounted by this tree
         // at the time collect_stats_recursively() API was called the last time.
-        return m_nVmSizeAtCreation + m_pRootNode->get_total_bytes();
+        return m_nVmSizeAtCreation + m_pRootNode->get_total_allocated_bytes();
     }
 
     //------------------------------------------------------------------------------

@@ -66,7 +66,7 @@ public:
 
     void init(MallocTreeNode* parent, pid_t threadID)
     {
-        m_nBytesTotal = 0;
+        m_nBytesTotalAllocated = 0;
         m_nBytesSelfAllocated = 0;
         m_nBytesSelfFreed = 0;
         m_nTimesEnteredAndExited = 0;
@@ -124,7 +124,7 @@ public:
 
     // IMPORTANT: total bytes will be zero unless compute_bytes_totals_recursively() has been invoked
     // previously on this tree node
-    size_t get_total_bytes() const { return m_nBytesTotal; }
+    size_t get_total_allocated_bytes() const { return m_nBytesTotalAllocated; }
 
     size_t get_net_self_bytes() const
     {
@@ -138,7 +138,7 @@ public:
         }
     }
 
-    size_t get_avg_self_bytes_per_visit() const
+    size_t get_avg_self_bytes_alloc_per_visit() const
     {
         if (m_nTimesEnteredAndExited)
             // it's questionable if we should instead use:
@@ -147,31 +147,31 @@ public:
         return 0;
     }
 
-    float get_weight_percentage() const
+    float get_total_weight_percentage() const
     {
         // to make this tree node more compact, we don't store a floating point directly;
         // rather we store a percentage in [0..1] range multiplied by MTAG_NODE_WEIGHT_MULTIPLIER
         return 100.0f * (float)m_nWeightTotal / (float)MTAG_NODE_WEIGHT_MULTIPLIER;
     }
-    float get_weight_self_percentage() const
+    float get_self_weight_percentage() const
     {
         // to make this tree node more compact, we don't store a floating point directly;
         // rather we store a percentage in [0..1] range multiplied by MTAG_NODE_WEIGHT_MULTIPLIER
         return 100.0f * (float)m_nWeightSelf / (float)MTAG_NODE_WEIGHT_MULTIPLIER;
     }
 
-    std::string get_weight_percentage_str() const
+    std::string get_total_weight_percentage_str() const
     {
         char ret[16];
         // ensure only 2 digits of accuracy:
-        snprintf(ret, 15, "%.2f", get_weight_percentage());
+        snprintf(ret, 15, "%.2f", get_total_weight_percentage());
         return std::string(ret);
     }
-    std::string get_weight_self_percentage_str() const
+    std::string get_self_weight_percentage_str() const
     {
         char ret[16];
         // ensure only 2 digits of accuracy:
-        snprintf(ret, 15, "%.2f", get_weight_self_percentage());
+        snprintf(ret, 15, "%.2f", get_self_weight_percentage());
         return std::string(ret);
     }
 
@@ -184,15 +184,17 @@ public:
     }
 
 private:
-    size_t m_nBytesTotal; // Allocated bytes by this node and ALL its descendant nodes.
-                          // This field is computed only at "stats collection time".
+    size_t m_nBytesTotalAllocated; // Allocated bytes by this node and ALL its descendant nodes.
+                                   // This field is computed only at "stats collection time".
     size_t m_nBytesSelfAllocated; // Allocated bytes only for THIS node.
     size_t m_nBytesSelfFreed; // Freed bytes only for THIS node.
     size_t m_nTimesEnteredAndExited; // How many times this malloc tree node has
     size_t m_nAllocationsSelf[MTAG_GLIBC_PRIMITIVE_MAX]; // The number of allocations for this node.
     unsigned int m_nTreeLevel; // How deep is located this node in the tree?
-    size_t m_nWeightTotal; // Weight of this node expressed as MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
-    size_t m_nWeightSelf; // Weight of this node expressed as MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytes/TOTAL_TREE_BYTES)
+    size_t m_nWeightTotal; // Weight of this node expressed as
+                           // MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytesTotalAllocated/TOTAL_TREE_BYTES)
+    size_t m_nWeightSelf; // Weight of this node expressed as
+                          // MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytesSelfAllocated/TOTAL_TREE_BYTES)
     pid_t m_nThreadID; // ID of the thread where the allocations will take place
     std::array<char, MTAG_MAX_SCOPENAME_LEN>
         m_scopeName; // Memory allocation scope name, NUL terminated. Defined via use of MallocTagScope.

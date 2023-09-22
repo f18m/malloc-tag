@@ -1,7 +1,7 @@
-{"PID": 2489341,
-"tmStartProfiling": "2023-09-22 @ 09:51:04 CEST",
-"tmCurrentSnapshot": "2023-09-22 @ 09:51:04 CEST",
-"tree_for_TID2489341": {"TID": 2489341,
+{"PID": 2512289,
+"tmStartProfiling": "2023-09-22 @ 10:59:58 CEST",
+"tmCurrentSnapshot": "2023-09-22 @ 10:59:58 CEST",
+"tree_for_TID2512289": {"TID": 2512289,
 "ThreadName": "minimal",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 6,
@@ -9,7 +9,7 @@
 "nPushNodeFailures": 0,
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 20368000,
-"scope_minimal": {"nBytesTotal": 10004784,
+"scope_minimal": {"nBytesTotalAllocated": 10004784,
 "nBytesSelfAllocated": 1032,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 0,
@@ -18,7 +18,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
-"nestedScopes": {"scope_TopFunc": {"nBytesTotal": 10003752,
+"nestedScopes": {"scope_TopFunc": {"nBytesTotalAllocated": 10003752,
 "nBytesSelfAllocated": 24,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -27,7 +27,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
-"nestedScopes": {"scope_FuncA": {"nBytesTotal": 808,
+"nestedScopes": {"scope_FuncA": {"nBytesTotalAllocated": 808,
 "nBytesSelfAllocated": 304,
 "nBytesSelfFreed": 200,
 "nTimesEnteredAndExited": 1,
@@ -36,7 +36,7 @@
 "nCallsTo_realloc": 1,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 1,
-"nestedScopes": {"scope_FuncB": {"nBytesTotal": 504,
+"nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 504,
 "nBytesSelfAllocated": 504,
 "nBytesSelfFreed": 504,
 "nTimesEnteredAndExited": 1,
@@ -49,7 +49,7 @@
 }
 }
 }
-,"scope_FuncB": {"nBytesTotal": 504,
+,"scope_FuncB": {"nBytesTotalAllocated": 504,
 "nBytesSelfAllocated": 504,
 "nBytesSelfFreed": 504,
 "nTimesEnteredAndExited": 1,
@@ -60,7 +60,7 @@
 "nCallsTo_free": 1,
 "nestedScopes": {}
 }
-,"scope_FuncC": {"nBytesTotal": 10002416,
+,"scope_FuncC": {"nBytesTotalAllocated": 10002416,
 "nBytesSelfAllocated": 10002416,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -76,7 +76,7 @@
 }
 }
 }
-,"nBytesAllocBeforeInit": 170536,
+,"nBytesAllocBeforeInit": 170896,
 "nBytesMallocTagSelfUsage": 69656,
 "vmSizeNowBytes": 30136000,
 "vmRSSNowBytes": 30136000,

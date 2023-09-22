@@ -160,7 +160,7 @@ void MallocTree::collect_stats_recursively(
     m_pRootNode->compute_bytes_totals_recursively();
 
     // STEP2: compute node weigth across the whole tree:
-    m_pRootNode->compute_node_weights_recursively(m_pRootNode->get_total_bytes());
+    m_pRootNode->compute_node_weights_recursively(m_pRootNode->get_total_allocated_bytes());
 
     // now, till we hold the lock which garantuees that the total bytes / node weights just computed are still accurate,
     // do a last recursive walk to encode all stats in JSON/Graphviz/etc format:

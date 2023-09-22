@@ -1,7 +1,7 @@
-{"PID": 2489010,
-"tmStartProfiling": "2023-09-22 @ 09:50:34 CEST",
-"tmCurrentSnapshot": "2023-09-22 @ 09:50:34 CEST",
-"tree_for_TID2489010": {"TID": 2489010,
+{"PID": 2512139,
+"tmStartProfiling": "2023-09-22 @ 10:59:17 CEST",
+"tmCurrentSnapshot": "2023-09-22 @ 10:59:17 CEST",
+"tree_for_TID2512139": {"TID": 2512139,
 "ThreadName": "multithread",
 "nTreeLevels": 0,
 "nTreeNodesInUse": 1,
@@ -9,7 +9,7 @@
 "nPushNodeFailures": 0,
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 20428000,
-"scope_multithread": {"nBytesTotal": 6712,
+"scope_multithread": {"nBytesTotalAllocated": 6712,
 "nBytesSelfAllocated": 6712,
 "nBytesSelfFreed": 4608,
 "nTimesEnteredAndExited": 0,
@@ -21,7 +21,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID2489011": {"TID": 2489011,
+,"tree_for_TID2512140": {"TID": 2512140,
 "ThreadName": "ExampleThr/0",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 5,
@@ -29,7 +29,7 @@
 "nPushNodeFailures": 0,
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 136388608,
-"scope_ExampleThr/0": {"nBytesTotal": 144168,
+"scope_ExampleThr/0": {"nBytesTotalAllocated": 144168,
 "nBytesSelfAllocated": 40,
 "nBytesSelfFreed": 64,
 "nTimesEnteredAndExited": 0,
@@ -38,7 +38,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 3,
-"nestedScopes": {"scope_ExampleThread": {"nBytesTotal": 144128,
+"nestedScopes": {"scope_ExampleThread": {"nBytesTotalAllocated": 144128,
 "nBytesSelfAllocated": 24,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -47,7 +47,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
-"nestedScopes": {"scope_FuncA": {"nBytesTotal": 72104,
+"nestedScopes": {"scope_FuncA": {"nBytesTotalAllocated": 72104,
 "nBytesSelfAllocated": 104,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -56,7 +56,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
-"nestedScopes": {"scope_FuncB": {"nBytesTotal": 72000,
+"nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 72000,
 "nBytesSelfAllocated": 72000,
 "nBytesSelfFreed": 72000,
 "nTimesEnteredAndExited": 1,
@@ -69,7 +69,7 @@
 }
 }
 }
-,"scope_FuncB": {"nBytesTotal": 72000,
+,"scope_FuncB": {"nBytesTotalAllocated": 72000,
 "nBytesSelfAllocated": 72000,
 "nBytesSelfFreed": 72000,
 "nTimesEnteredAndExited": 1,
@@ -85,7 +85,7 @@
 }
 }
 }
-,"tree_for_TID2489012": {"TID": 2489012,
+,"tree_for_TID2512141": {"TID": 2512141,
 "ThreadName": "ExampleThr/1",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 5,
@@ -93,7 +93,7 @@
 "nPushNodeFailures": 0,
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 136388608,
-"scope_ExampleThr/1": {"nBytesTotal": 289192,
+"scope_ExampleThr/1": {"nBytesTotalAllocated": 289192,
 "nBytesSelfAllocated": 40,
 "nBytesSelfFreed": 64,
 "nTimesEnteredAndExited": 0,
@@ -102,7 +102,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 3,
-"nestedScopes": {"scope_ExampleThread": {"nBytesTotal": 289152,
+"nestedScopes": {"scope_ExampleThread": {"nBytesTotalAllocated": 289152,
 "nBytesSelfAllocated": 24,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -111,7 +111,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
-"nestedScopes": {"scope_FuncA": {"nBytesTotal": 145128,
+"nestedScopes": {"scope_FuncA": {"nBytesTotalAllocated": 145128,
 "nBytesSelfAllocated": 1128,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -120,7 +120,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
-"nestedScopes": {"scope_FuncB": {"nBytesTotal": 144000,
+"nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 144000,
 "nBytesSelfAllocated": 144000,
 "nBytesSelfFreed": 144000,
 "nTimesEnteredAndExited": 1,
@@ -133,7 +133,7 @@
 }
 }
 }
-,"scope_FuncB": {"nBytesTotal": 144000,
+,"scope_FuncB": {"nBytesTotalAllocated": 144000,
 "nBytesSelfAllocated": 144000,
 "nBytesSelfFreed": 144000,
 "nTimesEnteredAndExited": 1,
@@ -149,7 +149,7 @@
 }
 }
 }
-,"tree_for_TID2489013": {"TID": 2489013,
+,"tree_for_TID2512142": {"TID": 2512142,
 "ThreadName": "NonInstrThr",
 "nTreeLevels": 0,
 "nTreeNodesInUse": 1,
@@ -157,7 +157,7 @@
 "nPushNodeFailures": 0,
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 136388608,
-"scope_NonInstrThr": {"nBytesTotal": 164632,
+"scope_NonInstrThr": {"nBytesTotalAllocated": 164632,
 "nBytesSelfAllocated": 164632,
 "nBytesSelfFreed": 164656,
 "nTimesEnteredAndExited": 0,
@@ -169,7 +169,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID2489014": {"TID": 2489014,
+,"tree_for_TID2512143": {"TID": 2512143,
 "ThreadName": "YetAnThr/2",
 "nTreeLevels": 2,
 "nTreeNodesInUse": 3,
@@ -177,7 +177,7 @@
 "nPushNodeFailures": 0,
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 136388608,
-"scope_YetAnThr/2": {"nBytesTotal": 237640,
+"scope_YetAnThr/2": {"nBytesTotalAllocated": 237640,
 "nBytesSelfAllocated": 40,
 "nBytesSelfFreed": 64,
 "nTimesEnteredAndExited": 0,
@@ -186,7 +186,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 3,
-"nestedScopes": {"scope_YetAnThr::MainEvLoop": {"nBytesTotal": 237600,
+"nestedScopes": {"scope_YetAnThr::MainEvLoop": {"nBytesTotalAllocated": 237600,
 "nBytesSelfAllocated": 21600,
 "nBytesSelfFreed": 21600,
 "nTimesEnteredAndExited": 1,
@@ -195,7 +195,7 @@
 "nCallsTo_realloc": 0,
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 300,
-"nestedScopes": {"scope_FuncB": {"nBytesTotal": 216000,
+"nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 216000,
 "nBytesSelfAllocated": 216000,
 "nBytesSelfFreed": 216000,
 "nTimesEnteredAndExited": 1,
@@ -211,7 +211,7 @@
 }
 }
 }
-,"nBytesAllocBeforeInit": 465056,
+,"nBytesAllocBeforeInit": 465416,
 "nBytesMallocTagSelfUsage": 348280,
 "vmSizeNowBytes": 241624000,
 "vmRSSNowBytes": 241624000,

@@ -119,7 +119,7 @@ void MallocTreeRegistry::collect_stats(
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
-            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
+            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
         }
     } break;
 
@@ -132,7 +132,7 @@ void MallocTreeRegistry::collect_stats(
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
-            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
+            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
             stats_str += ",";
         }
 
@@ -156,7 +156,7 @@ void MallocTreeRegistry::collect_stats(
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
-            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_bytes_tracked();
+            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
             stats_str += "\n";
         }
 
