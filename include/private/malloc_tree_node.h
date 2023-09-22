@@ -113,6 +113,8 @@ public:
     void compute_bytes_totals_recursively(size_t* totAlloc, size_t* totFreed);
     void compute_node_weights_recursively(size_t allTreesTotalAllocatedBytes);
 
+    std::string get_graphviz_node_name() const { return std::to_string(m_nThreadID) + "_" + get_node_name(); }
+
     //------------------------------------------------------------------------------
     // Getters
     //------------------------------------------------------------------------------

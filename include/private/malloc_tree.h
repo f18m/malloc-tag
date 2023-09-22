@@ -82,6 +82,8 @@ public:
         return m_nVmSizeAtCreation + m_pRootNode->get_net_total_bytes();
     }
 
+    std::string get_graphviz_root_node_name() const { return m_pRootNode->get_graphviz_node_name(); }
+
     //------------------------------------------------------------------------------
     // Getters
     //------------------------------------------------------------------------------
