@@ -69,11 +69,10 @@ MallocTreeRegistry g_registry;
 // this accounts for ALL mallocs done by ALL threads before MallocTagEngine::init() and is thread-safe
 std::atomic<size_t> g_bytes_allocated_before_init;
 
-// snapshot interval time
+// snapshot globals:
 std::atomic<unsigned int> g_snapshot_interval_sec;
-
-// last snapshot timestamp
 std::atomic<unsigned int> g_snapshot_last_timestamp_sec;
+std::atomic<unsigned int> g_snapshot_num;
 
 //------------------------------------------------------------------------------
 // Utils
@@ -197,10 +196,10 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels, unsign
     g_snapshot_interval_sec = snapshot_interval_sec;
     if (snapshot_interval_sec == MTAG_SNAPSHOT_DISABLED) {
         // check the env var
-        if (getenv(MTAG_INTERVAL_ENV)) {
-            long n = std::atol(getenv(MTAG_INTERVAL_ENV));
+        if (getenv(MTAG_SNAPSHOT_INTERVAL_ENV)) {
+            long n = std::atol(getenv(MTAG_SNAPSHOT_INTERVAL_ENV));
             if (n)
-                snapshot_interval_sec = n;
+                g_snapshot_interval_sec = n;
         }
     }
 
@@ -272,11 +271,13 @@ static bool __internal_write_stats(
         }
     }
 
-    std::ofstream stats_file(fpath);
-    if (stats_file.is_open()) {
-        stats_file << MallocTagEngine::collect_stats(format, output_options) << std::endl;
-        bwritten = true;
-        stats_file.close();
+    if (!fpath.empty()) {
+        std::ofstream stats_file(fpath);
+        if (stats_file.is_open()) {
+            stats_file << MallocTagEngine::collect_stats(format, output_options) << std::endl;
+            bwritten = true;
+            stats_file.close();
+        }
     }
 
     return bwritten;
@@ -306,7 +307,8 @@ bool MallocTagEngine::write_stats(
     return bwritten;
 }
 
-bool MallocTagEngine::write_snapshot_if_needed()
+bool MallocTagEngine::write_snapshot_if_needed(
+    MallocTagOutputFormat_e format, const std::string& snapshot_filename_prefix)
 {
     if (g_snapshot_interval_sec == 0)
         return 0; // snapshotting disabled
@@ -317,7 +319,20 @@ bool MallocTagEngine::write_snapshot_if_needed()
     if ((now_tv.tv_sec - g_snapshot_last_timestamp_sec.load()) > g_snapshot_interval_sec) {
         // time to write a snapshot
         g_snapshot_last_timestamp_sec = now_tv.tv_sec;
-        return write_stats();
+
+        std::string prefix = snapshot_filename_prefix;
+        if (prefix.empty() && getenv(MTAG_SNAPSHOT_OUTPUT_PREFIX_ENV)) {
+            prefix = getenv(MTAG_SNAPSHOT_OUTPUT_PREFIX_ENV);
+        }
+
+        if (prefix.empty())
+            return false;
+
+        // append snapshot number to prefix:
+        char postfix[16];
+        snprintf(postfix, 15, ".%04d", g_snapshot_num.fetch_add(1));
+
+        return write_stats(format, prefix + postfix);
     }
 
     // not enough time passed yet

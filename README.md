@@ -136,6 +136,8 @@ this will work thanks to ELF interposition: the malloc() imeplementation of mall
 | MTAG_STATS_OUTPUT_JSON         | The relative/full path to the output JSON file written by `MallocTagEngine::write_stats()`. If empty, no JSON output file will be produced. |
 | MTAG_STATS_OUTPUT_GRAPHVIZ_DOT | The relative/full path to the output Graphviz DOT file written by `MallocTagEngine::write_stats()`. If empty, no DOT output file will be produced.                                                                                                                                                   |
 | MTAG_SNAPSHOT_INTERVAL_SEC     | The time interval between two snapshots written by `MallocTagEngine::write_snapshot_if_needed()`. The special value zero means "disable snapshotting".   |
+| MTAG_SNAPSHOT_OUTPUT_PREFIX_FILE_PATH | The filename prefix for snapshots written by `MallocTagEngine::write_snapshot_if_needed()`. If empty, no snapshot will be written.   |
+
 
 # Links
 

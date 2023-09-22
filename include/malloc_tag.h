@@ -33,7 +33,8 @@
 */
 #define MTAG_STATS_OUTPUT_JSON_ENV "MTAG_STATS_OUTPUT_JSON"
 #define MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV "MTAG_STATS_OUTPUT_GRAPHVIZ_DOT"
-#define MTAG_INTERVAL_ENV "MTAG_SNAPSHOT_INTERVAL_SEC"
+#define MTAG_SNAPSHOT_OUTPUT_PREFIX_ENV "MTAG_SNAPSHOT_OUTPUT_PREFIX_FILE_PATH"
+#define MTAG_SNAPSHOT_INTERVAL_ENV "MTAG_SNAPSHOT_INTERVAL_SEC"
 
 //------------------------------------------------------------------------------
 // Constants
@@ -197,12 +198,14 @@ public: // snapshot API
     // The application is supposed to invoke this function "frequently enough" from a suitable thread context.
     // Every N secs, this function will invoke write_stats() API to write on disk JSON/Graphviz memory profiler output,
     // using filenames in the format:
-    //    <MTAG_STATS_OUTPUT_JSON_ENV>.0000.json
-    //    <MTAG_STATS_OUTPUT_JSON_ENV>.0001.json
+    //    <snapshot filename prefix>.0000.json
+    //    <snapshot filename prefix>.0001.json
     //    ...
-    // (and similarly for .dot files).
+    // (and similarly for .dot files). The "snapshot filename prefix" can be provided as an argument or it will be
+    // loaded from env vars, see MTAG_SNAPSHOT_OUTPUT_PREFIX_ENV.
     // Returns true if the snapshot has been written.
-    static bool write_snapshot_if_needed();
+    static bool write_snapshot_if_needed(
+        MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL, const std::string& snapshot_filename_prefix = "");
 
 public: // generic utilities, not strictly related to malloc-tag itself
     // Get all virtual memory "associated" by Linux to this process.
