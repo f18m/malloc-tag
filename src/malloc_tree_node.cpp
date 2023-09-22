@@ -172,37 +172,41 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
 {
     std::string thisNodeName = get_node_name();
 
+    // write a description of this node:
+    std::vector<std::string> thisNodeLabels;
+    std::string thisNodeShape;
+    if (m_pParent == NULL) {
+        // for root node, provide a more verbose label
+        thisNodeLabels.push_back("thread=" + thisNodeName);
+        thisNodeLabels.push_back("TID=" + std::to_string(m_nThreadID));
+        thisNodeShape = "box"; // to differentiate from all other nodes
+    } else {
+        thisNodeLabels.push_back("scope=" + thisNodeName);
+    }
+
     // for each node provide an overall view of
     // - total memory usage accounted for this node (both in bytes and as percentage)
     // - self memory usage (both in bytes and as percentage)
-    std::string info;
-    if (m_nBytesSelfAllocated != m_nBytesTotalAllocated)
-        info = "total_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotalAllocated) + " ("
-            + get_total_weight_percentage_str() + "%)\\nself_alloc="
-            + GraphVizUtils::pretty_print_bytes(m_nBytesSelfAllocated) + " (" + get_self_weight_percentage_str() + "%)";
-    else
+    if (m_nBytesSelfAllocated != m_nBytesTotalAllocated) {
+        thisNodeLabels.push_back("total_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotalAllocated) + " ("
+            + get_total_weight_percentage_str() + "%)");
+        thisNodeLabels.push_back("self_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelfAllocated) + " ("
+            + get_self_weight_percentage_str() + "%)");
+    } else {
         // shorten the label:
-        info = "total_alloc=self_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotalAllocated) + " ("
-            + get_total_weight_percentage_str() + "%)";
+        thisNodeLabels.push_back("total_alloc=self_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotalAllocated)
+            + " (" + get_total_weight_percentage_str() + "%)");
+    }
 
-    info += "\\nself_freed=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelfFreed);
-    info += "\\nvisited_times=" + std::to_string(m_nTimesEnteredAndExited);
-    info += "\\nself_alloc_per_visit=" + GraphVizUtils::pretty_print_bytes(get_avg_self_bytes_alloc_per_visit());
+    thisNodeLabels.push_back("self_freed=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelfFreed));
+    thisNodeLabels.push_back("visited_times=" + std::to_string(m_nTimesEnteredAndExited));
+    thisNodeLabels.push_back(
+        "self_alloc_per_visit=" + GraphVizUtils::pretty_print_bytes(get_avg_self_bytes_alloc_per_visit()));
 
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
         if (m_nAllocationsSelf[i])
-            info += "\\nnum_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i)
-                + "_self=" + std::to_string(m_nAllocationsSelf[i]);
-
-    // write a description of this node:
-    std::string thisNodeLabel, thisNodeShape;
-    if (m_pParent == NULL) {
-        // for root node, provide a more verbose label
-        thisNodeLabel = "thread=" + thisNodeName + "\\nTID=" + std::to_string(m_nThreadID) + "\\n" + info;
-        thisNodeShape = "box"; // to differentiate from all other nodes
-    } else {
-        thisNodeLabel = "scope=" + thisNodeName + "\\n" + info;
-    }
+            thisNodeLabels.push_back("num_" + MallocTagGlibcPrimitive2String((MallocTagGlibcPrimitive_e)i)
+                + "_self=" + std::to_string(m_nAllocationsSelf[i]));
 
     // calculate the fillcolor in a range from 0-9 based on the "self weight";
     // the idea is to provide a intuitive indication of the self contributions of each malloc scope:
@@ -236,12 +240,13 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
     // finally add this node to the graph:
     std::string per_thread_node_name = std::to_string(m_nThreadID) + "_" + thisNodeName;
     GraphVizUtils::append_node(
-        out, per_thread_node_name, thisNodeLabel, thisNodeShape, thisNodeFillColor, thisNodeFontSize);
+        out, per_thread_node_name, thisNodeLabels, thisNodeShape, thisNodeFillColor, thisNodeFontSize);
 
     // write all the connections between this node and its children:
     for (unsigned int i = 0; i < m_nChildrens; i++) {
         std::string child_per_thread_node_name = std::to_string(m_nThreadID) + "_" + m_pChildren[i]->get_node_name();
-        GraphVizUtils::append_edge(out, per_thread_node_name, child_per_thread_node_name);
+        std::string edge_label = "w=" + m_pChildren[i]->get_total_weight_percentage_str() + "%";
+        GraphVizUtils::append_edge(out, per_thread_node_name, child_per_thread_node_name, edge_label);
     }
 
     // now recurse into each children:
@@ -249,30 +254,34 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
         m_pChildren[i]->collect_stats_recursively_GRAPHVIZDOT(out);
 }
 
-size_t MallocTreeNode::compute_bytes_totals_recursively() // returns total bytes accumulated by this node
+void MallocTreeNode::compute_bytes_totals_recursively(size_t* totAlloc, size_t* totFreed)
 {
     // postorder traversal of a tree:
     // first of all, traverse all children subtrees:
-    size_t accumulated_bytes = 0;
+    size_t alloc_bytes = 0, freed_bytes = 0;
     for (unsigned int i = 0; i < m_nChildrens; i++)
-        accumulated_bytes += m_pChildren[i]->compute_bytes_totals_recursively();
+        m_pChildren[i]->compute_bytes_totals_recursively(&alloc_bytes, &freed_bytes);
 
     // finally "visit" this node, updating the bytes count, using all children contributions:
-    m_nBytesTotalAllocated = accumulated_bytes + m_nBytesSelfAllocated;
-    return m_nBytesTotalAllocated;
+    m_nBytesTotalAllocated = alloc_bytes + m_nBytesSelfAllocated;
+    m_nBytesTotalFreed = freed_bytes + m_nBytesSelfFreed;
+
+    // assume the provided pointers had been initialized to zero at the start of the recursion
+    *totAlloc += m_nBytesTotalAllocated;
+    *totFreed += m_nBytesTotalFreed;
 }
 
-void MallocTreeNode::compute_node_weights_recursively(size_t rootNodeTotalBytes)
+void MallocTreeNode::compute_node_weights_recursively(size_t allTreesTotalAllocatedBytes)
 {
-    if (rootNodeTotalBytes == 0) {
+    if (allTreesTotalAllocatedBytes == 0) {
         m_nWeightTotal = m_nWeightSelf = 0;
     } else {
         // compute weight of this node:
-        m_nWeightTotal = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesTotalAllocated / rootNodeTotalBytes;
-        m_nWeightSelf = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesSelfAllocated / rootNodeTotalBytes;
+        m_nWeightTotal = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesTotalAllocated / allTreesTotalAllocatedBytes;
+        m_nWeightSelf = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesSelfAllocated / allTreesTotalAllocatedBytes;
     }
 
     // recurse:
     for (unsigned int i = 0; i < m_nChildrens; i++)
-        m_pChildren[i]->compute_node_weights_recursively(rootNodeTotalBytes);
+        m_pChildren[i]->compute_node_weights_recursively(allTreesTotalAllocatedBytes);
 }

@@ -107,7 +107,19 @@ void MallocTreeRegistry::collect_stats(
     strftime(tmCurrentStr, sizeof(tmCurrentStr), "%Y-%m-%d @ %H:%M:%S %Z", &current_time_tm);
 
     size_t vmSizeNowBytes = MallocTagEngine::get_linux_vmsize_in_bytes();
-    size_t vmRSSNowBytes = MallocTagEngine::get_linux_vmsize_in_bytes();
+    size_t vmRSSNowBytes = MallocTagEngine::get_linux_vmrss_in_bytes();
+
+    // IMPORTANT:
+    // To collect total allocated/freed across all trees/threads, the collect_allocated_freed_recursively() will
+    // grab a lock and then release it.
+    // By the time we have finished accumulating these stats across all threads, probably some tree has already
+    // been updated by another thread. So what we get is an APPROXIMATED count of total ALLOCATED/FREED.
+    // This is fast to obtain and good enough for our purposes.
+    size_t nTotalBytesAllocatedFromAllTrees = 0;
+    size_t nTotalBytesFreedFromAllTrees = 0;
+    for (size_t i = 0; i < num_trees; i++)
+        m_pMallocTreeRegistry[i]->collect_allocated_freed_recursively(
+            &nTotalBytesAllocatedFromAllTrees, &nTotalBytesFreedFromAllTrees);
 
     switch (format) {
     case MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE: {
@@ -118,7 +130,8 @@ void MallocTreeRegistry::collect_stats(
 
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
-            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
+            m_pMallocTreeRegistry[i]->collect_stats_recursively(
+                stats_str, format, output_options, nTotalBytesAllocatedFromAllTrees);
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
         }
     } break;
@@ -131,7 +144,8 @@ void MallocTreeRegistry::collect_stats(
 
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
-            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
+            m_pMallocTreeRegistry[i]->collect_stats_recursively(
+                stats_str, format, output_options, nTotalBytesAllocatedFromAllTrees);
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
             stats_str += ",";
         }
@@ -149,39 +163,48 @@ void MallocTreeRegistry::collect_stats(
     } break;
 
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT: {
-        if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
-            // create a single unique graph for ALL threads/trees, named "MallocTree"
-            GraphVizUtils::start_digraph(stats_str, "MallocTree");
-        }
-        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
-        for (size_t i = 0; i < num_trees; i++) {
-            m_pMallocTreeRegistry[i]->collect_stats_recursively(stats_str, format, output_options);
-            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
-            stats_str += "\n";
-        }
+        // create a single unique graph for ALL threads/trees, named "MallocTree"
+        GraphVizUtils::start_digraph(stats_str, "AllMallocTrees");
 
         // use labels to convey extra info:
         std::vector<std::string> labels;
-        labels.push_back("Memory allocated before MallocTag initialization = "
-            + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
-        labels.push_back("Memory allocated by MallocTag itself ="
-            + GraphVizUtils::pretty_print_bytes(get_total_memusage_in_bytes()));
-        labels.push_back("Total memory tracked by MallocTag across all threads ="
-            + GraphVizUtils::pretty_print_bytes(tot_tracked_mem_bytes));
-        labels.push_back("vmSizeNowBytes = " + GraphVizUtils::pretty_print_bytes(vmSizeNowBytes));
-        labels.push_back("vmRSSNowBytes = " + GraphVizUtils::pretty_print_bytes(vmRSSNowBytes));
-        labels.push_back("Memory profiling session start timestamp = " + std::string(tmStartProfilingStr));
-        labels.push_back("This snapshot timestamp = " + std::string(tmCurrentStr));
-        labels.push_back("PID = " + std::to_string(getpid()));
+        labels.push_back("Whole process stats");
+        labels.push_back(
+            "allocated_mem_before_malloctag_init=" + GraphVizUtils::pretty_print_bytes(g_bytes_allocated_before_init));
+        labels.push_back(
+            "allocated_mem_by_malloctag_itself=" + GraphVizUtils::pretty_print_bytes(get_total_memusage_in_bytes()));
+        labels.push_back("allocated_mem=" + GraphVizUtils::pretty_print_bytes(nTotalBytesAllocatedFromAllTrees));
+        labels.push_back("vm_size_now=" + GraphVizUtils::pretty_print_bytes(vmSizeNowBytes));
+        labels.push_back("vm_rss_now=" + GraphVizUtils::pretty_print_bytes(vmRSSNowBytes));
+        labels.push_back("malloctag_start_ts=" + std::string(tmStartProfilingStr));
+        labels.push_back("this_snapshot_ts=" + std::string(tmCurrentStr));
+        std::string mainNode = "Process " + std::to_string(getpid());
+        GraphVizUtils::append_node(stats_str, mainNode, labels);
 
-        if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
-            GraphVizUtils::end_digraph(stats_str, labels); // close the MallocTree
+        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
+        for (size_t i = 0; i < num_trees; i++) {
+            m_pMallocTreeRegistry[i]->collect_stats_recursively(
+                stats_str, format, output_options, nTotalBytesAllocatedFromAllTrees);
+            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
+            stats_str += "\n";
 
-        if (output_options != MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
-            // add a few nodes "external" to the tree:
-            GraphVizUtils::start_digraph(stats_str, "MallocTree_globals", labels);
-            GraphVizUtils::end_digraph(stats_str); // close the MallocTree_globals
+            float w = 100 * m_pMallocTreeRegistry[i]->get_total_allocated_bytes() / nTotalBytesAllocatedFromAllTrees;
+            char wstr[16];
+            // ensure only 2 digits of accuracy:
+            snprintf(wstr, 15, "w=%.2f%%", w);
+
+            GraphVizUtils::append_edge(
+                stats_str, mainNode, m_pMallocTreeRegistry[i]->get_graphviz_root_node_name(), wstr);
         }
+
+        std::vector<std::string> legend;
+        legend.push_back("Legend:");
+        legend.push_back(
+            "'w' stands for self-allocation-weight, defined as BYTES_ALLOCATED_BY_NODE / BYTES_ALLOCATED_BY_ALL_TREES");
+        legend.push_back("Square box: indicates the root node of a MallocTree for an application thread");
+        legend.push_back("Nodes having an high self-allocation-weight are drawn bigger and with dark shade of red");
+
+        GraphVizUtils::end_digraph(stats_str, legend); // close the MallocTree
     } break;
 
     default:

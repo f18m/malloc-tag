@@ -68,16 +68,28 @@ public:
     // will be accessing these functions
     //------------------------------------------------------------------------------
 
-    void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format, const std::string& output_options);
+    void collect_stats_recursively(std::string& out, MallocTagOutputFormat_e format, const std::string& output_options,
+        size_t nTotalAllocatedBytes);
     void collect_stats_recursively_MAP(MallocTagStatMap_t& out);
+
+    void collect_allocated_freed_recursively(size_t* allocated, size_t* freed);
 
     size_t get_total_allocated_bytes_tracked() const
     {
         // call this function only after collect_stats_recursively() API.
         // the result will be an approximated result: it will report the total memory accounted by this tree
         // at the time collect_stats_recursively() API was called the last time.
-        return m_nVmSizeAtCreation + m_pRootNode->get_total_allocated_bytes();
+        return m_nVmSizeAtCreation + m_pRootNode->get_net_total_bytes();
     }
+    size_t get_total_allocated_bytes() const
+    {
+        // call this function only after collect_stats_recursively() API.
+        // the result will be an approximated result: it will report the total memory accounted by this tree
+        // at the time collect_stats_recursively() API was called the last time.
+        return m_pRootNode->get_total_allocated_bytes();
+    }
+
+    std::string get_graphviz_root_node_name() const { return m_pRootNode->get_graphviz_node_name(); }
 
     //------------------------------------------------------------------------------
     // Getters

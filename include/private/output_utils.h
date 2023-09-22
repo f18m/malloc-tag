@@ -63,11 +63,18 @@ public:
     }
     static void end_subgraph(std::string& out) { out += " }\n"; }
 
-    static void append_node(std::string& out, const std::string& nodeName, const std::string& label,
+    static void append_node(std::string& out, const std::string& nodeName, const std::vector<std::string>& labels,
         const std::string& shape = "", const std::string& fillcolor = "", const std::string& fontsize = "")
     {
         // use double quotes around the node name in case it contains Graphviz-invalid chars e.g. '/'
-        out += "  \"" + nodeName + "\" [label=\"" + label + "\"";
+        out += "  \"" + nodeName + "\" [";
+
+        if (!labels.empty()) {
+            out += "label=\"";
+            for (const auto& l : labels)
+                out += l + "\\n";
+            out += "\"\n";
+        }
 
         if (!shape.empty())
             out += " shape=" + shape;
@@ -79,10 +86,15 @@ public:
         out += "]\n";
     }
 
-    static void append_edge(std::string& out, const std::string& nodeName1, const std::string& nodeName2)
+    static void append_edge(
+        std::string& out, const std::string& nodeName1, const std::string& nodeName2, const std::string& label = "")
     {
         // use double quotes around the node name in case it contains Graphviz-invalid chars e.g. '/'
-        out += "  \"" + nodeName1 + "\" -> \"" + nodeName2 + "\"\n";
+        out += "  \"" + nodeName1 + "\" -> \"" + nodeName2 + "\"";
+        if (!label.empty())
+            out += " [label=\"" + label + "\"]";
+
+        out += "\n";
     }
     static std::string pretty_print_bytes(size_t bytes)
     {
