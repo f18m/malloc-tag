@@ -1,31 +1,31 @@
 digraph AllMallocTrees {
  node [colorscheme=reds9 style=filled]
-  "Process 2557069" [label="Whole process stats\nallocated_mem_before_malloctag_init=189kB\nallocated_mem_by_malloctag_itself=71kB\nallocated_mem=10MB\nvm_size_now=30MB\nvm_rss_now=2MB\nmalloctag_start_ts=2023-09-22 @ 14:22:59 CEST\nthis_snapshot_ts=2023-09-22 @ 14:22:59 CEST\n"
+  "Process 2563667" [label="Whole process stats\nallocated_mem_before_malloctag_init=189kB\nallocated_mem_by_malloctag_itself=71kB\nallocated_mem=10MB\nvm_size_now=30MB\nvm_rss_now=2MB\nmalloctag_start_ts=2023-09-22 @ 14:52:11 CEST\nthis_snapshot_ts=2023-09-22 @ 14:52:11 CEST\n"
 ]
- subgraph cluster_TID2557069 {
+ subgraph cluster_TID2563667 {
   node [colorscheme=reds9 style=filled]
   labelloc="b"
-  label="TID=2557069\nnPushNodeFailures=0\nnTreeNodesInUse/Max=6/256\n"
-  "2557069_minimal" [label="thread=minimal\nTID=2557069\ntotal_alloc=10MB (100.00%)\nself_alloc=1kB (0.01%)\nself_freed=0B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\n"
+  label="TID=2563667\nnPushNodeFailures=0\nnTreeNodesInUse/Max=6/256\n"
+  "2563667_minimal" [label="thread=minimal\nTID=2563667\ntotal_alloc=10MB (100.00%)\nself_alloc=1kB (0.01%)\nself_freed=0B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\n"
  shape=box fillcolor=1 fontsize=9]
-  "2557069_minimal" -> "2557069_TopFunc" [label="w=99.98%"]
-  "2557069_TopFunc" [label="scope=TopFunc\ntotal_alloc=10MB (99.98%)\nself_alloc=24B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=24B\nnum_malloc_self=1\n"
+  "2563667_minimal" -> "2563667_TopFunc" [label="w=99.98%"]
+  "2563667_TopFunc" [label="scope=TopFunc\ntotal_alloc=10MB (99.98%)\nself_alloc=24B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=24B\nnum_malloc_self=1\n"
  fillcolor=1 fontsize=9]
-  "2557069_TopFunc" -> "2557069_FuncA" [label="w=0.00%"]
-  "2557069_TopFunc" -> "2557069_FuncB" [label="w=0.00%"]
-  "2557069_TopFunc" -> "2557069_FuncC" [label="w=99.97%"]
-  "2557069_FuncA" [label="scope=FuncA\ntotal_alloc=808B (0.00%)\nself_alloc=304B (0.00%)\nself_freed=200B\nvisited_times=1\nself_alloc_per_visit=304B\nnum_malloc_self=1\nnum_realloc_self=1\nnum_free_self=1\n"
+  "2563667_TopFunc" -> "2563667_FuncA" [label="w=0.00%"]
+  "2563667_TopFunc" -> "2563667_FuncB" [label="w=0.00%"]
+  "2563667_TopFunc" -> "2563667_FuncC" [label="w=99.97%"]
+  "2563667_FuncA" [label="scope=FuncA\ntotal_alloc=808B (0.00%)\nself_alloc=304B (0.00%)\nself_freed=200B\nvisited_times=1\nself_alloc_per_visit=304B\nnum_malloc_self=1\nnum_realloc_self=1\nnum_free_self=1\n"
  fillcolor=1 fontsize=9]
-  "2557069_FuncA" -> "2557069_FuncB" [label="w=0.00%"]
-  "2557069_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nself_freed=504B\nvisited_times=1\nself_alloc_per_visit=504B\nnum_malloc_self=1\nnum_free_self=1\n"
+  "2563667_FuncA" -> "2563667_FuncB" [label="w=0.00%"]
+  "2563667_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nself_freed=504B\nvisited_times=1\nself_alloc_per_visit=504B\nnum_malloc_self=1\nnum_free_self=1\n"
  fillcolor=1 fontsize=9]
-  "2557069_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nself_freed=504B\nvisited_times=1\nself_alloc_per_visit=504B\nnum_malloc_self=1\nnum_free_self=1\n"
+  "2563667_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nself_freed=504B\nvisited_times=1\nself_alloc_per_visit=504B\nnum_malloc_self=1\nnum_free_self=1\n"
  fillcolor=1 fontsize=9]
-  "2557069_FuncC" [label="scope=FuncC\ntotal_alloc=self_alloc=10MB (99.97%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=10MB\nnum_malloc_self=1\n"
+  "2563667_FuncC" [label="scope=FuncC\ntotal_alloc=self_alloc=10MB (99.97%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=10MB\nnum_malloc_self=1\n"
  fillcolor=7 fontsize=20]
  }
 
-  "Process 2557069" -> "2557069_minimal" [label="w=100.00%"]
+  "Process 2563667" -> "2563667_minimal" [label="w=100.00%"]
  labelloc="b"
  label="Legend:\n'w' stands for self-allocation-weight, defined as BYTES_ALLOCATED_BY_NODE / BYTES_ALLOCATED_BY_ALL_TREES\nSquare box: indicates the root node of a MallocTree for an application thread\nNodes having an high self-allocation-weight are drawn bigger and with dark shade of red\n"
 }

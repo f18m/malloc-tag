@@ -25,6 +25,7 @@
 #include <fstream>
 #include <sys/prctl.h>
 #include <sys/syscall.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "private/malloc_tree.h"
@@ -59,14 +60,20 @@ void* __libc_pvalloc(size_t __size);
 // main enable/disable flag:
 thread_local bool g_perthread_malloc_hook_active = true;
 
-// the main global per-thread malloc tree:
+// the main, global, per-thread malloc tree:
 thread_local MallocTree* g_perthread_tree = nullptr;
 
 // the global registry for all threads; this is NOT thread-specific, but is thread-safe
 MallocTreeRegistry g_registry;
 
-// this accounts for ALL mallocs done by ALL threads before MallocTagEngine::init()
+// this accounts for ALL mallocs done by ALL threads before MallocTagEngine::init() and is thread-safe
 std::atomic<size_t> g_bytes_allocated_before_init;
+
+// snapshot interval time
+std::atomic<unsigned int> g_snapshot_interval_sec;
+
+// last snapshot timestamp
+std::atomic<unsigned int> g_snapshot_last_timestamp_sec;
 
 //------------------------------------------------------------------------------
 // Utils
@@ -175,7 +182,7 @@ MallocTagScope::~MallocTagScope()
 // MallocTagEngine
 //------------------------------------------------------------------------------
 
-bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
+bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels, unsigned int snapshot_interval_sec)
 {
     if (UNLIKELY(g_perthread_tree && g_perthread_tree->is_ready()))
         return true; // invoking twice? not a failure but suspicious
@@ -187,7 +194,22 @@ bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels)
         g_perthread_tree = g_registry.register_main_tree(max_tree_nodes, max_tree_levels);
     }
 
+    g_snapshot_interval_sec = snapshot_interval_sec;
+    if (snapshot_interval_sec == MTAG_SNAPSHOT_DISABLED) {
+        // check the env var
+        if (getenv(MTAG_INTERVAL_ENV)) {
+            long n = std::atol(getenv(MTAG_INTERVAL_ENV));
+            if (n)
+                snapshot_interval_sec = n;
+        }
+    }
+
     return g_perthread_tree != nullptr;
+}
+
+void MallocTagEngine::set_snapshot_interval(unsigned int snapshot_interval_sec)
+{
+    g_snapshot_interval_sec = snapshot_interval_sec;
 }
 
 MallocTagStatMap_t MallocTagEngine::collect_stats()
@@ -284,10 +306,30 @@ bool MallocTagEngine::write_stats(
     return bwritten;
 }
 
+bool MallocTagEngine::write_snapshot_if_needed()
+{
+    if (g_snapshot_interval_sec == 0)
+        return 0; // snapshotting disabled
+    struct timeval now_tv;
+    if (gettimeofday(&now_tv, NULL) != 0)
+        return false;
+
+    if ((now_tv.tv_sec - g_snapshot_last_timestamp_sec.load()) > g_snapshot_interval_sec) {
+        // time to write a snapshot
+        g_snapshot_last_timestamp_sec = now_tv.tv_sec;
+        return write_stats();
+    }
+
+    // not enough time passed yet
+    return false;
+}
+
 size_t MallocTagEngine::get_limit(const std::string& limit_name)
 {
     if (limit_name == "max_trees")
         return MTAG_MAX_TREES; // this is fixed and cannot be changed right now
+    if (limit_name == "max_node_siblings")
+        return MTAG_MAX_CHILDREN_PER_NODE; // this is fixed and cannot be changed right now
     if (limit_name == "max_tree_nodes") {
         MallocTree* p = g_registry.get_main_thread_tree();
         if (p)
@@ -300,8 +342,6 @@ size_t MallocTagEngine::get_limit(const std::string& limit_name)
             return p->get_max_levels();
         // else MallocTagEngine::init() has not been invoked yet... return 0
     }
-    if (limit_name == "max_node_siblings")
-        return MTAG_MAX_CHILDREN_PER_NODE; // this is fixed and cannot be changed right now
 
     return 0;
 }

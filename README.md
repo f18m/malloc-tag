@@ -133,9 +133,9 @@ this will work thanks to ELF interposition: the malloc() imeplementation of mall
 
 | Environment var                | Description                                                                                                                                       |
 |--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| MTAG_STATS_OUTPUT_JSON         | The relative/full path to the output JSON file written by `MallocTagEngine::write_stats_on_disk()`. If empty, no JSON output file will be produced. |
-| MTAG_STATS_OUTPUT_GRAPHVIZ_DOT | The relative/full path to the output Graphviz DOT file written by `MallocTagEngine::write_stats_on_disk()`. If empty, no DOT output file will be produced.                                                                                                                                                   |
-|                                |                                                                                                                                                   |
+| MTAG_STATS_OUTPUT_JSON         | The relative/full path to the output JSON file written by `MallocTagEngine::write_stats()`. If empty, no JSON output file will be produced. |
+| MTAG_STATS_OUTPUT_GRAPHVIZ_DOT | The relative/full path to the output Graphviz DOT file written by `MallocTagEngine::write_stats()`. If empty, no DOT output file will be produced.                                                                                                                                                   |
+| MTAG_SNAPSHOT_INTERVAL_SEC     | The time interval between two snapshots written by `MallocTagEngine::write_snapshot_if_needed()`. The special value zero means "disable snapshotting".   |
 
 # Links
 
@@ -165,9 +165,7 @@ Apache 2.0 License
 
 # TODO
 
-* make everything configurable via env vars
-* interval-based snapshotting of memory profiling results
-* install signal hook on initialization
+* make max_tree_nodes, max_tree_levels configurable via env vars
 
 # FUTURE
 
