@@ -54,13 +54,13 @@ malloc-tag profiler can produce output in a machine-friendly JSON format, see e.
 
 ![minimal_example_svg](examples/minimal/minimal_stats.dot.svg?raw=true "Malloc-tag output for MINIMAL example")
 
-From the picture above it becomes obvious that to improve/reduce memory usage, all the allocations accounted against the "minimal" scope and all the code executing in the malloc scope "FuncC" should be improved, since they have the highest self-memory usage, as emphasized by the darkest red shade.
+From the picture above it becomes obvious that to improve/reduce memory usage, all the allocations accounted against the "minimal" scope and **all the code executing in the malloc scope "FuncC" should be improved**, since they have the **highest self-memory allocation**, as emphasized by the darkest red shade.
 
 Profiling a more complex example, involving a simple application spawning 5 secondary pthreads, will produce such kind of graph:
 
 ![multithread_example_svg](examples/multithread/multithread_stats.dot.svg?raw=true "Malloc-tag output for MULTITHREAD example")
 
-From this picture it should be evident that all the memory allocations happen, regardless of the thread, in the malloc scope named "FuncB" (look at the self memory usage of that node and also at the number of malloc operations!).
+From this picture it should be evident that **all the memory allocations happen, regardless of the thread, in the malloc scope named "FuncB"** (look at the self memory usage of that node and also at the number of malloc operations!).
 
 
 # How to use
@@ -75,7 +75,7 @@ cd malloc-tag
 make && make install
 ```
 
-2) add "-lmalloc_tag" to your C/C++ project linker flags in order to link against malloc-tag library (see caveat about tcmalloc below)
+2) add `-lmalloc_tag` to your C/C++ project linker flags in order to link against malloc-tag library (see caveat about tcmalloc below)
 
 3) add malloctag initialization as close as possible to the entrypoint of your application, e.g. as first instruction in your `main()`, using:
 
@@ -123,10 +123,10 @@ Then open the resulting SVG file with any suitable viewer.
 ## TcMalloc integration
 
 If your C/C++ project is using [tcmalloc](https://github.com/google/tcmalloc) that's fine.
-malloc-tag has been tested together with tcmalloc with the caveat that the "-lmalloc_tag" library must be provided to the linker BEFORE the "-ltcmalloc" library is provided. 
+malloc-tag has been tested together with tcmalloc with the caveat that the `-lmalloc_tag` library must be provided to the linker BEFORE the `-ltcmalloc` library is provided. 
 
 As explained in the [Overview](#overview) section
-this will work thanks to ELF interposition: the malloc() imeplementation of malloc-tag will be used and will use the "tcmalloc" malloc() to carry out the actual memory allocation.
+this will work thanks to ELF interposition: the malloc() imeplementation of malloc-tag will be used and will use the `tcmalloc` malloc() to carry out the actual memory allocation.
 
 
 # Environment variables
