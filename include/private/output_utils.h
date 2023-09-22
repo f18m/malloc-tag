@@ -86,10 +86,15 @@ public:
         out += "]\n";
     }
 
-    static void append_edge(std::string& out, const std::string& nodeName1, const std::string& nodeName2)
+    static void append_edge(
+        std::string& out, const std::string& nodeName1, const std::string& nodeName2, const std::string& label = "")
     {
         // use double quotes around the node name in case it contains Graphviz-invalid chars e.g. '/'
-        out += "  \"" + nodeName1 + "\" -> \"" + nodeName2 + "\"\n";
+        out += "  \"" + nodeName1 + "\" -> \"" + nodeName2 + "\"";
+        if (!label.empty())
+            out += " [label=\"" + label + "\"]";
+
+        out += "\n";
     }
     static std::string pretty_print_bytes(size_t bytes)
     {

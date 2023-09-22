@@ -1,7 +1,7 @@
-{"PID": 2534943,
-"tmStartProfiling": "2023-09-22 @ 12:38:53 CEST",
-"tmCurrentSnapshot": "2023-09-22 @ 12:38:53 CEST",
-"tree_for_TID2534943": {"TID": 2534943,
+{"PID": 2535928,
+"tmStartProfiling": "2023-09-22 @ 12:41:52 CEST",
+"tmCurrentSnapshot": "2023-09-22 @ 12:41:52 CEST",
+"tree_for_TID2535928": {"TID": 2535928,
 "ThreadName": "minimal",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 6,
@@ -79,5 +79,5 @@
 ,"nBytesAllocBeforeInit": 172944,
 "nBytesMallocTagSelfUsage": 71704,
 "vmSizeNowBytes": 30140000,
-"vmRSSNowBytes": 2172000,
+"vmRSSNowBytes": 2068000,
 "nTotalTrackedBytes": 30544344}

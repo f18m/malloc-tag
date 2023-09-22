@@ -245,7 +245,8 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
     // write all the connections between this node and its children:
     for (unsigned int i = 0; i < m_nChildrens; i++) {
         std::string child_per_thread_node_name = std::to_string(m_nThreadID) + "_" + m_pChildren[i]->get_node_name();
-        GraphVizUtils::append_edge(out, per_thread_node_name, child_per_thread_node_name);
+        std::string edge_label = "w=" + m_pChildren[i]->get_total_weight_percentage_str() + "%";
+        GraphVizUtils::append_edge(out, per_thread_node_name, child_per_thread_node_name, edge_label);
     }
 
     // now recurse into each children:

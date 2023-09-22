@@ -188,7 +188,13 @@ void MallocTreeRegistry::collect_stats(
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
             stats_str += "\n";
 
-            GraphVizUtils::append_edge(stats_str, mainNode, m_pMallocTreeRegistry[i]->get_graphviz_root_node_name());
+            float w = 100 * m_pMallocTreeRegistry[i]->get_total_allocated_bytes() / nTotalBytesAllocatedFromAllTrees;
+            char wstr[16];
+            // ensure only 2 digits of accuracy:
+            snprintf(wstr, 15, "w=%.2f%%", w);
+
+            GraphVizUtils::append_edge(
+                stats_str, mainNode, m_pMallocTreeRegistry[i]->get_graphviz_root_node_name(), wstr);
         }
 
         GraphVizUtils::end_digraph(stats_str); // close the MallocTree

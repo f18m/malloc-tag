@@ -81,6 +81,13 @@ public:
         // at the time collect_stats_recursively() API was called the last time.
         return m_nVmSizeAtCreation + m_pRootNode->get_net_total_bytes();
     }
+    size_t get_total_allocated_bytes() const
+    {
+        // call this function only after collect_stats_recursively() API.
+        // the result will be an approximated result: it will report the total memory accounted by this tree
+        // at the time collect_stats_recursively() API was called the last time.
+        return m_pRootNode->get_total_allocated_bytes();
+    }
 
     std::string get_graphviz_root_node_name() const { return m_pRootNode->get_graphviz_node_name(); }
 
