@@ -246,6 +246,16 @@ std::string MallocTagEngine::collect_stats(MallocTagOutputFormat_e format, const
     return stats_str;
 }
 
+// std::string:ends_with() is available only from C++20 onward
+bool __string_ends_with(std::string const& fullString, std::string const& ending)
+{
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
 static bool __internal_write_stats(
     MallocTagOutputFormat_e format, const std::string& fullpath, const std::string& output_options)
 {
@@ -258,11 +268,13 @@ static bool __internal_write_stats(
         case MTAG_OUTPUT_FORMAT_JSON:
             if (getenv(MTAG_STATS_OUTPUT_JSON_ENV))
                 fpath = std::string(getenv(MTAG_STATS_OUTPUT_JSON_ENV));
+
             break;
 
         case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
             if (getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV))
                 fpath = std::string(getenv(MTAG_STATS_OUTPUT_GRAPHVIZDOT_ENV));
+
             break;
 
         case MTAG_OUTPUT_FORMAT_ALL:
@@ -272,6 +284,23 @@ static bool __internal_write_stats(
     }
 
     if (!fpath.empty()) {
+
+        switch (format) {
+        case MTAG_OUTPUT_FORMAT_JSON:
+            if (!__string_ends_with(fpath, ".json"))
+                fpath += ".json";
+            break;
+
+        case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT:
+            if (!__string_ends_with(fpath, ".dot"))
+                fpath += ".dot";
+            break;
+
+        case MTAG_OUTPUT_FORMAT_ALL:
+            assert(0); // caller must deal with MTAG_OUTPUT_FORMAT_ALL
+            break;
+        }
+
         std::ofstream stats_file(fpath);
         if (stats_file.is_open()) {
             stats_file << MallocTagEngine::collect_stats(format, output_options) << std::endl;
@@ -316,15 +345,13 @@ bool MallocTagEngine::write_snapshot_if_needed(
     if (gettimeofday(&now_tv, NULL) != 0)
         return false;
 
-    if ((now_tv.tv_sec - g_snapshot_last_timestamp_sec.load()) > g_snapshot_interval_sec) {
+    if ((now_tv.tv_sec - g_snapshot_last_timestamp_sec.load()) >= g_snapshot_interval_sec) {
         // time to write a snapshot
         g_snapshot_last_timestamp_sec = now_tv.tv_sec;
 
         std::string prefix = snapshot_filename_prefix;
-        if (prefix.empty() && getenv(MTAG_SNAPSHOT_OUTPUT_PREFIX_ENV)) {
+        if (prefix.empty() && getenv(MTAG_SNAPSHOT_OUTPUT_PREFIX_ENV))
             prefix = getenv(MTAG_SNAPSHOT_OUTPUT_PREFIX_ENV);
-        }
-
         if (prefix.empty())
             return false;
 
