@@ -204,8 +204,10 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
         thisNodeLabel = "scope=" + thisNodeName + "\\n" + info;
     }
 
-    // calculate the fillcolor in a range from 0-9 based on the "self" memory usage:
+    // calculate the fillcolor in a range from 0-9 based on the "self weight";
     // the idea is to provide a intuitive indication of the self contributions of each malloc scope:
+    // the bigger / eye-catching nodes will be those where a lot of byte allocations have been recorded,
+    // regardless of what happened inside their children
     float self_w = get_self_weight_percentage();
     std::string thisNodeFillColor, thisNodeFontSize = "14";
     if (self_w < 5) {
