@@ -197,7 +197,14 @@ void MallocTreeRegistry::collect_stats(
                 stats_str, mainNode, m_pMallocTreeRegistry[i]->get_graphviz_root_node_name(), wstr);
         }
 
-        GraphVizUtils::end_digraph(stats_str); // close the MallocTree
+        std::vector<std::string> legend;
+        legend.push_back("Legend:");
+        legend.push_back(
+            "'w' stands for self-allocation-weight, defined as BYTES_ALLOCATED_BY_NODE / BYTES_ALLOCATED_BY_ALL_TREES");
+        legend.push_back("Square box: indicates the root node of a MallocTree for an application thread");
+        legend.push_back("Nodes having an high self-allocation-weight are drawn bigger and with dark shade of red");
+
+        GraphVizUtils::end_digraph(stats_str, legend); // close the MallocTree
     } break;
 
     default:
