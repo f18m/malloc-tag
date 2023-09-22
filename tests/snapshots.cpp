@@ -3,6 +3,7 @@
 */
 
 #include "malloc_tag.h"
+#include <fstream>
 #include <iostream>
 #include <string.h>
 #include <sys/time.h>
@@ -10,6 +11,12 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+
+bool file_exists(const char* fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}
 
 void Snapshotting_thread()
 {
@@ -29,6 +36,13 @@ void Snapshotting_thread()
         nwritten += MallocTagEngine::write_snapshot_if_needed(MTAG_OUTPUT_FORMAT_ALL, "/tmp/snapshot") ? 1 : 0;
         sleep(1);
     }
+
+    EXPECT_EQ(file_exists("/tmp/snapshot.0000.dot"), true);
+    EXPECT_EQ(file_exists("/tmp/snapshot.0001.dot"), true);
+    EXPECT_EQ(file_exists("/tmp/snapshot.0002.dot"), true);
+    EXPECT_EQ(file_exists("/tmp/snapshot.0000.json"), true);
+    EXPECT_EQ(file_exists("/tmp/snapshot.0001.json"), true);
+    EXPECT_EQ(file_exists("/tmp/snapshot.0002.json"), true);
 }
 
 TEST(MallocTagTestsuite, Snapshots)
