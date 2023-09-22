@@ -163,10 +163,9 @@ void MallocTreeRegistry::collect_stats(
     } break;
 
     case MTAG_OUTPUT_FORMAT_GRAPHVIZ_DOT: {
-        if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
-            // create a single unique graph for ALL threads/trees, named "MallocTree"
-            GraphVizUtils::start_digraph(stats_str, "MallocTree");
-        }
+        // create a single unique graph for ALL threads/trees, named "MallocTree"
+        GraphVizUtils::start_digraph(stats_str, "MallocTree");
+
         size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(
@@ -189,14 +188,7 @@ void MallocTreeRegistry::collect_stats(
         labels.push_back("This snapshot timestamp = " + std::string(tmCurrentStr));
         labels.push_back("PID = " + std::to_string(getpid()));
 
-        if (output_options == MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE)
-            GraphVizUtils::end_digraph(stats_str, labels); // close the MallocTree
-
-        if (output_options != MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
-            // add a few nodes "external" to the tree:
-            GraphVizUtils::start_digraph(stats_str, "MallocTree_globals", labels);
-            GraphVizUtils::end_digraph(stats_str); // close the MallocTree_globals
-        }
+        GraphVizUtils::end_digraph(stats_str, labels); // close the MallocTree
     } break;
 
     default:

@@ -52,11 +52,6 @@
 */
 #define MTAG_DEFAULT_MAX_TREE_LEVELS 256
 
-/*
-    Output options supported by MallocTagEngine::write_stats()
-*/
-#define MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE "uniquetree"
-
 //------------------------------------------------------------------------------
 // glibc overrides
 //------------------------------------------------------------------------------
@@ -135,7 +130,7 @@ public:
     //       such memory allocations are EXCLUDED from the stats collected by MallocTagEngine
     static std::string collect_stats( // fn
         MallocTagOutputFormat_e format, // fn
-        const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
+        const std::string& output_options = ""); // no options supported for now
 
     // Another API to collect all stats in form of a flat map/dictionary.
     // This API provides a machine-friendly structured view on all the memory allocation stats for all the trees
@@ -167,7 +162,7 @@ public:
     static bool write_stats( // fn
         MallocTagOutputFormat_e format = MTAG_OUTPUT_FORMAT_ALL, // fn
         const std::string& fullpath = "", // fn
-        const std::string& output_options = MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE);
+        const std::string& output_options = ""); // no options supported for the time being
 
     // This API returns one of the limits associated to the malloc-tag implementation.
     // This API takes a string to make sure no ABI will be broken if in future new limits are added (or old ones are

@@ -211,16 +211,10 @@ void MallocTree::collect_stats_recursively(
         labels.push_back(
             "nTreeNodesInUse/Max=" + std::to_string(m_nTreeNodesInUse) + "/" + std::to_string(m_nMaxTreeNodes));
 
-        if (output_options != MTAG_GRAPHVIZ_OPTION_UNIQUE_TREE) {
-            // create one tree for each MallocTree:
-            GraphVizUtils::start_digraph(out, graphviz_name, labels);
-        } else {
-            // create one subcluster for each MallocTree
-            GraphVizUtils::start_subgraph(out, graphviz_name, labels);
-        }
-
+        // create one subcluster for each MallocTree
+        GraphVizUtils::start_subgraph(out, graphviz_name, labels);
         m_pRootNode->collect_stats_recursively_GRAPHVIZDOT(out);
-        GraphVizUtils::end_subgraph(out); // close this digraph/subgraph
+        GraphVizUtils::end_subgraph(out); // close this subgraph
     } break;
 
     default:
