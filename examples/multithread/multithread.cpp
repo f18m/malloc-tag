@@ -50,6 +50,7 @@ void FuncB(int thread_id)
 {
     MallocTagScope noname("FuncB");
 
+    // a std::map will trigger a "shower" of malloc() operations: see the "FuncB" malloc scope in results
     std::map<std::string, uint64_t> mytestmap;
     for (unsigned int i = 0; i < 1000 + thread_id * 1000; i++)
         mytestmap["onemorekey" + std::to_string(i)] = i;
@@ -58,8 +59,9 @@ void FuncB(int thread_id)
 void NonInstrumentedThread()
 {
     prctl(PR_SET_NAME, "NonInstrThr");
-    std::set<std::string> letsConsumeMemory;
 
+    // a std::set will trigger a "shower" of malloc() operations: see the "FuncB" malloc scope in results
+    std::set<std::string> letsConsumeMemory;
     for (size_t i = 0; i < 1000; i++)
         letsConsumeMemory.insert(std::string(100 + (rand() % 101), 'c'));
 }

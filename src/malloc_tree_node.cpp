@@ -89,7 +89,8 @@ void MallocTreeNode::collect_stats_recursively_MAP(MallocTagStatMap_t& out, cons
 
     // provide a programmer-friendly way to get stats out of a "flat dictionary":
     out[fullName + ".nBytesTotal"] = m_nBytesTotal;
-    out[fullName + ".nBytesSelf"] = m_nBytesSelf;
+    out[fullName + ".nBytesSelfAllocated"] = m_nBytesSelfAllocated;
+    out[fullName + ".nBytesSelfFreed"] = m_nBytesSelfFreed;
     out[fullName + ".nTimesEnteredAndExited"] = m_nTimesEnteredAndExited;
 
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++) {
@@ -109,7 +110,8 @@ void MallocTreeNode::collect_stats_recursively_JSON(std::string& out)
     JsonUtils::start_object(out, "scope_" + get_node_name());
 
     JsonUtils::append_field(out, "nBytesTotal", m_nBytesTotal);
-    JsonUtils::append_field(out, "nBytesSelf", m_nBytesSelf);
+    JsonUtils::append_field(out, "nBytesSelfAllocated", m_nBytesSelfAllocated);
+    JsonUtils::append_field(out, "nBytesSelfFreed", m_nBytesSelfFreed);
     JsonUtils::append_field(out, "nTimesEnteredAndExited", m_nTimesEnteredAndExited);
     JsonUtils::append_field(out, "nWeightPercentage", get_weight_percentage_str());
 
@@ -143,13 +145,14 @@ void MallocTreeNode::collect_stats_recursively_HUMANFRIENDLY(std::string& out)
     // try not to be too verbose:
     out += b + "scope_" + get_node_name() + "\n";
     if (m_nBytesTotal >= MINIMAL_BYTES_TOTAL_THRESHOLD && w >= MINIMAL_WEIGHT_PERC_THRESHOLD) {
-        out += i + "nBytesTotal/Self=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + "/"
-            + GraphVizUtils::pretty_print_bytes(m_nBytesSelf) + "\n";
+        out += i + "nBytesTotal/SelfAllocated/SelfFreed=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + "/"
+            + GraphVizUtils::pretty_print_bytes(m_nBytesSelfAllocated) + "/"
+            + GraphVizUtils::pretty_print_bytes(m_nBytesSelfFreed) + "\n";
         out += i + "nTimesEnteredAndExited=" + std::to_string(m_nTimesEnteredAndExited) + "\n";
         out += i + "nBytesSelfPerVisit=" + GraphVizUtils::pretty_print_bytes(get_avg_self_bytes_per_visit()) + "\n";
         out += i + "nWeightPercentage=" + get_weight_percentage_str();
         if (w >= 70) {
-            if (m_nBytesTotal != m_nBytesSelf)
+            if (m_nBytesTotal != m_nBytesSelfAllocated)
                 out += "\t\t\t<<<- hot path";
             else
                 out += "\t\t\t<<<- hot leaf";
@@ -171,10 +174,11 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
     // - total memory usage accounted for this node (both in bytes and as percentage)
     // - self memory usage (both in bytes and as percentage)
     std::string weight;
-    if (m_nBytesTotal != m_nBytesSelf)
+    if (m_nBytesSelfAllocated > 0)
         weight = "total=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " (" + get_weight_percentage_str()
-            + "%)\\nself=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelf) + " (" + get_weight_self_percentage_str()
-            + "%)";
+            + "%)\\nself_alloc=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelfAllocated) + " ("
+            + get_weight_self_percentage_str()
+            + "%)\\nself_freed=" + GraphVizUtils::pretty_print_bytes(m_nBytesSelfFreed);
     else
         // shorten the label:
         weight = "total=self=" + GraphVizUtils::pretty_print_bytes(m_nBytesTotal) + " (" + get_weight_percentage_str()
@@ -250,7 +254,7 @@ size_t MallocTreeNode::compute_bytes_totals_recursively() // returns total bytes
         accumulated_bytes += m_pChildren[i]->compute_bytes_totals_recursively();
 
     // finally "visit" this node, updating the bytes count, using all children contributions:
-    m_nBytesTotal = accumulated_bytes + m_nBytesSelf;
+    m_nBytesTotal = accumulated_bytes + m_nBytesSelfAllocated;
     return m_nBytesTotal;
 }
 
@@ -261,7 +265,7 @@ void MallocTreeNode::compute_node_weights_recursively(size_t rootNodeTotalBytes)
     } else {
         // compute weight of this node:
         m_nWeightTotal = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesTotal / rootNodeTotalBytes;
-        m_nWeightSelf = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesSelf / rootNodeTotalBytes;
+        m_nWeightSelf = MTAG_NODE_WEIGHT_MULTIPLIER * m_nBytesSelfAllocated / rootNodeTotalBytes;
     }
 
     // recurse:

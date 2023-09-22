@@ -48,8 +48,8 @@ void TooManyNodes_thread()
     EXPECT_EQ(mtag_stats[k + ".nTreeNodesInUse"], max_nodes);
 
     // CHECK2: the last entry in the tree should be "dummy4", there should be no "dummy5"
-    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.dummy4.nBytesSelf") != mtag_stats.end());
-    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.dummy5.nBytesSelf") == mtag_stats.end());
+    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.dummy4.nBytesSelfAllocated") != mtag_stats.end());
+    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.dummy5.nBytesSelfAllocated") == mtag_stats.end());
 }
 
 TEST(MallocTagTestsuite, TooManyNodes)

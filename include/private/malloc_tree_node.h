@@ -67,7 +67,8 @@ public:
     void init(MallocTreeNode* parent, pid_t threadID)
     {
         m_nBytesTotal = 0;
-        m_nBytesSelf = 0;
+        m_nBytesSelfAllocated = 0;
+        m_nBytesSelfFreed = 0;
         m_nTimesEnteredAndExited = 0;
         for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
             m_nAllocationsSelf[i] = 0;
@@ -91,19 +92,14 @@ public:
 
     void track_alloc(MallocTagGlibcPrimitive_e type, size_t nBytes)
     {
-        m_nBytesSelf += nBytes;
+        m_nBytesSelfAllocated += nBytes;
         m_nAllocationsSelf[type]++;
     }
     bool track_free(MallocTagGlibcPrimitive_e type, size_t nBytes)
     {
-        if (m_nBytesSelf >= nBytes) {
-            m_nBytesSelf -= nBytes;
-            m_nAllocationsSelf[type]++;
-            return true;
-        }
-
-        // this is very suspicious and should never happen
-        return false;
+        m_nBytesSelfFreed += nBytes;
+        m_nAllocationsSelf[type]++;
+        return true;
     }
 
     void track_node_leave() { m_nTimesEnteredAndExited++; }
@@ -130,10 +126,24 @@ public:
     // previously on this tree node
     size_t get_total_bytes() const { return m_nBytesTotal; }
 
+    size_t get_net_self_bytes() const
+    {
+        if (m_nBytesSelfAllocated >= m_nBytesSelfFreed) {
+            return m_nBytesSelfAllocated - m_nBytesSelfFreed;
+        } else {
+            // this case is reached when the application is using realloc(): malloc-tag is unable
+            // to properly adjust counters for realloc()ed memory areas, so eventually it will turn out
+            // that apparently we free more memory than what we allocate:
+            return 0;
+        }
+    }
+
     size_t get_avg_self_bytes_per_visit() const
     {
         if (m_nTimesEnteredAndExited)
-            return m_nBytesSelf / m_nTimesEnteredAndExited;
+            // it's questionable if we should instead use:
+            //                get_net_self_bytes() / m_nTimesEnteredAndExited
+            return m_nBytesSelfAllocated / m_nTimesEnteredAndExited;
         return 0;
     }
 
@@ -174,9 +184,10 @@ public:
     }
 
 private:
-    size_t m_nBytesTotal; // Allocated bytes by this node and ALL its descendant nodes. Computed at "stats collection
-                          // time".
-    size_t m_nBytesSelf; // Allocated bytes only for THIS node.
+    size_t m_nBytesTotal; // Allocated bytes by this node and ALL its descendant nodes.
+                          // This field is computed only at "stats collection time".
+    size_t m_nBytesSelfAllocated; // Allocated bytes only for THIS node.
+    size_t m_nBytesSelfFreed; // Freed bytes only for THIS node.
     size_t m_nTimesEnteredAndExited; // How many times this malloc tree node has
     size_t m_nAllocationsSelf[MTAG_GLIBC_PRIMITIVE_MAX]; // The number of allocations for this node.
     unsigned int m_nTreeLevel; // How deep is located this node in the tree?
