@@ -249,17 +249,21 @@ void MallocTreeNode::collect_stats_recursively_GRAPHVIZDOT(std::string& out)
         m_pChildren[i]->collect_stats_recursively_GRAPHVIZDOT(out);
 }
 
-size_t MallocTreeNode::compute_bytes_totals_recursively() // returns total bytes accumulated by this node
+void MallocTreeNode::compute_bytes_totals_recursively(size_t* totAlloc, size_t* totFreed)
 {
     // postorder traversal of a tree:
     // first of all, traverse all children subtrees:
-    size_t accumulated_bytes = 0;
+    size_t alloc_bytes = 0, freed_bytes = 0;
     for (unsigned int i = 0; i < m_nChildrens; i++)
-        accumulated_bytes += m_pChildren[i]->compute_bytes_totals_recursively();
+        m_pChildren[i]->compute_bytes_totals_recursively(&alloc_bytes, &freed_bytes);
 
     // finally "visit" this node, updating the bytes count, using all children contributions:
-    m_nBytesTotalAllocated = accumulated_bytes + m_nBytesSelfAllocated;
-    return m_nBytesTotalAllocated;
+    m_nBytesTotalAllocated = alloc_bytes + m_nBytesSelfAllocated;
+    m_nBytesTotalFreed = freed_bytes + m_nBytesSelfFreed;
+
+    // assume the provided pointers had been initialized to zero at the start of the recursion
+    *totAlloc += m_nBytesTotalAllocated;
+    *totFreed += m_nBytesTotalFreed;
 }
 
 void MallocTreeNode::compute_node_weights_recursively(size_t rootNodeTotalBytes)

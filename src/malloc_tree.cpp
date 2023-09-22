@@ -157,7 +157,8 @@ void MallocTree::collect_stats_recursively(
     // NOTE: order is important:
 
     // STEP1: compute "bytes total" across the whole tree
-    m_pRootNode->compute_bytes_totals_recursively();
+    size_t allocated = 0, freed = 0;
+    m_pRootNode->compute_bytes_totals_recursively(&allocated, &freed);
 
     // STEP2: compute node weigth across the whole tree:
     m_pRootNode->compute_node_weights_recursively(m_pRootNode->get_total_allocated_bytes());

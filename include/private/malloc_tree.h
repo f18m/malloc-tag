@@ -76,7 +76,7 @@ public:
         // call this function only after collect_stats_recursively() API.
         // the result will be an approximated result: it will report the total memory accounted by this tree
         // at the time collect_stats_recursively() API was called the last time.
-        return m_nVmSizeAtCreation + m_pRootNode->get_total_allocated_bytes();
+        return m_nVmSizeAtCreation + m_pRootNode->get_net_total_bytes();
     }
 
     //------------------------------------------------------------------------------

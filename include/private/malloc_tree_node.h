@@ -67,6 +67,7 @@ public:
     void init(MallocTreeNode* parent, pid_t threadID)
     {
         m_nBytesTotalAllocated = 0;
+        m_nBytesTotalFreed = 0;
         m_nBytesSelfAllocated = 0;
         m_nBytesSelfFreed = 0;
         m_nTimesEnteredAndExited = 0;
@@ -109,7 +110,7 @@ public:
     void collect_stats_recursively_HUMANFRIENDLY(std::string& out);
     void collect_stats_recursively_MAP(MallocTagStatMap_t& out, const std::string& parent_kpi_prefix);
 
-    size_t compute_bytes_totals_recursively();
+    void compute_bytes_totals_recursively(size_t* totAlloc, size_t* totFreed);
     void compute_node_weights_recursively(size_t rootNodeTotalBytes);
 
     //------------------------------------------------------------------------------
@@ -125,6 +126,19 @@ public:
     // IMPORTANT: total bytes will be zero unless compute_bytes_totals_recursively() has been invoked
     // previously on this tree node
     size_t get_total_allocated_bytes() const { return m_nBytesTotalAllocated; }
+    size_t get_total_freed_bytes() const { return m_nBytesTotalFreed; }
+
+    size_t get_net_total_bytes() const
+    {
+        if (m_nBytesTotalAllocated >= m_nBytesTotalFreed) {
+            return m_nBytesTotalAllocated - m_nBytesTotalFreed;
+        } else {
+            // this case is reached when the application is using realloc(): malloc-tag is unable
+            // to properly adjust counters for realloc()ed memory areas, so eventually it will turn out
+            // that apparently we free more memory than what we allocate:
+            return 0;
+        }
+    }
 
     size_t get_net_self_bytes() const
     {
@@ -186,6 +200,8 @@ public:
 private:
     size_t m_nBytesTotalAllocated; // Allocated bytes by this node and ALL its descendant nodes.
                                    // This field is computed only at "stats collection time".
+    size_t m_nBytesTotalFreed; // Freed bytes by this node and ALL its descendant nodes.
+                               // This field is computed only at "stats collection time".
     size_t m_nBytesSelfAllocated; // Allocated bytes only for THIS node.
     size_t m_nBytesSelfFreed; // Freed bytes only for THIS node.
     size_t m_nTimesEnteredAndExited; // How many times this malloc tree node has

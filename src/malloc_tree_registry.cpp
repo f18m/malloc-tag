@@ -107,7 +107,13 @@ void MallocTreeRegistry::collect_stats(
     strftime(tmCurrentStr, sizeof(tmCurrentStr), "%Y-%m-%d @ %H:%M:%S %Z", &current_time_tm);
 
     size_t vmSizeNowBytes = MallocTagEngine::get_linux_vmsize_in_bytes();
-    size_t vmRSSNowBytes = MallocTagEngine::get_linux_vmsize_in_bytes();
+    size_t vmRSSNowBytes = MallocTagEngine::get_linux_vmrss_in_bytes();
+
+    /*
+        for (size_t i = 0; i < num_trees; i++) {
+            m_pRootNode->compute_bytes_totals_recursively();
+        }
+    */
 
     switch (format) {
     case MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE: {

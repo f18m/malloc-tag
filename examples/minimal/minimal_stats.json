@@ -1,14 +1,14 @@
-{"PID": 2514292,
-"tmStartProfiling": "2023-09-22 @ 11:11:12 CEST",
-"tmCurrentSnapshot": "2023-09-22 @ 11:11:12 CEST",
-"tree_for_TID2514292": {"TID": 2514292,
+{"PID": 2523727,
+"tmStartProfiling": "2023-09-22 @ 11:51:00 CEST",
+"tmCurrentSnapshot": "2023-09-22 @ 11:51:00 CEST",
+"tree_for_TID2523727": {"TID": 2523727,
 "ThreadName": "minimal",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 6,
 "nMaxTreeNodes": 256,
 "nPushNodeFailures": 0,
 "nFreeTrackingFailed": 0,
-"nVmSizeAtCreation": 20368000,
+"nVmSizeAtCreation": 20372000,
 "scope_minimal": {"nBytesTotalAllocated": 10004784,
 "nBytesSelfAllocated": 1032,
 "nBytesSelfFreed": 0,
@@ -76,8 +76,8 @@
 }
 }
 }
-,"nBytesAllocBeforeInit": 170896,
-"nBytesMallocTagSelfUsage": 69656,
-"vmSizeNowBytes": 30136000,
-"vmRSSNowBytes": 30136000,
-"nTotalTrackedBytes": 30539504}
+,"nBytesAllocBeforeInit": 172944,
+"nBytesMallocTagSelfUsage": 71704,
+"vmSizeNowBytes": 30140000,
+"vmRSSNowBytes": 2160000,
+"nTotalTrackedBytes": 30544344}
