@@ -1,17 +1,17 @@
 digraph MallocTree {
  node [colorscheme=reds9 style=filled]
- subgraph cluster_TID1909386 {
+ subgraph cluster_TID2514251 {
   node [colorscheme=reds9 style=filled]
   labelloc="b"
-  label="TID=1909386\nnPushNodeFailures=0\nnTreeNodesInUse/Max=3/256\n"
-  "1909386_minimal_tcm" [label="thread=minimal_tcm\nTID=1909386\ntotal=1kB (100.00%)\nself=1kB (64.00%)\nnum_malloc_self=1" shape=box fillcolor=6 fontsize=18]
-  "1909386_minimal_tcm" -> "1909386_OuterScope"
-  "1909386_OuterScope" [label="scope=OuterScope\ntotal=576B (36.00%)\nself=0B (0.00%)" fillcolor=1 fontsize=9]
-  "1909386_OuterScope" -> "1909386_InnerScope"
-  "1909386_InnerScope" [label="scope=InnerScope\ntotal=self=576B (36.00%)\nnum_malloc_self=1" fillcolor=4 fontsize=14]
+  label="TID=2514251\nnPushNodeFailures=0\nnTreeNodesInUse/Max=3/256\n"
+  "2514251_minimal_tcm" [label="thread=minimal_tcm\nTID=2514251\ntotal_alloc=1kB (100.00%)\nself_alloc=1kB (64.00%)\nself_freed=0B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1" shape=box fillcolor=6 fontsize=18]
+  "2514251_minimal_tcm" -> "2514251_OuterScope"
+  "2514251_OuterScope" [label="scope=OuterScope\ntotal_alloc=576B (36.00%)\nself_alloc=0B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=0B" fillcolor=1 fontsize=9]
+  "2514251_OuterScope" -> "2514251_InnerScope"
+  "2514251_InnerScope" [label="scope=InnerScope\ntotal_alloc=self_alloc=576B (36.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=576B\nnum_malloc_self=1" fillcolor=4 fontsize=14]
  }
 
  labelloc="b"
- label="Memory allocated before MallocTag initialization = 1kB\nMemory allocated by MallocTag itself =65kB\nTotal memory tracked by MallocTag across all threads =35MB\nVmSizeNow = 35MB\nMemory profiling session start timestamp = 2023-09-20 @ 00:12:50 CEST\nThis snapshot timestamp = 2023-09-20 @ 00:12:50 CEST\nPID = 1909386\n"
+ label="Memory allocated before MallocTag initialization = 90kB\nMemory allocated by MallocTag itself =69kB\nTotal memory tracked by MallocTag across all threads =35MB\nvmSizeNowBytes = 35MB\nvmRSSNowBytes = 35MB\nMemory profiling session start timestamp = 2023-09-22 @ 11:11:03 CEST\nThis snapshot timestamp = 2023-09-22 @ 11:11:03 CEST\nPID = 2514251\n"
 }
 

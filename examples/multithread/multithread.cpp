@@ -50,6 +50,7 @@ void FuncB(int thread_id)
 {
     MallocTagScope noname("FuncB");
 
+    // a std::map will trigger a "shower" of malloc() operations: see the "FuncB" malloc scope in results
     std::map<std::string, uint64_t> mytestmap;
     for (unsigned int i = 0; i < 1000 + thread_id * 1000; i++)
         mytestmap["onemorekey" + std::to_string(i)] = i;
@@ -58,8 +59,9 @@ void FuncB(int thread_id)
 void NonInstrumentedThread()
 {
     prctl(PR_SET_NAME, "NonInstrThr");
-    std::set<std::string> letsConsumeMemory;
 
+    // a std::set will trigger a "shower" of malloc() operations: see the "FuncB" malloc scope in results
+    std::set<std::string> letsConsumeMemory;
     for (size_t i = 0; i < 1000; i++)
         letsConsumeMemory.insert(std::string(100 + (rand() % 101), 'c'));
 }
@@ -137,7 +139,15 @@ int main()
     // if you want to dig into the GNU libc malloc this can be useful:
     // std::cout << MallocTagEngine::malloc_info() << std::endl;
 
-    std::cout << "Bye!" << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << "Human-friendly dump on stdout:" << std::endl;
+
+    std::string bigstr = MallocTagEngine::collect_stats(MTAG_OUTPUT_FORMAT_HUMANFRIENDLY_TREE);
+    std::cout << bigstr << std::endl;
+
+    std::cout << std::endl;
+    std::cout << "Multithread example says bye!" << std::endl;
 
     return 0;
 }

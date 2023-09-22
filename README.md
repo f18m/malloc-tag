@@ -56,7 +56,7 @@ malloc-tag profiler can produce output in a machine-friendly JSON format, see e.
 
 From the picture above it becomes obvious that to improve/reduce memory usage, all the allocations accounted against the "minimal" scope and all the code executing in the malloc scope "FuncC" should be improved, since they have the highest self-memory usage, as emphasized by the darkest red shade.
 
-Profiling a more complex example, involving a simple application spawning 6 secondary pthreads, will produce such kind of graph:
+Profiling a more complex example, involving a simple application spawning 5 secondary pthreads, will produce such kind of graph:
 
 ![multithread_example_svg](examples/multithread/multithread_stats.dot.svg?raw=true "Malloc-tag output for MULTITHREAD example")
 
@@ -91,7 +91,7 @@ int main() {
 4) whenever you want a snapshot of the memory profiling results to be written, invoke the API to write results on disk:
 
 ```
-MallocTagEngine::write_stats()
+MallocTagEngine::write_stats();
 ```
 
 This function might be placed at the very end of your main() or any other exit point. In alternative it can be hooked to a signal e.g. SIGUSR1 so that the

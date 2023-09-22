@@ -28,7 +28,8 @@ void Level2()
     MallocTagScope noname("Level2");
     Level3();
 
-    malloc(MALLOC_AT_LEVEL2); // check this gets accounted on the correct scope
+    void* mypointer = malloc(MALLOC_AT_LEVEL2); // check this gets accounted on the correct scope
+    free(mypointer);
 }
 void Level3()
 {
@@ -61,13 +62,15 @@ void TooManyLevels_thread()
     // CHECK1: the malloc at level5 must end up accounted at level3 (last available level)
     std::string k = MallocTagEngine::get_stat_key_prefix_for_thread() + "unit_tests.Level1.Level2.Level3";
     EXPECT_EQ(mtag_stats[k + ".nCallsTo_malloc"], 1);
-    EXPECT_GE(mtag_stats[k + ".nBytesSelf"], MALLOC_AT_LEVEL5);
+    EXPECT_GE(mtag_stats[k + ".nBytesSelfAllocated"], MALLOC_AT_LEVEL5);
+    EXPECT_EQ(mtag_stats[k + ".nBytesSelfFreed"], 0 /* we produced a memleak no purpose */);
 
     // CHECK2: the malloc at level2 must end up correctly accounted at level2
     //         (this checks that all "pop" operations by failed MallocTagScope are correctly skipped)
     k = MallocTagEngine::get_stat_key_prefix_for_thread() + "unit_tests.Level1.Level2";
     EXPECT_EQ(mtag_stats[k + ".nCallsTo_malloc"], 1);
-    EXPECT_GE(mtag_stats[k + ".nBytesSelf"], MALLOC_AT_LEVEL2);
+    EXPECT_GE(mtag_stats[k + ".nBytesSelfAllocated"], MALLOC_AT_LEVEL2);
+    EXPECT_GE(mtag_stats[k + ".nBytesSelfFreed"], MALLOC_AT_LEVEL2);
 }
 
 TEST(MallocTagTestsuite, TooManyLevels)

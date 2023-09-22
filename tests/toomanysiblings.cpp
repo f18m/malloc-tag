@@ -39,8 +39,8 @@ void TooManySiblings_thread()
         mtag_stats[k + ".nPushNodeFailures"], 1); // we iterate to "sibling_limits + 1" so we should get 1 push fail
 
     // CHECK2: the last entry in the tree should be "dummy15", there should be no "dummy16"
-    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.TooManySib.dummy15.nBytesSelf") != mtag_stats.end());
-    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.TooManySib.dummy16.nBytesSelf") == mtag_stats.end());
+    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.TooManySib.dummy15.nBytesSelfAllocated") != mtag_stats.end());
+    EXPECT_TRUE(mtag_stats.find(k + "unit_tests.TooManySib.dummy16.nBytesSelfAllocated") == mtag_stats.end());
 }
 
 TEST(MallocTagTestsuite, TooManySiblings)
