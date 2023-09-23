@@ -32,7 +32,7 @@
 
 class MallocTreeRegistry {
 public:
-    MallocTreeRegistry() { }
+    MallocTreeRegistry() { m_bShutdownStarted = false; }
     ~MallocTreeRegistry();
 
     MallocTree* register_main_tree(size_t max_tree_nodes, size_t max_tree_levels); // triggers some mallocs!
@@ -40,7 +40,7 @@ public:
 
     size_t get_total_memusage_in_bytes();
 
-    bool has_main_thread_tree() { return m_nMallocTrees > 0; }
+    bool has_main_thread_tree() { return !m_bShutdownStarted && m_nMallocTrees > 0; }
 
     MallocTree* get_main_thread_tree()
     {
@@ -56,6 +56,7 @@ protected:
 private:
     // the registry is the OWNER of m_nMallocTrees whose pointers get stored in m_pMallocTreeRegistry[]
     MallocTree* m_pMallocTreeRegistry[MTAG_MAX_TREES];
+    std::atomic_bool m_bShutdownStarted;
     std::atomic_uint m_nMallocTrees;
 
     // records the time the memory profiling has started:

@@ -33,12 +33,6 @@
 #include "private/malloc_tree_registry.h"
 
 //------------------------------------------------------------------------------
-// Macros
-//------------------------------------------------------------------------------
-
-#define UNLIKELY(x) __builtin_expect((x), 0)
-
-//------------------------------------------------------------------------------
 // External functions
 //------------------------------------------------------------------------------
 
@@ -116,7 +110,7 @@ public:
                 // MallocTagEngine::init() has been invoked, good;
                 // it means the tree for the main-thread is ready.
                 // Let's check if the tree of _this_ thread has been initialized or not:
-                if (UNLIKELY(!g_perthread_tree || !g_perthread_tree->is_ready())) {
+                if (MTAG_UNLIKELY(!g_perthread_tree || !g_perthread_tree->is_ready())) {
                     HookDisabler avoidInfiniteRecursionDueToMallocsInsideMalloc;
 
                     g_perthread_tree = g_registry.register_secondary_thread_tree();
@@ -126,7 +120,10 @@ public:
 
                 return g_perthread_tree != nullptr;
             } else {
-                // MallocTagEngine::init() not invoked yet
+                // MallocTagEngine::init() not invoked yet -- or perhaps the dtor of MallocTagRegistry is being
+                // executed (should happen only at application exit) and thus has_main_tree() returns now false
+                // (trees are being destroyed)... in such case g_perthread_tree is possibly a pointer to deallocated
+                // memory and thus we cannot use it
                 return false;
             }
         } else {
@@ -184,7 +181,7 @@ MallocTagScope::~MallocTagScope()
 
 bool MallocTagEngine::init(size_t max_tree_nodes, size_t max_tree_levels, unsigned int snapshot_interval_sec)
 {
-    if (UNLIKELY(g_perthread_tree && g_perthread_tree->is_ready()))
+    if (MTAG_UNLIKELY(g_perthread_tree && g_perthread_tree->is_ready()))
         return true; // invoking twice? not a failure but suspicious
 
     // init the main-thread tree:
