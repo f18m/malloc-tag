@@ -91,6 +91,14 @@ minimal_debug: $(BINS)
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
 		gdb \
 		examples/minimal/minimal
+minimal_valgrind: $(BINS)
+	# IMPORTANT: the minimal example is leaking memory on-purpose, so valgrind WILL detect some memory
+	#            that has been "lost" at the end of the program
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
+		valgrind \
+		examples/minimal/minimal
 
 #
 # If you want to experiment decreasing the glibc VIRT memory usage in multithreaded apps,
@@ -129,6 +137,12 @@ multithread_debug: $(BINS)
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
 		gdb \
+		examples/multithread/multithread
+multithread_valgrind: $(BINS)
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
+		valgrind \
 		examples/multithread/multithread
 
 

@@ -198,7 +198,9 @@ void MallocTreeRegistry::collect_stats(
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
             stats_str += "\n";
 
-            float w = 100 * m_pMallocTreeRegistry[i]->get_total_allocated_bytes() / nTotalBytesAllocatedFromAllTrees;
+            float w = 0;
+            if (nTotalBytesAllocatedFromAllTrees)
+                w = 100 * m_pMallocTreeRegistry[i]->get_total_allocated_bytes() / nTotalBytesAllocatedFromAllTrees;
             char wstr[16];
             // ensure only 2 digits of accuracy:
             snprintf(wstr, 15, "w=%.2f%%", w);

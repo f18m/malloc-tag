@@ -1,31 +1,31 @@
 digraph AllMallocTrees {
  node [colorscheme=reds9 style=filled]
-  "Process 2909020" [label="Whole process stats\nallocated_mem_before_malloctag_init=189kB\nallocated_mem_by_malloctag_itself=71kB\nallocated_mem=10MB\nvm_size_now=30MB\nvm_rss_now=3MB\nmalloctag_start_ts=2023-09-23 @ 15:36:41 CEST\nthis_snapshot_ts=2023-09-23 @ 15:36:41 CEST\n"
+  "Process 3089216" [label="Whole process stats\nallocated_mem_before_malloctag_init=0B\nallocated_mem_by_malloctag_itself=71kB\nallocated_mem=0B\nvm_size_now=116MB\nvm_rss_now=42MB\nmalloctag_start_ts=2023-09-25 @ 11:04:45 CEST\nthis_snapshot_ts=2023-09-25 @ 11:04:45 CEST\n"
 ]
- subgraph cluster_TID2909020 {
+ subgraph cluster_TID3089216 {
   node [colorscheme=reds9 style=filled]
   labelloc="b"
-  label="TID=2909020\nnPushNodeFailures=0\nnTreeNodesInUse/Max=6/256\n"
-  "2909020_minimal" [label="thread=minimal\nTID=2909020\ntotal_alloc=10MB (100.00%)\nself_alloc=1kB (0.01%)\nself_freed=0B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\n"
+  label="TID=3089216\nnPushNodeFailures=0\nnTreeNodesInUse/Max=6/256\n"
+  "3089216_memcheck-amd64-" [label="thread=memcheck-amd64-\nTID=3089216\ntotal_alloc=self_alloc=0B (0.00%)\nself_freed=0B\nvisited_times=0\nself_alloc_per_visit=0B\n"
  shape=box fillcolor=1 fontsize=9]
-  "2909020_minimal" -> "2909020_TopFunc" [label="w=99.98%"]
-  "2909020_TopFunc" [label="scope=TopFunc\ntotal_alloc=10MB (99.98%)\nself_alloc=24B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=24B\nnum_malloc_self=1\n"
+  "3089216_memcheck-amd64-" -> "3089216_TopFunc" [label="w=0.00%"]
+  "3089216_TopFunc" [label="scope=TopFunc\ntotal_alloc=self_alloc=0B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=0B\n"
  fillcolor=1 fontsize=9]
-  "2909020_TopFunc" -> "2909020_FuncA" [label="w=0.00%"]
-  "2909020_TopFunc" -> "2909020_FuncB" [label="w=0.00%"]
-  "2909020_TopFunc" -> "2909020_FuncC" [label="w=99.97%"]
-  "2909020_FuncA" [label="scope=FuncA\ntotal_alloc=808B (0.00%)\nself_alloc=304B (0.00%)\nself_freed=200B\nvisited_times=1\nself_alloc_per_visit=304B\nnum_malloc_self=1\nnum_realloc_self=1\nnum_free_self=1\n"
+  "3089216_TopFunc" -> "3089216_FuncA" [label="w=0.00%"]
+  "3089216_TopFunc" -> "3089216_FuncB" [label="w=0.00%"]
+  "3089216_TopFunc" -> "3089216_FuncC" [label="w=0.00%"]
+  "3089216_FuncA" [label="scope=FuncA\ntotal_alloc=self_alloc=0B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=0B\n"
  fillcolor=1 fontsize=9]
-  "2909020_FuncA" -> "2909020_FuncB" [label="w=0.00%"]
-  "2909020_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nself_freed=504B\nvisited_times=1\nself_alloc_per_visit=504B\nnum_malloc_self=1\nnum_free_self=1\n"
+  "3089216_FuncA" -> "3089216_FuncB" [label="w=0.00%"]
+  "3089216_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=0B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=0B\n"
  fillcolor=1 fontsize=9]
-  "2909020_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=504B (0.00%)\nself_freed=504B\nvisited_times=1\nself_alloc_per_visit=504B\nnum_malloc_self=1\nnum_free_self=1\n"
+  "3089216_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=0B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=0B\n"
  fillcolor=1 fontsize=9]
-  "2909020_FuncC" [label="scope=FuncC\ntotal_alloc=self_alloc=10MB (99.97%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=10MB\nnum_malloc_self=1\n"
- fillcolor=7 fontsize=20]
+  "3089216_FuncC" [label="scope=FuncC\ntotal_alloc=self_alloc=0B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=0B\n"
+ fillcolor=1 fontsize=9]
  }
 
-  "Process 2909020" -> "2909020_minimal" [label="w=100.00%"]
+  "Process 3089216" -> "3089216_memcheck-amd64-" [label="w=0.00%"]
  labelloc="b"
  label="Legend:\n'w' stands for self-allocation-weight, defined as BYTES_ALLOCATED_BY_NODE / BYTES_ALLOCATED_BY_ALL_TREES\nSquare box: indicates the root node of a MallocTree for an application thread\nNodes having an high self-allocation-weight are drawn bigger and with dark shade of red\n"
 }
