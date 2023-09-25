@@ -17,6 +17,12 @@
 // MallocTree
 //------------------------------------------------------------------------------
 
+MallocTree::~MallocTree()
+{
+    if (m_pNodePool)
+        fmpool_destroy(MallocTreeNode, m_pNodePool);
+}
+
 bool MallocTree::init(
     size_t max_tree_nodes, size_t max_tree_levels, bool is_owned_by_main_thread) // triggers some MEMORY ALLOCATION
 {

@@ -48,6 +48,12 @@ enum MallocTagGlibcPrimitive_e {
 std::string MallocTagGlibcPrimitive2String(MallocTagGlibcPrimitive_e t);
 
 //------------------------------------------------------------------------------
+// Macros
+//------------------------------------------------------------------------------
+
+#define MTAG_UNLIKELY(x) __builtin_expect((x), 0)
+
+//------------------------------------------------------------------------------
 // MallocTreeNode_t
 // A single node in the malloc tree structure.
 // These nodes are created by the application using the MallocTagScope helper class

@@ -22,16 +22,23 @@ extern std::atomic<size_t> g_bytes_allocated_before_init;
 
 MallocTreeRegistry::~MallocTreeRegistry()
 {
+    // atomically flag that the registry cannot be used anymore:
+    m_bShutdownStarted = true;
+
     size_t toDelete = m_nMallocTrees.fetch_sub(1);
     while (toDelete > 0) {
         delete m_pMallocTreeRegistry[toDelete];
         toDelete = m_nMallocTrees.fetch_sub(1);
     }
+
+    // delete the last tree
     delete m_pMallocTreeRegistry[0];
 }
 
 MallocTree* MallocTreeRegistry::register_main_tree(size_t max_tree_nodes, size_t max_tree_levels)
 {
+    if (MTAG_UNLIKELY(m_bShutdownStarted))
+        return nullptr;
     assert(m_nMallocTrees.fetch_add(1) == 0); // the main tree must be the first one to get created
 
     // when we register the main tree, it means basically the memory profiling session is starting;
@@ -51,9 +58,12 @@ MallocTree* MallocTreeRegistry::register_main_tree(size_t max_tree_nodes, size_t
 
 MallocTree* MallocTreeRegistry::register_secondary_thread_tree()
 {
+    if (MTAG_UNLIKELY(m_bShutdownStarted))
+        return nullptr;
+
     // thread-safe code
     size_t reservedIdx = m_nMallocTrees.fetch_add(1);
-    if (reservedIdx >= MTAG_MAX_TREES) {
+    if (MTAG_UNLIKELY(reservedIdx >= MTAG_MAX_TREES)) {
         // we have reached the max number of trees/threads for this application!
         return nullptr;
     }
@@ -188,7 +198,9 @@ void MallocTreeRegistry::collect_stats(
             tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
             stats_str += "\n";
 
-            float w = 100 * m_pMallocTreeRegistry[i]->get_total_allocated_bytes() / nTotalBytesAllocatedFromAllTrees;
+            float w = 0;
+            if (nTotalBytesAllocatedFromAllTrees)
+                w = 100 * m_pMallocTreeRegistry[i]->get_total_allocated_bytes() / nTotalBytesAllocatedFromAllTrees;
             char wstr[16];
             // ensure only 2 digits of accuracy:
             snprintf(wstr, 15, "w=%.2f%%", w);

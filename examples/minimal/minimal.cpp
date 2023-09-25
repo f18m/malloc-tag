@@ -32,10 +32,10 @@ void FuncA()
     MallocTagScope noname("FuncA"); // please account all mem allocs under the "FuncA" name from this point onward
 
     void* a = malloc(100);
-    realloc(a, 200); // just show also realloc() is accounted for
+    void* b = realloc(a, 200); // just show also realloc() is accounted for
     FuncB();
 
-    free(a);
+    free(b);
 }
 
 void FuncB()
