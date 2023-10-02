@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import sys
+import re
 
 # =======================================================================================================
 # GLOBALs
@@ -249,6 +250,7 @@ class MallocTagSnapshot:
 
         with open(json_outfile, 'w', encoding='utf-8') as f:
             json.dump(outdict, f, ensure_ascii=False, indent=4)  ## , cls=MallocTagSnapshot_Encoder
+        print(f"Saved postprocessed results into {json_outfile}.")
 
     def print_stats(self):
         num_nodes = sum([self.treeRegistry[t].get_num_nodes() for t in self.treeRegistry])
@@ -261,16 +263,78 @@ class MallocTagSnapshot:
         del self.treeRegistry[tid2]
 
 # =======================================================================================================
-# AggregationRules
+# PostProcessConfig
 # =======================================================================================================
 
-class AggregationRules:
+class PostProcessAggregationRule:
+
+    def __init__(self, ruleIdx: int):
+        self.ruleIdx = ruleIdx
+        self.matching_prefix = ""
+    def load(self, cfg_dict):
+        self.matching_prefix = cfg_dict["aggregate_trees"]["matching_prefix"]
+    def logprefix(self):
+        return f"Rule#{self.ruleIdx}:"
+    def apply(self, snapshot: MallocTagSnapshot):
+        # TODO
+        regex = re.compile(self.matching_prefix)
+
+        matching_tids = [tid for tid in snapshot.treeRegistry if re.match(regex, snapshot.treeRegistry[tid].name)]
+        print(f"{self.logprefix()} Found trees matching the prefix [{self.matching_prefix}] with TIDs: {matching_tids}")
+
+        if len(matching_tids) == 0:
+            print(f"{self.logprefix()} Could not find any tree matching the prefix [{self.matching_prefix}]")
+        elif len(matching_tids) == 1:
+            print(f"{self.logprefix()} Found only 1 tree matching the prefix [{self.matching_prefix}]. Nothing to aggregate.")
+        else:
+            firstTid = matching_tids[0]
+            for otherTid in matching_tids[1:]:
+                snapshot.aggregate_thread_trees(firstTid, otherTid)
+            print(f"{self.logprefix()} Aggregation completed.")
+
+class PostProcessConfig:
     """
-        This class represents some aggregation rules
-    """
+        This class represents some aggregation rules provided by the user
+    """    
 
     def __init__(self):
-        self.treeRegistry = {} # dict indexed by TID
+        self.rules = []
+
+    def load(self, cfg_json):
+        wholejson = {}
+        try:
+            f = open(cfg_json, "r")
+            text = f.read()
+            f.close()
+            wholejson = json.loads(text)
+        except json.decoder.JSONDecodeError as err:
+            print(f"Invalid configuration JSON file '{cfg_json}': {err}")
+            sys.exit(1)
+
+        nrule = 0
+        for rule in wholejson:
+            if not rule.startswith("rule"):
+                print(f"In configuration JSON file '{cfg_json}': all root-level objects should be rules starting with [rule] prefix. Found: {rule}")
+                sys.exit(1)
+            if len(wholejson[rule]) != 1:
+                print(f"In configuration JSON file '{cfg_json}': in rule '{rule}': expected exactly 1 mode")
+                sys.exit(1)
+
+            mode = next(iter(wholejson[rule]))
+
+            if mode == "aggregate_trees":
+                t = PostProcessAggregationRule(nrule)
+                t.load(wholejson[rule])
+                self.rules.append(t)
+                nrule += 1
+            else:
+                print(f"In configuration JSON file '{cfg_json}': in rule '{rule}': found unsupported mode '{mode}'")
+                sys.exit(1)
+        print(f"Loaded {len(self.rules)} postprocessing rules from config file '{cfg_json}'.")
+
+    def apply(self, snapshot: MallocTagSnapshot):
+        for r in self.rules:
+            r.apply(snapshot)
 
 # =======================================================================================================
 # MAIN HELPERS
@@ -285,7 +349,7 @@ def parse_command_line():
     # Optional arguments
     # NOTE: we cannot add required=True to --output option otherwise it's impossible to invoke this tool with just --version
     parser.add_argument("-o", "--output", help="The name of the output JSON file with aggregated stats.", default=None)
-    parser.add_argument("-a", "--aggregate", help="JSON file specifying the aggregation rules.", default=None)
+    parser.add_argument("-c", "--config", help="JSON file specifying the postprocessing configuration.", default=None)
     parser.add_argument("-v", "--verbose", help="Be verbose.", action="store_true", default=False)
     parser.add_argument("-V", "--version", help="Print version and exit", action="store_true", default=False)
     # NOTE: we use nargs='?' to make it possible to invoke this tool with just --version
@@ -315,7 +379,7 @@ def parse_command_line():
         # take absolute path
         args.output = os.path.join(os.getcwd(), args.output)
 
-    return {"input_json": args.input, "output_file": args.output, "aggregate_rules": args.aggregate}
+    return {"input_json": args.input, "output_file": args.output, "postprocess_config_file": args.config}
 
 
 # =======================================================================================================
@@ -325,11 +389,20 @@ def parse_command_line():
 if __name__ == "__main__":
     config = parse_command_line()
 
+    # load the malloctag snapshot file:
     t = MallocTagSnapshot()
     t.load(config["input_json"])
     t.print_stats()
 
-    #t.aggregate_thread_trees(7, 9)
+    # load postprocessing cfg:
+    r = PostProcessConfig()
+    if config["postprocess_config_file"]:
+        r.load(config["postprocess_config_file"])
 
-    t.save(config["output_file"])
+    # apply cfg:
+    r.apply(t)
+
+    # if requested, save the output:
+    if config["output_file"]:
+        t.save(config["output_file"])
 
