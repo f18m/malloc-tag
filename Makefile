@@ -69,15 +69,15 @@ cpp_tests: $(BINS)
 		tests/unit_tests
 
 python_tests:
-	@echo "Starting Python integration TESTS"
-	tools/postprocess.py -o /tmp/nopostprocess.json examples/minimal/minimal_stats.json
+	@echo "Starting Python integration TESTS (assume multithread example JSON is available)"
+	tools/postprocess.py -o /tmp/nopostprocess.json examples/multithread/multithread_stats.json
 	jq . /tmp/nopostprocess.json >/tmp/nopostprocess_prettyprinted.json
-	jq . examples/minimal/minimal_stats.json >/tmp/minimal_stats_prettyprinted.json
-	md5sum /tmp/minimal_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json
-	@cmp --silent /tmp/minimal_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json || ( \
+	jq . examples/multithread/multithread_stats.json >/tmp/multithread_stats_prettyprinted.json
+	md5sum /tmp/multithread_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json
+	@cmp --silent /tmp/multithread_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json || ( \
 		echo; \
 		echo "!! Failed test; the two files are different !!" ; \
-		diff -bU3 /tmp/minimal_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json ; \
+		diff -bU3 /tmp/multithread_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json ; \
 		echo; \
 		exit 2 \
 	)
