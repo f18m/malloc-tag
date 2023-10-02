@@ -57,6 +57,32 @@ format_check:
 	# if you have clang-format >= 10.0.0, this will work:
 	@clang-format --dry-run --Werror $(LIB_HDR) $(LIB_SRC)
 
+tests:
+	$(MAKE) cpp_tests
+	$(MAKE) python_tests
+
+cpp_tests: $(BINS)
+	@echo "Starting C++ UNIT TESTS application"
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/tests/dummystats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/tests/dummystats.dot \
+		tests/unit_tests
+
+python_tests:
+	@echo "Starting Python integration TESTS"
+	tools/postprocess.py -o /tmp/nopostprocess.json examples/minimal/minimal_stats.json
+	jq . /tmp/nopostprocess.json >/tmp/nopostprocess_prettyprinted.json
+	jq . examples/minimal/minimal_stats.json >/tmp/minimal_stats_prettyprinted.json
+	md5sum /tmp/minimal_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json
+	@cmp --silent /tmp/minimal_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json || ( \
+		echo; \
+		echo "!! Failed test; the two files are different !!" ; \
+		diff -bU3 /tmp/minimal_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json ; \
+		echo; \
+		exit 2 \
+	)
+
+
 minimal_example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
@@ -144,15 +170,6 @@ multithread_valgrind: $(BINS)
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
 		valgrind \
 		examples/multithread/multithread
-
-
-tests: $(BINS)
-	@echo "Starting UNIT TESTS application"
-	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
-	MTAG_STATS_OUTPUT_JSON=$(PWD)/tests/dummystats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/tests/dummystats.dot \
-		tests/unit_tests
-
 
 
 ifeq ($(USE_TCMALLOC),1)
