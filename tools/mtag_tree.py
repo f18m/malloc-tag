@@ -110,3 +110,5 @@ class MallocTree:
     def get_num_nodes(self):
         return self.treeRootNode.get_num_nodes()
 
+    def get_graphviz_root_node_name(self):
+        return self.treeRootNode.get_graphviz_node_name()

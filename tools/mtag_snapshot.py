@@ -117,11 +117,24 @@ class MallocTagSnapshot:
         labels.append("this_snapshot_ts=" + self.tmCurrentSnapshot)
 
         # create the main node:
-        thegraph.node(f"Process {self.pid}", label='\n'.join(labels))
+        mainNodeName = f"Process_{self.pid}"
+        thegraph.node(mainNodeName, label='\n'.join(labels))
 
-        # now dump 
+        # used to compute weights later:
+        totalloc, totfreed = self.collect_allocated_freed_recursively()
+
+        # now create subgraphs for each and every tree: 
         for t in self.treeRegistry.keys():
             self.treeRegistry[t].save_as_graphviz_dot(thegraph)
+
+            # compute the weight for the 't'-th tree:
+            treealloc, treefree = self.treeRegistry[t].collect_allocated_freed_recursively()
+            w = 0 if totalloc == 0 else 100*treealloc/totalloc
+            wstr = f"%.2f%%" % w
+
+            # add edge main node ---> tree
+            thegraph.edge(mainNodeName, self.treeRegistry[t].get_graphviz_root_node_name(), label=wstr)
+
 
         #print(thegraph.source)
         thegraph.render(outfile=graphviz_dot_outfile)

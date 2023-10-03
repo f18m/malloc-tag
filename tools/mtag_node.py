@@ -152,16 +152,15 @@ class MallocTagNode:
             thisNodeFontSize = "20"
         
         # create a name that is unique in the whole graphviz DOT document:
-        thisNodeName = f"{self.ownerTID}_{self.name}"
+        thisNodeName = self.get_graphviz_node_name()
 
         # finally add this node:
         graph.node(name=thisNodeName, label='\n'.join(thisNodeLabels), shape=thisNodeShape, fillcolor=thisNodeFillColor, fontsize=thisNodeFontSize)
             
         # write all the connections between this node and its children:
         for c in self.childrenNodes:
-            child_per_thread_node_name = f"{self.ownerTID}_{self.childrenNodes[c].name}"
             edge_label = f"w={self.childrenNodes[c].nTotalWeightPercentage}%"
-            graph.edge(thisNodeName, child_per_thread_node_name, label=edge_label);
+            graph.edge(thisNodeName, self.childrenNodes[c].get_graphviz_node_name(), label=edge_label);
 
         # now recurse into each children:
         for c in self.childrenNodes:
@@ -217,6 +216,11 @@ class MallocTagNode:
             #                get_net_self_bytes() / m_nTimesEnteredAndExited
             return self.nBytesSelfAllocated / self.nTimesEnteredAndExited
         return 0
+
+    def get_graphviz_node_name(self):
+        # create a name that is unique in the whole graphviz DOT document:
+        return f"{self.ownerTID}_{self.name}"
+
 
     def collect_allocated_freed_recursively(self):
         # Postorder traversal of a tree:
