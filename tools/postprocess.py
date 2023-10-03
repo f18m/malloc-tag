@@ -17,271 +17,15 @@ import sys
 import re
 import decimal
 from decimal import *
+from mtag_node import *
+from mtag_tree import *
+from mtag_snapshot import *
 
 # =======================================================================================================
 # GLOBALs
 # =======================================================================================================
 
-verbose = False
 THIS_SCRIPT_VERSION = "0.0.1"
-SCOPE_PREFIX = "scope_"
-TREE_PREFIX = "tree_for_TID"
-
-g_num_nodes = 0
-
-# =======================================================================================================
-# MallocTagNode
-# =======================================================================================================
-
-class MallocTagNode:
-    """
-    This class represents a node in the JSON tree produced by the malloc-tag library.
-    """
-
-    def __init__(self):
-        global g_num_nodes
-        self.childrenNodes = {}  # dict indexed by "scope name"
-
-        # allocate a new ID for this node
-        self.id = g_num_nodes
-        g_num_nodes += 1
-
-    def load(self, node_dict: dict, name: str):
-        # this is the "scope name"
-        self.name = name
-        # print(self.name)
-
-        # load self properties
-        self.nBytesTotalAllocated = node_dict["nBytesTotalAllocated"]
-        self.nBytesSelfAllocated = node_dict["nBytesSelfAllocated"]
-        self.nBytesSelfFreed = node_dict["nBytesSelfFreed"]
-        self.nTimesEnteredAndExited = node_dict["nTimesEnteredAndExited"]
-        self.nWeightPercentage = float(node_dict["nWeightPercentage"])
-        self.nCallsTo_malloc = node_dict["nCallsTo_malloc"]
-        self.nCallsTo_realloc = node_dict["nCallsTo_realloc"]
-        self.nCallsTo_calloc = node_dict["nCallsTo_calloc"]
-        self.nCallsTo_free = node_dict["nCallsTo_free"]
-
-        # recursive load
-        for scope in node_dict["nestedScopes"].keys():
-            assert scope.startswith(SCOPE_PREFIX)
-            name = scope[len(SCOPE_PREFIX) :]
-
-            # load the node recursively
-            t = MallocTagNode()
-            t.load(node_dict["nestedScopes"][scope], name)
-            assert name not in self.childrenNodes
-
-            # store the node
-            self.childrenNodes[name] = t
-
-    def get_as_dict(self):
-        d = {
-            "nBytesTotalAllocated": self.nBytesTotalAllocated,
-            "nBytesSelfAllocated": self.nBytesSelfAllocated,
-            "nBytesSelfFreed": self.nBytesSelfFreed,
-            "nTimesEnteredAndExited": self.nTimesEnteredAndExited,
-            "nWeightPercentage": Decimal(self.nWeightPercentage), # see usage of DecimalEncoder later on
-            "nCallsTo_malloc": self.nCallsTo_malloc,
-            "nCallsTo_realloc": self.nCallsTo_realloc,
-            "nCallsTo_calloc": self.nCallsTo_calloc,
-            "nCallsTo_free": self.nCallsTo_free,
-            "nestedScopes": {},
-        }
-        for n in self.childrenNodes:
-            d["nestedScopes"][SCOPE_PREFIX + n] = self.childrenNodes[n].get_as_dict()
-        return d
-
-    def get_num_levels(self):
-        tot = 1
-        if self.childrenNodes:
-            tot += max(
-                [self.childrenNodes[n].get_num_levels() for n in self.childrenNodes]
-            )
-        return tot
-
-    def get_num_nodes(self):
-        tot = 1  # this current node
-        for t in self.childrenNodes.keys():
-            tot += self.childrenNodes[t].get_num_nodes()
-        return tot
-
-    def aggregate_with(self, other: "MallocTagNode"):
-        self.nBytesTotalAllocated += other.nBytesTotalAllocated
-        self.nBytesSelfAllocated += other.nBytesSelfAllocated
-        self.nBytesSelfFreed += other.nBytesSelfFreed
-        self.nTimesEnteredAndExited += other.nTimesEnteredAndExited
-        self.nWeightPercentage += other.nWeightPercentage
-        self.nCallsTo_malloc += other.nCallsTo_malloc
-        self.nCallsTo_realloc += other.nCallsTo_realloc
-        self.nCallsTo_calloc += other.nCallsTo_calloc
-        self.nCallsTo_free += other.nCallsTo_free
-        for scopeName in other.childrenNodes.keys():
-            if scopeName in self.childrenNodes:
-                # same scope is already present... aggregate!
-                self.childrenNodes[scopeName].aggregate_with(
-                    other.childrenNodes[scopeName]
-                )
-            else:
-                # this is a new scope... present only in the 'other' node... add it
-                self.childrenNodes[scopeName] = other.childrenNodes[scopeName]
-
-
-# =======================================================================================================
-# MallocTree
-# =======================================================================================================
-
-
-class MallocTree:
-    """
-    This class represents a JSON tree produced by the malloc-tag library for an entire thread.
-    """
-
-    def __init__(self):
-        self.treeRootNode = None
-
-    def load(self, tree_dict: dict):
-        self.tid = tree_dict["TID"]
-        self.name = tree_dict["ThreadName"]
-        self.nPushNodeFailures = tree_dict["nPushNodeFailures"]
-        self.nFreeTrackingFailed = tree_dict["nFreeTrackingFailed"]
-        self.nMaxTreeNodes = tree_dict["nMaxTreeNodes"]
-        self.nVmSizeAtCreation = tree_dict["nVmSizeAtCreation"]
-        if self.nPushNodeFailures > 0:
-            print(
-                f"WARNING: found malloc-tag failures in tracking mem allocations inside the tree {self.name}"
-            )
-        if self.nFreeTrackingFailed > 0:
-            print(
-                f"WARNING: found malloc-tag failures in tracking mem allocations inside the tree {self.name}"
-            )
-
-        for k in tree_dict.keys():
-            if k.startswith(SCOPE_PREFIX):
-                # found the root node
-                # print(k)
-                assert self.treeRootNode is None
-                self.treeRootNode = MallocTagNode()
-                self.treeRootNode.load(tree_dict[k], k[len(SCOPE_PREFIX) :])
-
-    def get_as_dict(self):
-        d = {
-            "TID": self.tid,
-            "ThreadName": self.name,
-            "nTreeLevels": self.get_num_levels(),
-            "nTreeNodesInUse": self.get_num_nodes(),
-            "nMaxTreeNodes": self.nMaxTreeNodes,
-            "nPushNodeFailures": self.nPushNodeFailures,
-            "nFreeTrackingFailed": self.nFreeTrackingFailed,
-            "nVmSizeAtCreation": self.nVmSizeAtCreation,
-        }
-        d[SCOPE_PREFIX + self.treeRootNode.name] = self.treeRootNode.get_as_dict()
-        return d
-
-    def get_num_levels(self):
-        return self.treeRootNode.get_num_levels()
-
-    def get_num_nodes(self):
-        return self.treeRootNode.get_num_nodes()
-
-    def aggregate_with(self, other: "MallocTree"):
-        self.tid = -1  # the TID makes no sense anymore
-        self.name += "," + other.name
-        self.nPushNodeFailures += other.nPushNodeFailures
-        self.nFreeTrackingFailed += other.nFreeTrackingFailed
-        self.nMaxTreeNodes = max(self.nMaxTreeNodes, other.nMaxTreeNodes)
-        self.nVmSizeAtCreation = max(self.nVmSizeAtCreation, other.nVmSizeAtCreation)
-        self.treeRootNode.aggregate_with(other.treeRootNode)
-
-
-# =======================================================================================================
-# MallocTagSnapshot
-# =======================================================================================================
-
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, obj):
-        # 👇️ if passed in object is instance of Decimal
-        # convert it to a string
-        if isinstance(obj, Decimal):
-            return round(float(obj), 2)
-        # 👇️ otherwise use the default behavior
-        return json.JSONEncoder.default(self, obj)
-
-
-class MallocTagSnapshot:
-    """
-    This class represents a JSON snapshot produced by the malloc-tag library for an entire application.
-    """
-
-    def __init__(self):
-        self.treeRegistry = {}  # dict indexed by TID
-
-    def load(self, json_infile: str):
-        # load the JSON
-        wholejson = {}
-        try:
-            f = open(json_infile, "r")
-            text = f.read()
-            f.close()
-            wholejson = json.loads(text)
-        except json.decoder.JSONDecodeError as err:
-            print("Invalid input JSON file '%s': %s" % (json_infile, err))
-            sys.exit(1)
-
-        # process it
-        self.expand(wholejson)
-
-    def expand(self, snapshot_dict: dict):
-        self.pid = snapshot_dict["PID"]
-        self.tmStartProfiling = snapshot_dict["tmStartProfiling"]
-        self.tmCurrentSnapshot = snapshot_dict["tmCurrentSnapshot"]
-        self.nBytesAllocBeforeInit = snapshot_dict["nBytesAllocBeforeInit"]
-        self.nBytesMallocTagSelfUsage = snapshot_dict["nBytesMallocTagSelfUsage"]
-        self.vmSizeNowBytes = snapshot_dict["vmSizeNowBytes"]
-        self.vmRSSNowBytes = snapshot_dict["vmRSSNowBytes"]
-        self.nTotalTrackedBytes = snapshot_dict["nTotalTrackedBytes"]
-
-        for thread_tree in snapshot_dict.keys():
-            if thread_tree.startswith("tree_for_"):
-                t = MallocTree()
-                t.load(snapshot_dict[thread_tree])
-                assert t.tid not in self.treeRegistry
-                self.treeRegistry[t.tid] = t
-
-    def save(self, json_outfile: str):
-        outdict = {
-            "PID": self.pid,
-            "tmStartProfiling": self.tmStartProfiling,
-            "tmCurrentSnapshot": self.tmCurrentSnapshot,
-        }
-        for t in self.treeRegistry.keys():
-            outdict[TREE_PREFIX + str(t)] = self.treeRegistry[t].get_as_dict()
-
-        # add last few properties:
-        outdict["nBytesAllocBeforeInit"] = self.nBytesAllocBeforeInit
-        outdict["nBytesMallocTagSelfUsage"] = self.nBytesMallocTagSelfUsage
-        outdict["vmSizeNowBytes"] = self.vmSizeNowBytes
-        outdict["vmRSSNowBytes"] = self.vmRSSNowBytes
-        outdict["nTotalTrackedBytes"] = self.nTotalTrackedBytes
-
-        getcontext().prec = 2
-        with open(json_outfile, "w", encoding="utf-8") as f:
-            json.dump(outdict, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
-        print(f"Saved postprocessed results into {json_outfile}.")
-
-    def print_stats(self):
-        num_nodes = sum(
-            [self.treeRegistry[t].get_num_nodes() for t in self.treeRegistry]
-        )
-        print(
-            f"Loaded a total of {len(self.treeRegistry)} trees containing {num_nodes} nodes."
-        )
-
-    def aggregate_thread_trees(self, tid1: int, tid2: int):
-        # do the aggregation
-        self.treeRegistry[tid1].aggregate_with(self.treeRegistry[tid2])
-        # remove the aggregated tree:
-        del self.treeRegistry[tid2]
 
 
 # =======================================================================================================
@@ -394,7 +138,7 @@ class PostProcessConfig:
 def parse_command_line():
     """Parses the command line and returns the configuration as dictionary object."""
     parser = argparse.ArgumentParser(
-        description="Utility to post-process snapshots produced by the malloc-tag library."
+        description="Utility to post-process JSON snapshots produced by the malloc-tag library."
     )
 
     # Optional arguments
@@ -469,7 +213,7 @@ if __name__ == "__main__":
 
     # load the malloctag snapshot file:
     t = MallocTagSnapshot()
-    t.load(config["input_json"])
+    t.load_json(config["input_json"])
     t.print_stats()
 
     # load postprocessing cfg:
@@ -482,4 +226,4 @@ if __name__ == "__main__":
 
     # if requested, save the output:
     if config["output_file"]:
-        t.save(config["output_file"])
+        t.save_json(config["output_file"])
