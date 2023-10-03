@@ -11,6 +11,8 @@
 
 #include <gtest/gtest.h>
 
+#define DEBUG_UNIT_TEST 0
+
 void TooManySiblings_thread()
 {
     size_t max_nodes = MallocTagEngine::get_limit("max_tree_nodes");
@@ -28,9 +30,10 @@ void TooManySiblings_thread()
     }
 
     MallocTagStatMap_t mtag_stats = MallocTagEngine::collect_stats();
-    // decomment to debug this unit test:
-    // for (const auto& it : mtag_stats)
-    //    std::cout << it.first << "=" << it.second << std::endl;
+#if DEBUG_UNIT_TEST
+    for (const auto& it : mtag_stats)
+        std::cout << it.first << "=" << it.second << std::endl;
+#endif
 
     // check that malloc-tag has correctly handled the "too many siblings" corner case
     // CHECK1: the malloc at level5 must end up accounted at level3 (last available level)

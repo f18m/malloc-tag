@@ -15,13 +15,15 @@ import json
 import os
 import sys
 import re
+import decimal
+from decimal import *
 
 # =======================================================================================================
 # GLOBALs
 # =======================================================================================================
 
 verbose = False
-THIS_SCRIPT_VERSION = '0.0.1'
+THIS_SCRIPT_VERSION = "0.0.1"
 SCOPE_PREFIX = "scope_"
 TREE_PREFIX = "tree_for_TID"
 
@@ -33,28 +35,28 @@ g_num_nodes = 0
 
 class MallocTagNode:
     """
-        This class represents a node in the JSON tree produced by the malloc-tag library.
+    This class represents a node in the JSON tree produced by the malloc-tag library.
     """
 
     def __init__(self):
         global g_num_nodes
-        self.childrenNodes = {} # dict indexed by "scope name"
+        self.childrenNodes = {}  # dict indexed by "scope name"
 
         # allocate a new ID for this node
         self.id = g_num_nodes
         g_num_nodes += 1
-        
+
     def load(self, node_dict: dict, name: str):
         # this is the "scope name"
         self.name = name
-        #print(self.name)
+        # print(self.name)
 
         # load self properties
         self.nBytesTotalAllocated = node_dict["nBytesTotalAllocated"]
         self.nBytesSelfAllocated = node_dict["nBytesSelfAllocated"]
         self.nBytesSelfFreed = node_dict["nBytesSelfFreed"]
         self.nTimesEnteredAndExited = node_dict["nTimesEnteredAndExited"]
-        self.nWeightPercentage = node_dict["nWeightPercentage"]
+        self.nWeightPercentage = float(node_dict["nWeightPercentage"])
         self.nCallsTo_malloc = node_dict["nCallsTo_malloc"]
         self.nCallsTo_realloc = node_dict["nCallsTo_realloc"]
         self.nCallsTo_calloc = node_dict["nCallsTo_calloc"]
@@ -63,7 +65,7 @@ class MallocTagNode:
         # recursive load
         for scope in node_dict["nestedScopes"].keys():
             assert scope.startswith(SCOPE_PREFIX)
-            name = scope[len(SCOPE_PREFIX):]
+            name = scope[len(SCOPE_PREFIX) :]
 
             # load the node recursively
             t = MallocTagNode()
@@ -75,35 +77,38 @@ class MallocTagNode:
 
     def get_as_dict(self):
         d = {
-            'nBytesTotalAllocated': self.nBytesTotalAllocated,
-            'nBytesSelfAllocated': self.nBytesSelfAllocated,
-            'nBytesSelfFreed': self.nBytesSelfFreed,
-            'nTimesEnteredAndExited': self.nTimesEnteredAndExited,
-            'nWeightPercentage': self.nWeightPercentage,
-            'nCallsTo_malloc': self.nCallsTo_malloc,
-            'nCallsTo_realloc': self.nCallsTo_realloc,
-            'nCallsTo_calloc': self.nCallsTo_calloc,
-            'nCallsTo_free': self.nCallsTo_free,
-            'nestedScopes': {}
+            "nBytesTotalAllocated": self.nBytesTotalAllocated,
+            "nBytesSelfAllocated": self.nBytesSelfAllocated,
+            "nBytesSelfFreed": self.nBytesSelfFreed,
+            "nTimesEnteredAndExited": self.nTimesEnteredAndExited,
+            "nWeightPercentage": Decimal(self.nWeightPercentage), # see usage of DecimalEncoder later on
+            "nCallsTo_malloc": self.nCallsTo_malloc,
+            "nCallsTo_realloc": self.nCallsTo_realloc,
+            "nCallsTo_calloc": self.nCallsTo_calloc,
+            "nCallsTo_free": self.nCallsTo_free,
+            "nestedScopes": {},
         }
         for n in self.childrenNodes:
             d["nestedScopes"][SCOPE_PREFIX + n] = self.childrenNodes[n].get_as_dict()
         return d
 
     def get_num_levels(self):
-        tot = 1 
+        tot = 1
         if self.childrenNodes:
-            tot += max([self.childrenNodes[n].get_num_levels() for n in self.childrenNodes])
+            tot += max(
+                [self.childrenNodes[n].get_num_levels() for n in self.childrenNodes]
+            )
         return tot
 
     def get_num_nodes(self):
-        tot = 1 # this current node
+        tot = 1  # this current node
         for t in self.childrenNodes.keys():
             tot += self.childrenNodes[t].get_num_nodes()
         return tot
 
-    def aggregate_with(self, other: 'MallocTagNode'):
+    def aggregate_with(self, other: "MallocTagNode"):
         self.nBytesTotalAllocated += other.nBytesTotalAllocated
+        self.nBytesSelfAllocated += other.nBytesSelfAllocated
         self.nBytesSelfFreed += other.nBytesSelfFreed
         self.nTimesEnteredAndExited += other.nTimesEnteredAndExited
         self.nWeightPercentage += other.nWeightPercentage
@@ -114,7 +119,9 @@ class MallocTagNode:
         for scopeName in other.childrenNodes.keys():
             if scopeName in self.childrenNodes:
                 # same scope is already present... aggregate!
-                self.childrenNodes[scopeName].aggregate_with(other.childrenNodes[scopeName])
+                self.childrenNodes[scopeName].aggregate_with(
+                    other.childrenNodes[scopeName]
+                )
             else:
                 # this is a new scope... present only in the 'other' node... add it
                 self.childrenNodes[scopeName] = other.childrenNodes[scopeName]
@@ -124,14 +131,15 @@ class MallocTagNode:
 # MallocTree
 # =======================================================================================================
 
+
 class MallocTree:
     """
-        This class represents a JSON tree produced by the malloc-tag library for an entire thread.
+    This class represents a JSON tree produced by the malloc-tag library for an entire thread.
     """
 
     def __init__(self):
         self.treeRootNode = None
-        
+
     def load(self, tree_dict: dict):
         self.tid = tree_dict["TID"]
         self.name = tree_dict["ThreadName"]
@@ -140,44 +148,49 @@ class MallocTree:
         self.nMaxTreeNodes = tree_dict["nMaxTreeNodes"]
         self.nVmSizeAtCreation = tree_dict["nVmSizeAtCreation"]
         if self.nPushNodeFailures > 0:
-            print(f"WARNING: found malloc-tag failures in tracking mem allocations inside the tree {self.name}")
+            print(
+                f"WARNING: found malloc-tag failures in tracking mem allocations inside the tree {self.name}"
+            )
         if self.nFreeTrackingFailed > 0:
-            print(f"WARNING: found malloc-tag failures in tracking mem allocations inside the tree {self.name}")
-        
+            print(
+                f"WARNING: found malloc-tag failures in tracking mem allocations inside the tree {self.name}"
+            )
+
         for k in tree_dict.keys():
             if k.startswith(SCOPE_PREFIX):
                 # found the root node
-                #print(k)
+                # print(k)
                 assert self.treeRootNode is None
                 self.treeRootNode = MallocTagNode()
-                self.treeRootNode.load(tree_dict[k], k[len(SCOPE_PREFIX):])
+                self.treeRootNode.load(tree_dict[k], k[len(SCOPE_PREFIX) :])
 
     def get_as_dict(self):
         d = {
-            'TID': self.tid,
-            'ThreadName': self.name,
+            "TID": self.tid,
+            "ThreadName": self.name,
             "nTreeLevels": self.get_num_levels(),
             "nTreeNodesInUse": self.get_num_nodes(),
             "nMaxTreeNodes": self.nMaxTreeNodes,
-            'nPushNodeFailures': self.nPushNodeFailures,
-            'nFreeTrackingFailed': self.nFreeTrackingFailed,
-            'nVmSizeAtCreation': self.nVmSizeAtCreation
+            "nPushNodeFailures": self.nPushNodeFailures,
+            "nFreeTrackingFailed": self.nFreeTrackingFailed,
+            "nVmSizeAtCreation": self.nVmSizeAtCreation,
         }
         d[SCOPE_PREFIX + self.treeRootNode.name] = self.treeRootNode.get_as_dict()
         return d
 
     def get_num_levels(self):
-        # -1 is to get the level zero-based
-        return self.treeRootNode.get_num_levels() - 1
+        return self.treeRootNode.get_num_levels()
 
     def get_num_nodes(self):
         return self.treeRootNode.get_num_nodes()
 
-    def aggregate_with(self, other: 'MallocTree'):
-        self.tid += other.tid
+    def aggregate_with(self, other: "MallocTree"):
+        self.tid = -1  # the TID makes no sense anymore
         self.name += "," + other.name
         self.nPushNodeFailures += other.nPushNodeFailures
         self.nFreeTrackingFailed += other.nFreeTrackingFailed
+        self.nMaxTreeNodes = max(self.nMaxTreeNodes, other.nMaxTreeNodes)
+        self.nVmSizeAtCreation = max(self.nVmSizeAtCreation, other.nVmSizeAtCreation)
         self.treeRootNode.aggregate_with(other.treeRootNode)
 
 
@@ -185,20 +198,23 @@ class MallocTree:
 # MallocTagSnapshot
 # =======================================================================================================
 
-#class MallocTagSnapshot_Encoder(json.JSONEncoder):
-#    def default(self, obj):
-#        if isinstance(obj, MallocTagSnapshot):
-#            return 
-#        # Let the base class default method raise the TypeError
-#        return json.JSONEncoder.default(self, obj)
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        # 👇️ if passed in object is instance of Decimal
+        # convert it to a string
+        if isinstance(obj, Decimal):
+            return round(float(obj), 2)
+        # 👇️ otherwise use the default behavior
+        return json.JSONEncoder.default(self, obj)
+
 
 class MallocTagSnapshot:
     """
-        This class represents a JSON snapshot produced by the malloc-tag library for an entire application.
+    This class represents a JSON snapshot produced by the malloc-tag library for an entire application.
     """
 
     def __init__(self):
-        self.treeRegistry = {} # dict indexed by TID
+        self.treeRegistry = {}  # dict indexed by TID
 
     def load(self, json_infile: str):
         # load the JSON
@@ -224,7 +240,7 @@ class MallocTagSnapshot:
         self.vmSizeNowBytes = snapshot_dict["vmSizeNowBytes"]
         self.vmRSSNowBytes = snapshot_dict["vmRSSNowBytes"]
         self.nTotalTrackedBytes = snapshot_dict["nTotalTrackedBytes"]
-        
+
         for thread_tree in snapshot_dict.keys():
             if thread_tree.startswith("tree_for_"):
                 t = MallocTree()
@@ -234,13 +250,13 @@ class MallocTagSnapshot:
 
     def save(self, json_outfile: str):
         outdict = {
-            'PID': self.pid,
-            'tmStartProfiling': self.tmStartProfiling,
-            'tmCurrentSnapshot': self.tmCurrentSnapshot
+            "PID": self.pid,
+            "tmStartProfiling": self.tmStartProfiling,
+            "tmCurrentSnapshot": self.tmCurrentSnapshot,
         }
         for t in self.treeRegistry.keys():
             outdict[TREE_PREFIX + str(t)] = self.treeRegistry[t].get_as_dict()
-        
+
         # add last few properties:
         outdict["nBytesAllocBeforeInit"] = self.nBytesAllocBeforeInit
         outdict["nBytesMallocTagSelfUsage"] = self.nBytesMallocTagSelfUsage
@@ -248,13 +264,18 @@ class MallocTagSnapshot:
         outdict["vmRSSNowBytes"] = self.vmRSSNowBytes
         outdict["nTotalTrackedBytes"] = self.nTotalTrackedBytes
 
-        with open(json_outfile, 'w', encoding='utf-8') as f:
-            json.dump(outdict, f, ensure_ascii=False, indent=4)  ## , cls=MallocTagSnapshot_Encoder
+        getcontext().prec = 2
+        with open(json_outfile, "w", encoding="utf-8") as f:
+            json.dump(outdict, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
         print(f"Saved postprocessed results into {json_outfile}.")
 
     def print_stats(self):
-        num_nodes = sum([self.treeRegistry[t].get_num_nodes() for t in self.treeRegistry])
-        print(f"Loaded a total of {len(self.treeRegistry)} trees containing {num_nodes} nodes.")
+        num_nodes = sum(
+            [self.treeRegistry[t].get_num_nodes() for t in self.treeRegistry]
+        )
+        print(
+            f"Loaded a total of {len(self.treeRegistry)} trees containing {num_nodes} nodes."
+        )
 
     def aggregate_thread_trees(self, tid1: int, tid2: int):
         # do the aggregation
@@ -262,40 +283,55 @@ class MallocTagSnapshot:
         # remove the aggregated tree:
         del self.treeRegistry[tid2]
 
+
 # =======================================================================================================
 # PostProcessConfig
 # =======================================================================================================
 
-class PostProcessAggregationRule:
 
+class PostProcessAggregationRule:
     def __init__(self, ruleIdx: int):
         self.ruleIdx = ruleIdx
         self.matching_prefix = ""
+
     def load(self, cfg_dict):
         self.matching_prefix = cfg_dict["aggregate_trees"]["matching_prefix"]
+
     def logprefix(self):
         return f"Rule#{self.ruleIdx}:"
+
     def apply(self, snapshot: MallocTagSnapshot):
         # TODO
         regex = re.compile(self.matching_prefix)
 
-        matching_tids = [tid for tid in snapshot.treeRegistry if re.match(regex, snapshot.treeRegistry[tid].name)]
-        print(f"{self.logprefix()} Found trees matching the prefix [{self.matching_prefix}] with TIDs: {matching_tids}")
+        matching_tids = [
+            tid
+            for tid in snapshot.treeRegistry
+            if re.match(regex, snapshot.treeRegistry[tid].name)
+        ]
+        print(
+            f"{self.logprefix()} Found trees matching the prefix [{self.matching_prefix}] with TIDs: {matching_tids}"
+        )
 
         if len(matching_tids) == 0:
-            print(f"{self.logprefix()} Could not find any tree matching the prefix [{self.matching_prefix}]")
+            print(
+                f"{self.logprefix()} Could not find any tree matching the prefix [{self.matching_prefix}]"
+            )
         elif len(matching_tids) == 1:
-            print(f"{self.logprefix()} Found only 1 tree matching the prefix [{self.matching_prefix}]. Nothing to aggregate.")
+            print(
+                f"{self.logprefix()} Found only 1 tree matching the prefix [{self.matching_prefix}]. Nothing to aggregate."
+            )
         else:
             firstTid = matching_tids[0]
             for otherTid in matching_tids[1:]:
                 snapshot.aggregate_thread_trees(firstTid, otherTid)
             print(f"{self.logprefix()} Aggregation completed.")
 
+
 class PostProcessConfig:
     """
-        This class represents some aggregation rules provided by the user
-    """    
+    This class represents some aggregation rules provided by the user
+    """
 
     def __init__(self):
         self.rules = []
@@ -314,10 +350,14 @@ class PostProcessConfig:
         nrule = 0
         for rule in wholejson:
             if not rule.startswith("rule"):
-                print(f"In configuration JSON file '{cfg_json}': all root-level objects should be rules starting with [rule] prefix. Found: {rule}")
-                sys.exit(1)
+                print(
+                    f"WARN: In configuration JSON file '{cfg_json}': ignoring key not starting with [rule] prefix: '{rule}'"
+                )
+                continue
             if len(wholejson[rule]) != 1:
-                print(f"In configuration JSON file '{cfg_json}': in rule '{rule}': expected exactly 1 mode")
+                print(
+                    f"In configuration JSON file '{cfg_json}': in rule '{rule}': expected exactly 1 mode"
+                )
                 sys.exit(1)
 
             mode = next(iter(wholejson[rule]))
@@ -328,17 +368,28 @@ class PostProcessConfig:
                 self.rules.append(t)
                 nrule += 1
             else:
-                print(f"In configuration JSON file '{cfg_json}': in rule '{rule}': found unsupported mode '{mode}'")
+                print(
+                    f"In configuration JSON file '{cfg_json}': in rule '{rule}': found unsupported mode '{mode}'"
+                )
                 sys.exit(1)
-        print(f"Loaded {len(self.rules)} postprocessing rules from config file '{cfg_json}'.")
+        print(
+            f"Loaded {len(self.rules)} postprocessing rules from config file '{cfg_json}'."
+        )
 
     def apply(self, snapshot: MallocTagSnapshot):
+        if len(self.rules) == 0:
+            print(
+                f"No postprocessing rules specified (see --config). The malloc-tag snapshot will not be manipulated."
+            )
+            return
         for r in self.rules:
             r.apply(snapshot)
+
 
 # =======================================================================================================
 # MAIN HELPERS
 # =======================================================================================================
+
 
 def parse_command_line():
     """Parses the command line and returns the configuration as dictionary object."""
@@ -348,12 +399,35 @@ def parse_command_line():
 
     # Optional arguments
     # NOTE: we cannot add required=True to --output option otherwise it's impossible to invoke this tool with just --version
-    parser.add_argument("-o", "--output", help="The name of the output JSON file with aggregated stats.", default=None)
-    parser.add_argument("-c", "--config", help="JSON file specifying the postprocessing configuration.", default=None)
-    parser.add_argument("-v", "--verbose", help="Be verbose.", action="store_true", default=False)
-    parser.add_argument("-V", "--version", help="Print version and exit", action="store_true", default=False)
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="The name of the output JSON file with aggregated stats.",
+        default=None,
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        help="JSON file specifying the postprocessing configuration.",
+        default=None,
+    )
+    parser.add_argument(
+        "-v", "--verbose", help="Be verbose.", action="store_true", default=False
+    )
+    parser.add_argument(
+        "-V",
+        "--version",
+        help="Print version and exit",
+        action="store_true",
+        default=False,
+    )
     # NOTE: we use nargs='?' to make it possible to invoke this tool with just --version
-    parser.add_argument("input", nargs="?", help="The JSON file to analyze. If '-' the JSON is read from stdin.", default=None)
+    parser.add_argument(
+        "input",
+        nargs="?",
+        help="The JSON file to analyze. If '-' the JSON is read from stdin.",
+        default=None,
+    )
 
     if "COLUMNS" not in os.environ:
         os.environ["COLUMNS"] = "120"  # avoid too many line wraps
@@ -379,7 +453,11 @@ def parse_command_line():
         # take absolute path
         args.output = os.path.join(os.getcwd(), args.output)
 
-    return {"input_json": args.input, "output_file": args.output, "postprocess_config_file": args.config}
+    return {
+        "input_json": args.input,
+        "output_file": args.output,
+        "postprocess_config_file": args.config,
+    }
 
 
 # =======================================================================================================
@@ -405,4 +483,3 @@ if __name__ == "__main__":
     # if requested, save the output:
     if config["output_file"]:
         t.save(config["output_file"])
-

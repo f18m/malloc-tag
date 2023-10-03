@@ -1,0 +1,248 @@
+{
+  "PID": 274355,
+  "tmStartProfiling": "2023-10-03 @ 14:26:35 CEST",
+  "tmCurrentSnapshot": "2023-10-03 @ 14:26:35 CEST",
+  "tree_for_TID274355": {
+    "TID": 274355,
+    "ThreadName": "multithread",
+    "nTreeLevels": 1,
+    "nTreeNodesInUse": 1,
+    "nMaxTreeNodes": 256,
+    "nPushNodeFailures": 0,
+    "nFreeTrackingFailed": 0,
+    "nVmSizeAtCreation": 20440000,
+    "scope_multithread": {
+      "nBytesTotalAllocated": 6712,
+      "nBytesSelfAllocated": 6712,
+      "nBytesSelfFreed": 4608,
+      "nTimesEnteredAndExited": 0,
+      "nWeightPercentage": 0.79,
+      "nCallsTo_malloc": 14,
+      "nCallsTo_realloc": 0,
+      "nCallsTo_calloc": 3,
+      "nCallsTo_free": 25,
+      "nestedScopes": {}
+    }
+  },
+  "tree_for_TID274356": {
+    "TID": 274356,
+    "ThreadName": "ExampleThr/0",
+    "nTreeLevels": 4,
+    "nTreeNodesInUse": 5,
+    "nMaxTreeNodes": 256,
+    "nPushNodeFailures": 0,
+    "nFreeTrackingFailed": 0,
+    "nVmSizeAtCreation": 136388608,
+    "scope_ExampleThr/0": {
+      "nBytesTotalAllocated": 144168,
+      "nBytesSelfAllocated": 40,
+      "nBytesSelfFreed": 64,
+      "nTimesEnteredAndExited": 0,
+      "nWeightPercentage": 17.11,
+      "nCallsTo_malloc": 1,
+      "nCallsTo_realloc": 0,
+      "nCallsTo_calloc": 0,
+      "nCallsTo_free": 3,
+      "nestedScopes": {
+        "scope_ExampleThread": {
+          "nBytesTotalAllocated": 144128,
+          "nBytesSelfAllocated": 24,
+          "nBytesSelfFreed": 0,
+          "nTimesEnteredAndExited": 1,
+          "nWeightPercentage": 17.11,
+          "nCallsTo_malloc": 1,
+          "nCallsTo_realloc": 0,
+          "nCallsTo_calloc": 0,
+          "nCallsTo_free": 0,
+          "nestedScopes": {
+            "scope_FuncA": {
+              "nBytesTotalAllocated": 72104,
+              "nBytesSelfAllocated": 104,
+              "nBytesSelfFreed": 0,
+              "nTimesEnteredAndExited": 1,
+              "nWeightPercentage": 8.55,
+              "nCallsTo_malloc": 1,
+              "nCallsTo_realloc": 0,
+              "nCallsTo_calloc": 0,
+              "nCallsTo_free": 0,
+              "nestedScopes": {
+                "scope_FuncB": {
+                  "nBytesTotalAllocated": 72000,
+                  "nBytesSelfAllocated": 72000,
+                  "nBytesSelfFreed": 72000,
+                  "nTimesEnteredAndExited": 1,
+                  "nWeightPercentage": 8.54,
+                  "nCallsTo_malloc": 1000,
+                  "nCallsTo_realloc": 0,
+                  "nCallsTo_calloc": 0,
+                  "nCallsTo_free": 1000,
+                  "nestedScopes": {}
+                }
+              }
+            },
+            "scope_FuncB": {
+              "nBytesTotalAllocated": 72000,
+              "nBytesSelfAllocated": 72000,
+              "nBytesSelfFreed": 72000,
+              "nTimesEnteredAndExited": 1,
+              "nWeightPercentage": 8.54,
+              "nCallsTo_malloc": 1000,
+              "nCallsTo_realloc": 0,
+              "nCallsTo_calloc": 0,
+              "nCallsTo_free": 1000,
+              "nestedScopes": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "tree_for_TID274357": {
+    "TID": 274357,
+    "ThreadName": "ExampleThr/1",
+    "nTreeLevels": 4,
+    "nTreeNodesInUse": 5,
+    "nMaxTreeNodes": 256,
+    "nPushNodeFailures": 0,
+    "nFreeTrackingFailed": 0,
+    "nVmSizeAtCreation": 136388608,
+    "scope_ExampleThr/1": {
+      "nBytesTotalAllocated": 289192,
+      "nBytesSelfAllocated": 40,
+      "nBytesSelfFreed": 64,
+      "nTimesEnteredAndExited": 0,
+      "nWeightPercentage": 34.33,
+      "nCallsTo_malloc": 1,
+      "nCallsTo_realloc": 0,
+      "nCallsTo_calloc": 0,
+      "nCallsTo_free": 3,
+      "nestedScopes": {
+        "scope_ExampleThread": {
+          "nBytesTotalAllocated": 289152,
+          "nBytesSelfAllocated": 24,
+          "nBytesSelfFreed": 0,
+          "nTimesEnteredAndExited": 1,
+          "nWeightPercentage": 34.32,
+          "nCallsTo_malloc": 1,
+          "nCallsTo_realloc": 0,
+          "nCallsTo_calloc": 0,
+          "nCallsTo_free": 0,
+          "nestedScopes": {
+            "scope_FuncA": {
+              "nBytesTotalAllocated": 145128,
+              "nBytesSelfAllocated": 1128,
+              "nBytesSelfFreed": 0,
+              "nTimesEnteredAndExited": 1,
+              "nWeightPercentage": 17.22,
+              "nCallsTo_malloc": 1,
+              "nCallsTo_realloc": 0,
+              "nCallsTo_calloc": 0,
+              "nCallsTo_free": 0,
+              "nestedScopes": {
+                "scope_FuncB": {
+                  "nBytesTotalAllocated": 144000,
+                  "nBytesSelfAllocated": 144000,
+                  "nBytesSelfFreed": 144000,
+                  "nTimesEnteredAndExited": 1,
+                  "nWeightPercentage": 17.09,
+                  "nCallsTo_malloc": 2000,
+                  "nCallsTo_realloc": 0,
+                  "nCallsTo_calloc": 0,
+                  "nCallsTo_free": 2000,
+                  "nestedScopes": {}
+                }
+              }
+            },
+            "scope_FuncB": {
+              "nBytesTotalAllocated": 144000,
+              "nBytesSelfAllocated": 144000,
+              "nBytesSelfFreed": 144000,
+              "nTimesEnteredAndExited": 1,
+              "nWeightPercentage": 17.09,
+              "nCallsTo_malloc": 2000,
+              "nCallsTo_realloc": 0,
+              "nCallsTo_calloc": 0,
+              "nCallsTo_free": 2000,
+              "nestedScopes": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "tree_for_TID274358": {
+    "TID": 274358,
+    "ThreadName": "NonInstrThr",
+    "nTreeLevels": 1,
+    "nTreeNodesInUse": 1,
+    "nMaxTreeNodes": 256,
+    "nPushNodeFailures": 0,
+    "nFreeTrackingFailed": 0,
+    "nVmSizeAtCreation": 136388608,
+    "scope_NonInstrThr": {
+      "nBytesTotalAllocated": 164632,
+      "nBytesSelfAllocated": 164632,
+      "nBytesSelfFreed": 164656,
+      "nTimesEnteredAndExited": 0,
+      "nWeightPercentage": 19.54,
+      "nCallsTo_malloc": 1101,
+      "nCallsTo_realloc": 0,
+      "nCallsTo_calloc": 0,
+      "nCallsTo_free": 1103,
+      "nestedScopes": {}
+    }
+  },
+  "tree_for_TID274359": {
+    "TID": 274359,
+    "ThreadName": "YetAnThr/2",
+    "nTreeLevels": 3,
+    "nTreeNodesInUse": 3,
+    "nMaxTreeNodes": 256,
+    "nPushNodeFailures": 0,
+    "nFreeTrackingFailed": 0,
+    "nVmSizeAtCreation": 136388608,
+    "scope_YetAnThr/2": {
+      "nBytesTotalAllocated": 237640,
+      "nBytesSelfAllocated": 40,
+      "nBytesSelfFreed": 64,
+      "nTimesEnteredAndExited": 0,
+      "nWeightPercentage": 28.21,
+      "nCallsTo_malloc": 1,
+      "nCallsTo_realloc": 0,
+      "nCallsTo_calloc": 0,
+      "nCallsTo_free": 3,
+      "nestedScopes": {
+        "scope_YetAnThr::MainEvLoop": {
+          "nBytesTotalAllocated": 237600,
+          "nBytesSelfAllocated": 21600,
+          "nBytesSelfFreed": 21600,
+          "nTimesEnteredAndExited": 1,
+          "nWeightPercentage": 28.2,
+          "nCallsTo_malloc": 300,
+          "nCallsTo_realloc": 0,
+          "nCallsTo_calloc": 0,
+          "nCallsTo_free": 300,
+          "nestedScopes": {
+            "scope_FuncB": {
+              "nBytesTotalAllocated": 216000,
+              "nBytesSelfAllocated": 216000,
+              "nBytesSelfFreed": 216000,
+              "nTimesEnteredAndExited": 1,
+              "nWeightPercentage": 25.64,
+              "nCallsTo_malloc": 3000,
+              "nCallsTo_realloc": 0,
+              "nCallsTo_calloc": 0,
+              "nCallsTo_free": 3000,
+              "nestedScopes": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "nBytesAllocBeforeInit": 483456,
+  "nBytesMallocTagSelfUsage": 358520,
+  "vmSizeNowBytes": 241636000,
+  "vmRSSNowBytes": 3108000,
+  "nTotalTrackedBytes": 566453992
+}

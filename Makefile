@@ -67,21 +67,11 @@ cpp_tests: $(BINS)
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/tests/dummystats.json \
 	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/tests/dummystats.dot \
 		tests/unit_tests
+	jq . tests/dummystats.json >tests/dummystats.json.tmp && \
+		mv tests/dummystats.json.tmp tests/dummystats.json
 
 python_tests:
-	@echo "Starting Python integration TESTS (assume multithread example JSON is available)"
-	tools/postprocess.py -o /tmp/nopostprocess.json examples/multithread/multithread_stats.json
-	jq . /tmp/nopostprocess.json >/tmp/nopostprocess_prettyprinted.json
-	jq . examples/multithread/multithread_stats.json >/tmp/multithread_stats_prettyprinted.json
-	md5sum /tmp/multithread_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json
-	@cmp --silent /tmp/multithread_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json || ( \
-		echo; \
-		echo "!! Failed test; the two files are different !!" ; \
-		diff -bU3 /tmp/multithread_stats_prettyprinted.json /tmp/nopostprocess_prettyprinted.json ; \
-		echo; \
-		exit 2 \
-	)
-
+	$(MAKE) -C tools python_tests
 
 minimal_example: $(BINS)
 	@echo "Starting example application"

@@ -193,14 +193,14 @@ void MallocTree::collect_stats_recursively(
     case MTAG_OUTPUT_FORMAT_JSON:
         JsonUtils::start_object(out, "tree_for_TID" + std::to_string(m_nThreadID));
 
-        JsonUtils::append_field(out, "TID", m_nThreadID);
+        JsonUtils::append_field(out, "TID", (size_t)m_nThreadID);
         JsonUtils::append_field(out, "ThreadName", m_pRootNode->get_node_name());
-        JsonUtils::append_field(out, "nTreeLevels", m_nTreeLevels);
-        JsonUtils::append_field(out, "nTreeNodesInUse", m_nTreeNodesInUse);
-        JsonUtils::append_field(out, "nMaxTreeNodes", m_nMaxTreeNodes);
-        JsonUtils::append_field(out, "nPushNodeFailures", m_nPushNodeFailures);
-        JsonUtils::append_field(out, "nFreeTrackingFailed", m_nFreeTrackingFailed);
-        JsonUtils::append_field(out, "nVmSizeAtCreation", m_nVmSizeAtCreation); // in bytes
+        JsonUtils::append_field(out, "nTreeLevels", (size_t)m_nTreeLevels);
+        JsonUtils::append_field(out, "nTreeNodesInUse", (size_t)m_nTreeNodesInUse);
+        JsonUtils::append_field(out, "nMaxTreeNodes", (size_t)m_nMaxTreeNodes);
+        JsonUtils::append_field(out, "nPushNodeFailures", (size_t)m_nPushNodeFailures);
+        JsonUtils::append_field(out, "nFreeTrackingFailed", (size_t)m_nFreeTrackingFailed);
+        JsonUtils::append_field(out, "nVmSizeAtCreation", (size_t)m_nVmSizeAtCreation); // in bytes
 
         m_pRootNode->collect_stats_recursively_JSON(out);
 

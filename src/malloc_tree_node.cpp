@@ -82,7 +82,7 @@ void MallocTreeNode::collect_stats_recursively_MAP(MallocTagStatMap_t& out, cons
 {
     // use an underscore to flatten the "address" of this node inside the tree into a single string:
     std::string fullName;
-    if (m_nTreeLevel == 0)
+    if (m_nTreeLevel == 1) // first level
         fullName = parent_kpi_prefix + ":" + get_node_name();
     else
         fullName = parent_kpi_prefix + "." + get_node_name();
@@ -113,7 +113,7 @@ void MallocTreeNode::collect_stats_recursively_JSON(std::string& out)
     JsonUtils::append_field(out, "nBytesSelfAllocated", m_nBytesSelfAllocated);
     JsonUtils::append_field(out, "nBytesSelfFreed", m_nBytesSelfFreed);
     JsonUtils::append_field(out, "nTimesEnteredAndExited", m_nTimesEnteredAndExited);
-    JsonUtils::append_field(out, "nWeightPercentage", get_total_weight_percentage_str());
+    JsonUtils::append_field(out, "nWeightPercentage", get_total_weight_percentage());
 
     for (unsigned int i = 0; i < MTAG_GLIBC_PRIMITIVE_MAX; i++)
         JsonUtils::append_field(

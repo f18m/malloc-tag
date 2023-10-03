@@ -15,6 +15,8 @@
 // Includes
 //------------------------------------------------------------------------------
 
+#include <iomanip>
+#include <sstream>
 #include <vector>
 
 //------------------------------------------------------------------------------
@@ -148,6 +150,27 @@ public:
     static void append_field(std::string& out, const std::string& field_name, size_t field_value, bool is_last = false)
     {
         out += "\"" + field_name + "\": " + std::to_string(field_value);
+        if (!is_last)
+            out += ",\n";
+    }
+    static void append_field(std::string& out, const std::string& field_name, float field_value, bool is_last = false)
+    {
+        // we are forced to use std::stringstream to set precision in C++11:
+        std::stringstream stream;
+        stream << "\"" << field_name << "\": " << std::fixed << std::setprecision(2) << field_value;
+
+        // To make the C++ implementation aligned with the Python one (see tools/postprocess.py), the following code
+        // is here to remove the trailing zeros after decimal point.
+        // The issue is that serializing to JSON the floating value '1.2' in Python leads to the string "1.2" while
+        // instead serializing to JSON from C++ leads to "1.20". This fails some integration test that is expecting the
+        // C++ JSON output to be 1:1 with Python JSON output. Since I couldn't find a way to make the Python behave like
+        // the C++, I'm making the C++ behave like the Python:
+        std::string newfield = stream.str();
+        newfield.erase(newfield.find_last_not_of('0') + 1, std::string::npos);
+        newfield.erase(newfield.find_last_not_of('.') + 1, std::string::npos);
+
+        // append new field
+        out += newfield;
         if (!is_last)
             out += ",\n";
     }

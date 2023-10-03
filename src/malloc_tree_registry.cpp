@@ -148,7 +148,7 @@ void MallocTreeRegistry::collect_stats(
 
     case MTAG_OUTPUT_FORMAT_JSON: {
         JsonUtils::start_document(stats_str);
-        JsonUtils::append_field(stats_str, "PID", getpid());
+        JsonUtils::append_field(stats_str, "PID", (size_t)getpid());
         JsonUtils::append_field(stats_str, "tmStartProfiling", tmStartProfilingStr);
         JsonUtils::append_field(stats_str, "tmCurrentSnapshot", tmCurrentStr);
 

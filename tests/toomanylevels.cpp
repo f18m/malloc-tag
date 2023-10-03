@@ -10,6 +10,7 @@
 
 #include <gtest/gtest.h>
 
+#define DEBUG_UNIT_TEST 0
 #define MALLOC_AT_LEVEL2 26
 #define MALLOC_AT_LEVEL5 1999
 
@@ -53,15 +54,16 @@ void TooManyLevels_thread()
     Level1();
 
     MallocTagStatMap_t mtag_stats = MallocTagEngine::collect_stats();
-    // decomment to debug this unit test:
-    // for (const auto& it : mtag_stats)
-    //    std::cout << it.first << "=" << it.second << std::endl;
+#if DEBUG_UNIT_TEST
+    for (const auto& it : mtag_stats)
+        std::cout << it.first << "=" << it.second << std::endl;
+#endif
 
     // check that malloc-tag has correctly handled the "too many tree levels" corner case
 
     // CHECK1: the malloc at level5 must end up accounted at level3 (last available level)
     std::string k = MallocTagEngine::get_stat_key_prefix_for_thread() + "unit_tests.Level1.Level2.Level3";
-    EXPECT_EQ(mtag_stats[k + ".nCallsTo_malloc"], 1);
+    EXPECT_EQ(mtag_stats[k + ".nCallsTo_malloc"], 1) << "Failed comparison of key with prefix: " << k;
     EXPECT_GE(mtag_stats[k + ".nBytesSelfAllocated"], MALLOC_AT_LEVEL5);
     EXPECT_EQ(mtag_stats[k + ".nBytesSelfFreed"], 0 /* we produced a memleak no purpose */);
 

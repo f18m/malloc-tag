@@ -10,6 +10,7 @@
 
 #include <gtest/gtest.h>
 
+#define DEBUG_UNIT_TEST 0
 #define MALLOC_AT_LEVEL2 26
 #define MALLOC_AT_LEVEL5 1999
 
@@ -37,9 +38,10 @@ void TooManyNodes_thread()
 
     MallocTagStatMap_t mtag_stats = MallocTagEngine::collect_stats();
 
-    // decomment to debug this unit test:
-    // for (const auto& it : mtag_stats)
-    //    std::cout << it.first << "=" << it.second << std::endl;
+#if DEBUG_UNIT_TEST
+    for (const auto& it : mtag_stats)
+        std::cout << it.first << "=" << it.second << std::endl;
+#endif
 
     // check that malloc-tag has correctly handled the "too many nodes" corner case
 
