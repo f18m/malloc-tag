@@ -10,6 +10,7 @@ test_load_and_save_without_processing:
 	@echo
 	@echo ">> test_load_and_save_without_processing <<"
 	@echo
+	echo "PYTHONPATH is [${PYTHONPATH}]"
 	mtag_postprocess/postprocess.py -o /tmp/nopostprocess.json $(EXAMPLE_JSON_FILE)
 	jq . /tmp/nopostprocess.json >/tmp/nopostprocess_prettyprinted.json
 	jq . $(EXAMPLE_JSON_FILE) >/tmp/input_prettyprinted.json

@@ -74,7 +74,7 @@ jobs:
           ./src/libmalloc_tag.so*
 
     # test Python tools
-    - name: package the pypi
+    - name: run python integration tests
       run: |
         PWD=$(pwd)
         echo "PYTHONPATH=$PWD/tools" >> $GITHUB_ENV
