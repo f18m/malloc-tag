@@ -1,6 +1,6 @@
 [project]
 name = "malloctag-tools"
-version = "0.0.5"
+version = "1.5.0"
 authors = [
   { name="Francesco Montorsi", email="francesco.montorsi@gmail.com" },
 ]
