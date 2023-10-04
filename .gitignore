@@ -8,3 +8,5 @@ tests/*.o
 tests/*.json
 tests/*.dot
 tests/unit_tests
+tools/malloc_tag/libs/__pycache__/
+tools/dist

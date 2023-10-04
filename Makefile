@@ -57,6 +57,24 @@ format_check:
 	# if you have clang-format >= 10.0.0, this will work:
 	@clang-format --dry-run --Werror $(LIB_HDR) $(LIB_SRC)
 
+tests:
+	$(MAKE) cpp_tests
+	$(MAKE) python_tests
+
+cpp_tests: $(BINS)
+	@echo "Starting C++ UNIT TESTS application"
+	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
+	MTAG_STATS_OUTPUT_JSON=$(PWD)/tests/dummystats.json \
+	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/tests/dummystats.dot \
+		tests/unit_tests
+	jq . tests/dummystats.json >tests/dummystats.json.tmp && \
+		mv tests/dummystats.json.tmp tests/dummystats.json
+
+python_tests:
+	$(MAKE) -C tools/malloc_tag python_tests
+python_package:
+	python3 -m build
+
 minimal_example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
@@ -146,15 +164,6 @@ multithread_valgrind: $(BINS)
 		examples/multithread/multithread
 
 
-tests: $(BINS)
-	@echo "Starting UNIT TESTS application"
-	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
-	MTAG_STATS_OUTPUT_JSON=$(PWD)/tests/dummystats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/tests/dummystats.dot \
-		tests/unit_tests
-
-
-
 ifeq ($(USE_TCMALLOC),1)
 	
 tcmalloc_example: $(BINS)
@@ -198,6 +207,7 @@ endif
 	@echo "Installing malloc-tag library into $(DESTDIR)/lib"
 	@mkdir --parents                    $(DESTDIR)/lib
 	@cp -fv src/libmalloc_tag.so*       $(DESTDIR)/lib/
+
 
 
 .PHONY: all minimal_example multithread_example examples tests clean install

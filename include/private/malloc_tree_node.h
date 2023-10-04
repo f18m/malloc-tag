@@ -81,7 +81,7 @@ public:
             m_nAllocationsSelf[i] = 0;
         m_nWeightTotal = 0;
         m_nWeightSelf = 0;
-        m_nTreeLevel = parent ? parent->m_nTreeLevel + 1 : 0;
+        m_nTreeLevel = parent ? parent->m_nTreeLevel + 1 : 1 /* start 1 based */;
         m_nThreadID = threadID;
         m_scopeName[0] = '\0';
         m_nChildrens = 0;
@@ -220,8 +220,8 @@ private:
     size_t m_nWeightSelf; // Weight of this node expressed as
                           // MTAG_NODE_WEIGHT_MULTIPLIER*(m_nBytesSelfAllocated/TOTAL_TREE_BYTES)
     pid_t m_nThreadID; // ID of the thread where the allocations will take place
-    std::array<char, MTAG_MAX_SCOPENAME_LEN>
-        m_scopeName; // Memory allocation scope name, NUL terminated. Defined via use of MallocTagScope.
+    std::array<char, MTAG_MAX_SCOPENAME_LEN> m_scopeName; // Memory allocation scope name, NUL terminated.
+                                                          // This is set through MallocTagScope class instances.
     std::array<MallocTreeNode*, MTAG_MAX_CHILDREN_PER_NODE> m_pChildren; // Children nodes.
     unsigned int m_nChildrens; // Number of valid children pointers in m_pChildren[]
     MallocTreeNode* m_pParent; // Pointer to parent node; NULL if this is the root node

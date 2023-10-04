@@ -12,7 +12,8 @@ In summary, this library enables **minimal-overhead, per-thread memory profiling
 * Why your application is using so much memory?
 * In which part of the code should you focus your attention to decrease the memory footprint of your application?
 * Is there a thread/part of the code allocating abnormal amounts of memory? 
- 
+
+Additionally this project also provides Python-based tools that can be used to postprocess and manipulate the JSON files produced by malloc-tag and that contain "memory usage snapshots".
 
 # High-Level Design Criteria
 
@@ -123,7 +124,7 @@ dot -Tsvg -O ${MTAG_STATS_OUTPUT_GRAPHVIZ_DOT}
 ```
 
 Then open the resulting SVG file with any suitable viewer.
-
+In practice, you will often need to post-process the JSON file containing the memory usage snapshot; for this purpose there are a few [Python tools](tools/README.md) that you can employ.
 
 ## TcMalloc integration
 
@@ -173,6 +174,7 @@ Apache 2.0 License
 # TODO
 
 * make max_tree_nodes, max_tree_levels configurable via env vars
+* remove the C++ implementation of .dot output generation and keep only the mtag_json2dot tool?
 
 # FUTURE
 

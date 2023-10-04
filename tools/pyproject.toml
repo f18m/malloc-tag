@@ -1,0 +1,29 @@
+[project]
+name = "malloctag-tools"
+version = "0.0.5"
+authors = [
+  { name="Francesco Montorsi", email="francesco.montorsi@gmail.com" },
+]
+description = "Utility to postprocess malloc-tag JSON snapshots"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "graphviz>=0.19.1",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/f18m/malloc-tag"
+"Bug Tracker" = "https://github.com/f18m/malloc-tag/issues"
+
+[project.scripts]
+mtag-postprocess = "malloc_tag.mtag_postprocess.postprocess:postprocess_main"
+mtag-json2dot = "malloc_tag.mtag_json2dot.json2dot:json2dot_main"
+
+[build-system]
+requires = ["hatchling","graphviz>=0.19.1"]
+build-backend = "hatchling.build"

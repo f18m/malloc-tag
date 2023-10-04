@@ -16,6 +16,10 @@ jobs:
     - name: install debian-packaged dependencies
       run: sudo apt install -y jq clang-format graphviz libgoogle-perftools-dev libunwind-dev libgtest-dev
 
+    - uses: actions/checkout@v3
+    - name: install pypi-packaged dependencies
+      run: sudo pip3 install graphviz build
+
     - name: build malloc-tag
       run: make all
     - name: check formatting
@@ -31,12 +35,12 @@ jobs:
         # Core filenames will be of the form executable.pid.timestamp:
         sudo bash -c 'echo "/cores/%e.%p.%t" > /proc/sys/kernel/core_pattern'
 
-    # now run unit tests
+    # now run C++ unit tests
     - name: run unit tests
       run: |
         # Allow core dumps
         ulimit -c unlimited
-        make tests
+        make cpp_tests
 
     # now run examples to check they are still up to date and working
     - name: run basic example
@@ -58,6 +62,7 @@ jobs:
         # run the example
         make tcmalloc_example
 
+    # coredump collection to help debug failures inside the CI
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}  # Run only if something went wrong
       with:
@@ -67,3 +72,17 @@ jobs:
           ./examples/multithread/multithread
           ./examples/minimal/minimal
           ./src/libmalloc_tag.so*
+
+    # test Python tools
+    - name: set python path
+      run: |
+        PWD=$(pwd)
+        echo "PYTHONPATH=$PWD/tools" >> $GITHUB_ENV
+    - name: run python integration tests
+      run: |
+        make python_tests
+
+    # finally test Python packaging
+    - name: package the pypi
+      run: |
+        cd tools && python3 -m build

@@ -1,0 +1,8 @@
+{
+    "comment": "This is a simple example of postprocessing rule",
+    "rule0": {
+        "aggregate_trees": {
+            "matching_prefix": "ExampleThr/*"
+        }
+    }
+}
