@@ -1,4 +1,4 @@
-name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
+name: pypi-release
 
 on: push
 
@@ -27,7 +27,7 @@ jobs:
           uses: actions/upload-artifact@v3
           with:
             name: python-package-distributions
-            path: dist/
+            path: tools/dist/
     
     publish-to-pypi:
         name: Publish Python 🐍 distribution 📦 to PyPI
@@ -46,6 +46,6 @@ jobs:
           uses: actions/download-artifact@v3
           with:
             name: python-package-distributions
-            path: dist/
+            path: tools/dist/
         - name: Publish distribution 📦 to PyPI
           uses: pypa/gh-action-pypi-publish@release/v1
