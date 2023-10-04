@@ -10,7 +10,7 @@ This README describes the Python-based tools to postprocess malloc-tag snapshots
 Installing these utilities from [pypi](https://pypi.org/project/malloctag-tools/) is really simple:
 
 ```
-pip3 install -upgrade malloctag-tools
+pip3 install --upgrade malloctag-tools
 ```
 
 ## Postprocess 
