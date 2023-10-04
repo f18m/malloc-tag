@@ -14,11 +14,12 @@ jobs:
           uses: actions/setup-python@v4
           with:
             python-version: "3.x"
+        - name: install pypa/build
+          run: >-
+            python3 -m
+            pip install build --user
         
-        - name: install pypi-packaged dependencies
-          run: sudo pip3 install build
-        
-        # package 
+        # package & store artifacts
         - name: package the pypi
           run: |
             cd tools && python3 -m build
@@ -39,7 +40,7 @@ jobs:
             url: https://pypi.org/p/malloctag-tools
         permissions:
             id-token: write  # IMPORTANT: mandatory for trusted publishing
-            
+
         steps:
         - name: Download all the dists
           uses: actions/download-artifact@v3
