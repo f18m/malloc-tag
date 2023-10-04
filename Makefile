@@ -71,7 +71,7 @@ cpp_tests: $(BINS)
 		mv tests/dummystats.json.tmp tests/dummystats.json
 
 python_tests:
-	$(MAKE) -C tools python_tests
+	$(MAKE) -C tools/malloc_tag python_tests
 python_package:
 	python3 -m build
 
