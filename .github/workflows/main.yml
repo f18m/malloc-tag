@@ -35,12 +35,12 @@ jobs:
         # Core filenames will be of the form executable.pid.timestamp:
         sudo bash -c 'echo "/cores/%e.%p.%t" > /proc/sys/kernel/core_pattern'
 
-    # now run unit tests
+    # now run C++ unit tests
     - name: run unit tests
       run: |
         # Allow core dumps
         ulimit -c unlimited
-        make tests
+        make cpp_tests
 
     # now run examples to check they are still up to date and working
     - name: run basic example
@@ -73,6 +73,14 @@ jobs:
           ./examples/minimal/minimal
           ./src/libmalloc_tag.so*
 
+    # test Python tools
+    - name: package the pypi
+      run: |
+        PWD=$(pwd)
+        echo "PYTHONPATH=$PWD/tools" >> $GITHUB_ENV
+        make python_tests
+
     # finally test Python packaging
     - name: package the pypi
-      run: python3 -m build
+      run: |
+        python3 -m build
