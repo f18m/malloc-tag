@@ -9,4 +9,4 @@ tests/*.json
 tests/*.dot
 tests/unit_tests
 tools/__pycache__/
-
+tools/dist

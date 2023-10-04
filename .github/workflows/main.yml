@@ -85,4 +85,4 @@ jobs:
     # finally test Python packaging
     - name: package the pypi
       run: |
-        python3 -m build
+        cd tools && python3 -m build
