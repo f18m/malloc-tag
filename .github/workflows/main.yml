@@ -16,6 +16,10 @@ jobs:
     - name: install debian-packaged dependencies
       run: sudo apt install -y jq clang-format graphviz libgoogle-perftools-dev libunwind-dev libgtest-dev
 
+    - uses: actions/checkout@v3
+    - name: install pypi-packaged dependencies
+      run: sudo pip3 install graphviz
+
     - name: build malloc-tag
       run: make all
     - name: check formatting
