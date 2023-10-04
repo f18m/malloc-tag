@@ -74,10 +74,12 @@ jobs:
           ./src/libmalloc_tag.so*
 
     # test Python tools
-    - name: run python integration tests
+    - name: set python path
       run: |
         PWD=$(pwd)
         echo "PYTHONPATH=$PWD/tools" >> $GITHUB_ENV
+    - name: run python integration tests
+      run: |
         make python_tests
 
     # finally test Python packaging
