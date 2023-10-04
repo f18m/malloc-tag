@@ -148,7 +148,7 @@ def parse_command_line():
     parser.add_argument(
         "-o",
         "--output",
-        help="The name of the output JSON file with aggregated stats.",
+        help="The name of the output JSON file where post-processed results must be stored.",
         default=None,
     )
     parser.add_argument(
@@ -171,7 +171,7 @@ def parse_command_line():
     parser.add_argument(
         "input",
         nargs="?",
-        help="The JSON file to analyze. If '-' the JSON is read from stdin.",
+        help="The malloc-tag snapshot JSON file to analyze.",
         default=None,
     )
 

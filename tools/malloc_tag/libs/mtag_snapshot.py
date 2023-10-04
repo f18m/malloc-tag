@@ -8,7 +8,7 @@ import json
 import os
 import sys
 import decimal
-import graphviz   # pip3 install graphviz
+import graphviz  # pip3 install graphviz
 from decimal import *
 
 from malloc_tag.libs.mtag_graphviz_utils import *
@@ -24,18 +24,20 @@ TREE_PREFIX = "tree_for_TID"
 # DecimalEncoder
 # =======================================================================================================
 
+
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
-        # 👇️ if passed in object is instance of Decimal
-        # convert it to a string
+        # if passed in object is instance of Decimal ensure accuracy remains of up to 2 digits only
         if isinstance(obj, Decimal):
             return round(float(obj), 2)
-        # 👇️ otherwise use the default behavior
+        # otherwise use the default behavior:
         return json.JSONEncoder.default(self, obj)
+
 
 # =======================================================================================================
 # MallocTagSnapshot
 # =======================================================================================================
+
 
 class MallocTagSnapshot:
     """
@@ -101,43 +103,65 @@ class MallocTagSnapshot:
             json.dump(outdict, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
         print(f"Saved postprocessed results into {json_outfile}.")
 
-    def save_graphviz_dot(self, graphviz_dot_outfile: str):
-        thegraph = graphviz.Digraph(comment='Malloc-tag snapshot')
+    def save_graphviz(self, output_fname: str):
+        thegraph = graphviz.Digraph(comment="Malloc-tag snapshot")
 
         labels = []
-        labels.append("Whole process stats")
+        labels.append("Process-wide stats\\n")
         labels.append(
-            "allocated_mem_before_malloctag_init=" + GraphVizUtils.pretty_print_bytes(self.nBytesAllocBeforeInit))
+            f"allocated_mem_before_malloctag_init={GraphVizUtils.pretty_print_bytes(self.nBytesAllocBeforeInit)}"
+        )
         labels.append(
-            "allocated_mem_by_malloctag_itself=" + GraphVizUtils.pretty_print_bytes(self.nBytesMallocTagSelfUsage))
-        labels.append("allocated_mem=" + GraphVizUtils.pretty_print_bytes(self.nTotalTrackedBytes))
-        labels.append("vm_size_now=" + GraphVizUtils.pretty_print_bytes(self.vmSizeNowBytes))
-        labels.append("vm_rss_now=" + GraphVizUtils.pretty_print_bytes(self.vmRSSNowBytes))
-        labels.append("malloctag_start_ts=" + self.tmStartProfiling)
-        labels.append("this_snapshot_ts=" + self.tmCurrentSnapshot)
+            f"allocated_mem_by_malloctag_itself={GraphVizUtils.pretty_print_bytes(self.nBytesMallocTagSelfUsage)}"
+        )
+        labels.append(
+            f"allocated_mem={GraphVizUtils.pretty_print_bytes(self.nTotalTrackedBytes)}"
+        )
+        labels.append(
+            f"vm_size_now={GraphVizUtils.pretty_print_bytes(self.vmSizeNowBytes)}"
+        )
+        labels.append(
+            f"vm_rss_now={GraphVizUtils.pretty_print_bytes(self.vmRSSNowBytes)}"
+        )
+        labels.append(f"malloctag_start_ts={self.tmStartProfiling}")
+        labels.append(f"this_snapshot_ts={self.tmCurrentSnapshot}")
 
         # create the main node:
         mainNodeName = f"Process_{self.pid}"
-        thegraph.node(mainNodeName, label='\n'.join(labels))
+        thegraph.node(mainNodeName, label="\\n".join(labels))
+        #thegraph.attr(colorscheme="reds9", style="filled")
 
         # used to compute weights later:
         totalloc, totfreed = self.collect_allocated_freed_recursively()
 
-        # now create subgraphs for each and every tree: 
+        # now create subgraphs for each and every tree:
         for t in self.treeRegistry.keys():
             self.treeRegistry[t].save_as_graphviz_dot(thegraph)
 
             # compute the weight for the 't'-th tree:
-            treealloc, treefree = self.treeRegistry[t].collect_allocated_freed_recursively()
-            w = 0 if totalloc == 0 else 100*treealloc/totalloc
+            treealloc, treefree = self.treeRegistry[
+                t
+            ].collect_allocated_freed_recursively()
+            w = 0 if totalloc == 0 else 100 * treealloc / totalloc
             wstr = f"%.2f%%" % w
 
             # add edge main node ---> tree
-            thegraph.edge(mainNodeName, self.treeRegistry[t].get_graphviz_root_node_name(), label=wstr)
+            thegraph.edge(
+                mainNodeName,
+                self.treeRegistry[t].get_graphviz_root_node_name(),
+                label=wstr,
+            )
 
-
-        #print(thegraph.source)
-        thegraph.render(outfile=graphviz_dot_outfile)
+        if output_fname.endswith(".dot"):
+            # NOTE: writing the .source property of the graphviz.Digraph() on disk seems to produce
+            # later better results compared to
+            #    thegraph.render(outfile=output_fname)
+            # because the render() method will put inside the .dot files a lot of width/height/pos attributes
+            # that typically break label lines (e.g. "num_malloc_self=0" becomes "num_malloc_", newline and then "self=0")
+            with open(output_fname, "w") as file:
+                file.write(thegraph.source)
+        else:
+            thegraph.render(outfile=output_fname)
 
     def print_stats(self):
         num_nodes = sum(
@@ -154,7 +178,6 @@ class MallocTagSnapshot:
         del self.treeRegistry[tid2]
         # update all node weights:
         self.compute_node_weights_recursively()
-
 
     def collect_allocated_freed_recursively(self):
         totalloc = 0

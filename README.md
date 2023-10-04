@@ -173,6 +173,7 @@ Apache 2.0 License
 # TODO
 
 * make max_tree_nodes, max_tree_levels configurable via env vars
+* remove the C++ implementation of .dot output generation and keep only the mtag_json2dot tool?
 
 # FUTURE
 

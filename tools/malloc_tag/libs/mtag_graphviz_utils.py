@@ -8,6 +8,7 @@
 # GraphVizUtils
 # =======================================================================================================
 
+
 class GraphVizUtils:
     """
     This class provides utilities for producing .DOT graphviz outputs
@@ -27,4 +28,3 @@ class GraphVizUtils:
             return str(bytes // 1000000) + "MB"
         else:
             return str(bytes // 1000000000) + "GB"
-

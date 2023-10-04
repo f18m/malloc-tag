@@ -39,7 +39,7 @@ def parse_command_line():
     parser.add_argument(
         "-o",
         "--output",
-        help="The name of the output Graphviz DOT file with aggregated stats.",
+        help="The name of the output Graphviz DOT/SVG file. The file type is auto-detected from file extension.",
         default=None,
     )
     parser.add_argument(
@@ -56,7 +56,7 @@ def parse_command_line():
     parser.add_argument(
         "input",
         nargs="?",
-        help="The JSON file to analyze. If '-' the JSON is read from stdin.",
+        help="The JSON file containing the malloc-tag snapshot that must be rendered.",
         default=None,
     )
 
@@ -99,7 +99,7 @@ def json2dot_main():
 
     # if requested, save the output:
     if config["output_file"]:
-        t.save_graphviz_dot(config["output_file"])
+        t.save_graphviz(config["output_file"])
 
 
 # =======================================================================================================

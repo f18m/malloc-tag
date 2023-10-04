@@ -8,7 +8,7 @@ import json
 import os
 import sys
 import decimal
-import graphviz   # pip3 install graphviz
+import graphviz  # pip3 install graphviz
 from decimal import *
 from malloc_tag.libs.mtag_graphviz_utils import *
 
@@ -23,6 +23,7 @@ g_num_nodes = 0
 # =======================================================================================================
 # MallocTagNode
 # =======================================================================================================
+
 
 class MallocTagNode:
     """
@@ -46,8 +47,8 @@ class MallocTagNode:
         self.name = name
 
         # weights
-        self.nTotalWeightPercentage = 0 # this will be recomputed on the fly later
-        self.nSelfWeightPercentage = 0 # this will be recomputed on the fly later
+        self.nTotalWeightPercentage = 0  # this will be recomputed on the fly later
+        self.nSelfWeightPercentage = 0  # this will be recomputed on the fly later
 
         # load self properties
         self.nBytesTotalAllocated = node_dict["nBytesTotalAllocated"]
@@ -65,7 +66,7 @@ class MallocTagNode:
             name = scope[len(SCOPE_PREFIX) :]
 
             # load the node recursively
-            t = MallocTagNode(owner_tid=self.ownerTID, level=self.nLevel+1)
+            t = MallocTagNode(owner_tid=self.ownerTID, level=self.nLevel + 1)
             t.load_json(node_dict["nestedScopes"][scope], name)
             assert name not in self.childrenNodes
 
@@ -79,7 +80,9 @@ class MallocTagNode:
             "nBytesSelfFreed": self.nBytesSelfFreed,
             "nTimesEnteredAndExited": self.nTimesEnteredAndExited,
             # FIXME: rename to nTotalWeightPercentage also in the JSON output
-            "nWeightPercentage": Decimal(self.nTotalWeightPercentage), # see usage of DecimalEncoder later on
+            "nWeightPercentage": Decimal(
+                self.nTotalWeightPercentage
+            ),  # see usage of DecimalEncoder later on
             "nCallsTo_malloc": self.nCallsTo_malloc,
             "nCallsTo_realloc": self.nCallsTo_realloc,
             "nCallsTo_calloc": self.nCallsTo_calloc,
@@ -91,7 +94,6 @@ class MallocTagNode:
         return d
 
     def save_as_graphviz_dot(self, graph):
-
         thisNodeShape = "ellipse"
         thisNodeLabels = []
         if self.nLevel == 1:
@@ -105,22 +107,36 @@ class MallocTagNode:
         # - total memory usage accounted for this node (both in bytes and as percentage)
         # - self memory usage (both in bytes and as percentage)
         if self.nBytesSelfAllocated != self.nBytesTotalAllocated:
-            thisNodeLabels.append(f"total_alloc={GraphVizUtils.pretty_print_bytes(self.nBytesTotalAllocated)}")
-            thisNodeLabels.append(f"self_alloc={GraphVizUtils.pretty_print_bytes(self.nBytesSelfAllocated)}")
+            thisNodeLabels.append(
+                f"total_alloc={GraphVizUtils.pretty_print_bytes(self.nBytesTotalAllocated)} ({self.nTotalWeightPercentage}%)"
+            )
+            thisNodeLabels.append(
+                f"self_alloc={GraphVizUtils.pretty_print_bytes(self.nBytesSelfAllocated)} ({self.nSelfWeightPercentage}%)"
+            )
         else:
             # shorten the label:
-            thisNodeLabels.append(f"total_alloc=self_alloc={GraphVizUtils.pretty_print_bytes(self.nBytesTotalAllocated)}")
-        
-        thisNodeLabels.append(f"self_freed={GraphVizUtils.pretty_print_bytes(self.nBytesSelfFreed)}")
+            thisNodeLabels.append(
+                f"total_alloc=self_alloc={GraphVizUtils.pretty_print_bytes(self.nBytesTotalAllocated)} ({self.nTotalWeightPercentage}%)"
+            )
+
+        thisNodeLabels.append(
+            f"self_freed={GraphVizUtils.pretty_print_bytes(self.nBytesSelfFreed)}"
+        )
         thisNodeLabels.append(f"visited_times={self.nTimesEnteredAndExited}")
 
         n = self.get_avg_self_bytes_alloc_per_visit()
-        thisNodeLabels.append(f"self_alloc_per_visit={GraphVizUtils.pretty_print_bytes(n)}")
+        thisNodeLabels.append(
+            f"self_alloc_per_visit={GraphVizUtils.pretty_print_bytes(n)}"
+        )
 
-        thisNodeLabels.append(f"nCallsTo_malloc={self.nCallsTo_malloc}")
-        thisNodeLabels.append(f"nCallsTo_realloc={self.nCallsTo_realloc}")
-        thisNodeLabels.append(f"nCallsTo_calloc={self.nCallsTo_calloc}")
-        thisNodeLabels.append(f"nCallsTo_free={self.nCallsTo_free}")
+        if self.nCallsTo_malloc:
+            thisNodeLabels.append(f"num_malloc_self={self.nCallsTo_malloc}")
+        if self.nCallsTo_realloc:
+            thisNodeLabels.append(f"num_realloc_self={self.nCallsTo_realloc}")
+        if self.nCallsTo_calloc:
+            thisNodeLabels.append(f"num_calloc_self={self.nCallsTo_calloc}")
+        if self.nCallsTo_free:
+            thisNodeLabels.append(f"num_free_self={self.nCallsTo_free}")
 
         # Calculate the fillcolor in a range from 0-9 based on the "self weight"
         # The idea is to provide an intuitive indication of the self contributions of each malloc scope:
@@ -150,17 +166,27 @@ class MallocTagNode:
         else:
             thisNodeFillColor = "7"
             thisNodeFontSize = "20"
-        
+
         # create a name that is unique in the whole graphviz DOT document:
         thisNodeName = self.get_graphviz_node_name()
 
         # finally add this node:
-        graph.node(name=thisNodeName, label='\n'.join(thisNodeLabels), shape=thisNodeShape, fillcolor=thisNodeFillColor, fontsize=thisNodeFontSize)
-            
+        graph.node(
+            name=thisNodeName,
+            label="\\n".join(thisNodeLabels),
+            shape=thisNodeShape,
+            fillcolor=thisNodeFillColor,
+            fontsize=thisNodeFontSize,
+        )
+
         # write all the connections between this node and its children:
         for c in self.childrenNodes:
             edge_label = f"w={self.childrenNodes[c].nTotalWeightPercentage}%"
-            graph.edge(thisNodeName, self.childrenNodes[c].get_graphviz_node_name(), label=edge_label);
+            graph.edge(
+                thisNodeName,
+                self.childrenNodes[c].get_graphviz_node_name(),
+                label=edge_label,
+            )
 
         # now recurse into each children:
         for c in self.childrenNodes:
@@ -192,8 +218,6 @@ class MallocTagNode:
                 # this is a new scope... present only in the 'other' node... add it
                 self.childrenNodes[scopeName] = other.childrenNodes[scopeName]
 
-
-
     def get_num_levels(self):
         tot = 1
         if self.childrenNodes:
@@ -214,13 +238,16 @@ class MallocTagNode:
         if self.nTimesEnteredAndExited > 0:
             # it's questionable if we should instead use:
             #                get_net_self_bytes() / m_nTimesEnteredAndExited
-            return self.nBytesSelfAllocated / self.nTimesEnteredAndExited
+            return int(self.nBytesSelfAllocated / self.nTimesEnteredAndExited)
         return 0
 
     def get_graphviz_node_name(self):
         # create a name that is unique in the whole graphviz DOT document:
-        return f"{self.ownerTID}_{self.name}"
-
+        # also be aware that colons (:) have a special meaning to graphviz Python library,
+        # see https://github.com/xflr6/graphviz/issues/53
+        # to avoid troubles we replace colons with underscores in node IDs
+        # (but the colons will still appear in the node label)
+        return graphviz.escape(f"{self.ownerTID}_{self.name}").replace(":", "_")
 
     def collect_allocated_freed_recursively(self):
         # Postorder traversal of a tree:
@@ -244,16 +271,15 @@ class MallocTagNode:
             self.nTotalWeightPercentage = self.nSelfWeightPercentage = 0
         else:
             # Compute weight of this node:
-            self.nTotalWeightPercentage = round(float(100 * self.nBytesTotalAllocated) / allTreesTotalAllocatedBytes, 2)
-            self.nWeightSelf = round(float(100 * self.nBytesSelfAllocated) / allTreesTotalAllocatedBytes, 2)
+            self.nTotalWeightPercentage = round(
+                float(100 * self.nBytesTotalAllocated) / allTreesTotalAllocatedBytes, 2
+            )
+            self.nSelfWeightPercentage = round(
+                float(100 * self.nBytesSelfAllocated) / allTreesTotalAllocatedBytes, 2
+            )
 
         # recurse:
         for child in self.childrenNodes:
-            self.childrenNodes[child].compute_node_weights_recursively(allTreesTotalAllocatedBytes)
-
-
-
-
-
-
-
+            self.childrenNodes[child].compute_node_weights_recursively(
+                allTreesTotalAllocatedBytes
+            )

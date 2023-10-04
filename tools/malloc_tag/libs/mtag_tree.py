@@ -8,7 +8,7 @@ import json
 import os
 import sys
 import decimal
-import graphviz   # pip3 install graphviz
+import graphviz  # pip3 install graphviz
 from decimal import *
 
 from malloc_tag.libs.mtag_graphviz_utils import *
@@ -23,6 +23,7 @@ SCOPE_PREFIX = "scope_"
 # =======================================================================================================
 # MallocTree
 # =======================================================================================================
+
 
 class MallocTree:
     """
@@ -80,11 +81,10 @@ class MallocTree:
         labels.append(f"TID={self.tid}")
         labels.append(f"nPushNodeFailures={self.nPushNodeFailures}")
         labels.append(f"nTreeNodesInUse/Max={nTreeNodesInUse}/{self.nMaxTreeNodes}")
-
+ 
         # create one graph for each MallocTree
-        tree_graph = graphviz.Digraph(name=f"cluster_TID{self.tid}")
-        tree_graph.attr(label='\n'.join(labels))
-        tree_graph.attr(fontsize='20')
+        tree_graph = graphviz.Digraph(name=f"cluster_TID{self.tid}", node_attr={"colorscheme":"reds9", "style":"filled"})
+        tree_graph.attr(label="\\n".join(labels), labelloc="b", fontsize="20")
         self.treeRootNode.save_as_graphviz_dot(tree_graph)
 
         # finally add the graph into the "big one" as subgraph

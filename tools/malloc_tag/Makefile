@@ -1,4 +1,5 @@
 EXAMPLE_JSON_FILE=../../examples/multithread/multithread_stats.json
+PYTHON_MODULE_PATH=../../tools
 
 python_tests:
 	@echo "Starting Python integration TESTS (assume multithread example JSON is available)"
@@ -10,7 +11,8 @@ test_load_and_save_without_processing:
 	@echo
 	@echo ">> test_load_and_save_without_processing <<"
 	@echo
-	mtag_postprocess/postprocess.py -o /tmp/nopostprocess.json $(EXAMPLE_JSON_FILE)
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		mtag_postprocess/postprocess.py -o /tmp/nopostprocess.json $(EXAMPLE_JSON_FILE)
 	jq . /tmp/nopostprocess.json >/tmp/nopostprocess_prettyprinted.json
 	jq . $(EXAMPLE_JSON_FILE) >/tmp/input_prettyprinted.json
 	# give up trying to get perfectly-matching node weights between C++/Python:
@@ -31,7 +33,8 @@ test_thread_aggregation:
 	@echo
 	@echo ">> test_thread_aggregation <<"
 	@echo
-	mtag_postprocess/postprocess.py -o /tmp/threadagg.json -c mtag_postprocess/example_agg_rules.json $(EXAMPLE_JSON_FILE)
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		mtag_postprocess/postprocess.py -o /tmp/threadagg.json -c mtag_postprocess/example_agg_rules.json $(EXAMPLE_JSON_FILE)
 	jq . /tmp/threadagg.json >/tmp/nopostprocess_prettyprinted.json
 	jq . $(EXAMPLE_JSON_FILE) >/tmp/input_prettyprinted.json
 	#
@@ -45,4 +48,9 @@ test_json2dot:
 	@echo
 	@echo ">> test_json2dot <<"
 	@echo
-	mtag_json2dot/json2dot.py -o /tmp/testoutput.dot $(EXAMPLE_JSON_FILE)
+	# test creation of .dot output file:
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		mtag_json2dot/json2dot.py -o /tmp/testoutput.dot $(EXAMPLE_JSON_FILE)
+	# test creation of .svg output file:
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		mtag_json2dot/json2dot.py -o /tmp/testoutput.svg $(EXAMPLE_JSON_FILE)
