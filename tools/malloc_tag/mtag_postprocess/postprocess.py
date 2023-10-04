@@ -17,9 +17,9 @@ import sys
 import re
 import decimal
 from decimal import *
-from mtag_node import *
-from mtag_tree import *
-from mtag_snapshot import *
+from malloc_tag.libs.mtag_node import *
+from malloc_tag.libs.mtag_tree import *
+from malloc_tag.libs.mtag_snapshot import *
 
 # =======================================================================================================
 # GLOBALs
@@ -29,9 +29,8 @@ THIS_SCRIPT_VERSION = "0.0.1"
 
 
 # =======================================================================================================
-# PostProcessConfig
+# PostProcessAggregationRule
 # =======================================================================================================
-
 
 class PostProcessAggregationRule:
     def __init__(self, ruleIdx: int):
@@ -71,6 +70,10 @@ class PostProcessAggregationRule:
                 snapshot.aggregate_thread_trees(firstTid, otherTid)
             print(f"{self.logprefix()} Aggregation completed.")
 
+
+# =======================================================================================================
+# PostProcessConfig
+# =======================================================================================================
 
 class PostProcessConfig:
     """
@@ -133,7 +136,6 @@ class PostProcessConfig:
 # =======================================================================================================
 # MAIN HELPERS
 # =======================================================================================================
-
 
 def parse_command_line():
     """Parses the command line and returns the configuration as dictionary object."""
@@ -203,12 +205,7 @@ def parse_command_line():
         "postprocess_config_file": args.config,
     }
 
-
-# =======================================================================================================
-# MAIN
-# =======================================================================================================
-
-if __name__ == "__main__":
+def postprocess_main():
     config = parse_command_line()
 
     # load the malloctag snapshot file:
@@ -227,3 +224,10 @@ if __name__ == "__main__":
     # if requested, save the output:
     if config["output_file"]:
         t.save_json(config["output_file"])
+
+# =======================================================================================================
+# MAIN
+# =======================================================================================================
+
+if __name__ == "__main__":
+    postprocess_main()

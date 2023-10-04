@@ -10,7 +10,7 @@ test_load_and_save_without_processing:
 	@echo
 	@echo ">> test_load_and_save_without_processing <<"
 	@echo
-	./postprocess.py -o /tmp/nopostprocess.json $(EXAMPLE_JSON_FILE)
+	mtag_postprocess/postprocess.py -o /tmp/nopostprocess.json $(EXAMPLE_JSON_FILE)
 	jq . /tmp/nopostprocess.json >/tmp/nopostprocess_prettyprinted.json
 	jq . $(EXAMPLE_JSON_FILE) >/tmp/input_prettyprinted.json
 	# give up trying to get perfectly-matching node weights between C++/Python:
@@ -31,7 +31,7 @@ test_thread_aggregation:
 	@echo
 	@echo ">> test_thread_aggregation <<"
 	@echo
-	./postprocess.py -o /tmp/threadagg.json -c example_agg_rules.json $(EXAMPLE_JSON_FILE)
+	mtag_postprocess/postprocess.py -o /tmp/threadagg.json -c example_agg_rules.json $(EXAMPLE_JSON_FILE)
 	jq . /tmp/threadagg.json >/tmp/nopostprocess_prettyprinted.json
 	jq . $(EXAMPLE_JSON_FILE) >/tmp/input_prettyprinted.json
 	#
@@ -45,5 +45,5 @@ test_json2dot:
 	@echo
 	@echo ">> test_json2dot <<"
 	@echo
-	./json2dot.py -o /tmp/testoutput.dot $(EXAMPLE_JSON_FILE)
+	mtag_json2dot/json2dot.py -o /tmp/testoutput.dot $(EXAMPLE_JSON_FILE)
 	cp /tmp/testoutput.dot .

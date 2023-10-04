@@ -72,6 +72,8 @@ cpp_tests: $(BINS)
 
 python_tests:
 	$(MAKE) -C tools python_tests
+python_package:
+	python3 -m build
 
 minimal_example: $(BINS)
 	@echo "Starting example application"
@@ -205,6 +207,7 @@ endif
 	@echo "Installing malloc-tag library into $(DESTDIR)/lib"
 	@mkdir --parents                    $(DESTDIR)/lib
 	@cp -fv src/libmalloc_tag.so*       $(DESTDIR)/lib/
+
 
 
 .PHONY: all minimal_example multithread_example examples tests clean install

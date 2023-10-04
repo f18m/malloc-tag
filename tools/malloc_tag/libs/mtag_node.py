@@ -10,7 +10,7 @@ import sys
 import decimal
 import graphviz   # pip3 install graphviz
 from decimal import *
-from mtag_graphviz_utils import *
+from malloc_tag.libs.mtag_graphviz_utils import *
 
 # =======================================================================================================
 # GLOBALs

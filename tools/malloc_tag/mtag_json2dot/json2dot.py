@@ -14,9 +14,9 @@ import argparse
 import json
 import os
 import sys
-from mtag_node import *
-from mtag_tree import *
-from mtag_snapshot import *
+from malloc_tag.libs.mtag_node import *
+from malloc_tag.libs.mtag_tree import *
+from malloc_tag.libs.mtag_snapshot import *
 
 # =======================================================================================================
 # GLOBALs
@@ -27,7 +27,6 @@ THIS_SCRIPT_VERSION = "0.0.1"
 # =======================================================================================================
 # MAIN HELPERS
 # =======================================================================================================
-
 
 def parse_command_line():
     """Parses the command line and returns the configuration as dictionary object."""
@@ -90,12 +89,7 @@ def parse_command_line():
         "output_file": args.output,
     }
 
-
-# =======================================================================================================
-# MAIN
-# =======================================================================================================
-
-if __name__ == "__main__":
+def json2dot_main():
     config = parse_command_line()
 
     # load the malloctag snapshot file:
@@ -106,3 +100,11 @@ if __name__ == "__main__":
     # if requested, save the output:
     if config["output_file"]:
         t.save_graphviz_dot(config["output_file"])
+
+
+# =======================================================================================================
+# MAIN
+# =======================================================================================================
+
+if __name__ == "__main__":
+    json2dot_main()
