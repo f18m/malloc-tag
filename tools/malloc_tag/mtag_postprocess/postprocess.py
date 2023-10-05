@@ -88,7 +88,7 @@ class PostProcessAggregationRule:
                 f"{self.logprefix()} Found {len(matching_tids)} trees matching the prefix [{self.matchingRegex}] with TIDs: {matching_tids}"
             )
 
-            rule = AggregationRuleDescriptor(self.ruleIdx, f"{self.logprefix()}: aggregate threads {self.matchingRegex}")
+            rule = AggregationRuleDescriptor(self.ruleIdx, self.matchingRegex, f"{self.logprefix()}: aggregate threads {self.matchingRegex}")
 
             firstTid = matching_tids[0]
             for otherTid in matching_tids[1:]:

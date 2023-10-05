@@ -202,6 +202,8 @@ class MallocTagNode:
         self.nBytesSelfAllocated += other.nBytesSelfAllocated
         self.nBytesSelfFreed += other.nBytesSelfFreed
         self.nTimesEnteredAndExited += other.nTimesEnteredAndExited
+
+        # sum all stats by memory operation:
         self.nCallsTo_malloc += other.nCallsTo_malloc
         self.nCallsTo_realloc += other.nCallsTo_realloc
         self.nCallsTo_calloc += other.nCallsTo_calloc
@@ -209,6 +211,9 @@ class MallocTagNode:
 
         # recurse into children:
         for scopeName in other.childrenNodes.keys():
+
+            # for each scope of the "other" node, check if there is an identical children
+            # also in this node and aggregate them:
             if scopeName in self.childrenNodes:
                 # same scope is already present... aggregate!
                 self.childrenNodes[scopeName].aggregate_with(
@@ -216,6 +221,7 @@ class MallocTagNode:
                 )
             else:
                 # this is a new scope... present only in the 'other' node... add it
+                # as new scope also to this node:
                 self.childrenNodes[scopeName] = other.childrenNodes[scopeName]
 
     def get_num_levels(self):

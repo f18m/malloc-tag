@@ -39,10 +39,10 @@ class DecimalEncoder(json.JSONEncoder):
 # =======================================================================================================
 
 class AggregationRuleDescriptor:
-    def __init__(self, index: int, name: str):
+    def __init__(self, index: int, name: str, desc: str):
         self.index = index
         self.name = name
-
+        self.desc = desc
 
 
 # =======================================================================================================
@@ -84,7 +84,7 @@ class MallocTagSnapshot:
             f.close()
             wholejson = json.loads(text)
         except json.decoder.JSONDecodeError as err:
-            print("Invalid input JSON file '%s': %s" % (json_infile, err))
+            print(f"Invalid input JSON file '{json_infile}': {err}")
             sys.exit(1)
 
         # process it
@@ -174,7 +174,7 @@ class MallocTagSnapshot:
         else:
             thegraph.render(outfile=output_fname)
         
-        print(f"Saved rendered JSON as Graphviz format into {output_fname}.")
+        print(f"Saved rendered JSON as Graphviz format into {output_fname}")
 
     def print_stats(self):
         num_nodes = sum(
