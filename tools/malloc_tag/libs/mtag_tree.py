@@ -102,12 +102,12 @@ class MallocTree:
         # the trick done here is to use the rule index as fake TID assuming that within the same rule, only one
         # tree will contain the aggregation result
         self.tid = rule.index
+        self.manipulatedByRule = rule.name
         self.name += "," + other.name
         self.nPushNodeFailures += other.nPushNodeFailures
         self.nFreeTrackingFailed += other.nFreeTrackingFailed
         self.nMaxTreeNodes = max(self.nMaxTreeNodes, other.nMaxTreeNodes)
         self.nVmSizeAtCreation = max(self.nVmSizeAtCreation, other.nVmSizeAtCreation)
-        self.manipulatedByRule = rule.name
         self.treeRootNode.aggregate_with(other.treeRootNode)
 
     def collect_allocated_freed_recursively(self):
