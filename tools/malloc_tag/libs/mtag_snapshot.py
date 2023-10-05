@@ -173,6 +173,8 @@ class MallocTagSnapshot:
                 file.write(thegraph.source)
         else:
             thegraph.render(outfile=output_fname)
+        
+        print(f"Saved rendered JSON as Graphviz format into {output_fname}.")
 
     def print_stats(self):
         num_nodes = sum(

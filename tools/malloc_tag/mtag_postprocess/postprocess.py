@@ -34,13 +34,29 @@ THIS_SCRIPT_PYPI_PACKAGE = "malloctag-tools"
 # =======================================================================================================
 
 class PostProcessAggregationRule:
+
+    RULE_NAME = "aggregate_trees"
+    PROPERTY_NAME = "matching_regex"
+
     def __init__(self, ruleIdx: int):
         self.ruleIdx = ruleIdx
         self.matchingRegex = ""
         self.regex = None
 
     def load(self, cfg_dict):
-        self.matchingRegex = cfg_dict["aggregate_trees"]["matching_regex"]
+
+        rulename = PostProcessAggregationRule.RULE_NAME
+        pname = PostProcessAggregationRule.PROPERTY_NAME
+
+        if rulename not in cfg_dict:
+            print(f"{self.logprefix()} Invalid syntax for aggregation rule.")
+            return False
+
+        if pname not in cfg_dict[rulename]:
+            print(f"{self.logprefix()} Missing property {pname} inside {rulename}.")
+            return False
+
+        self.matchingRegex = cfg_dict[rulename][pname]
         try:
             self.regex = re.compile(self.matchingRegex)
             return True
@@ -118,7 +134,7 @@ class PostProcessConfig:
 
             mode = next(iter(wholejson[rule]))
 
-            if mode == "aggregate_trees":
+            if mode == PostProcessAggregationRule.RULE_NAME:
                 t = PostProcessAggregationRule(nrule)
                 if not t.load(wholejson[rule]):
                     sys.exit(1)

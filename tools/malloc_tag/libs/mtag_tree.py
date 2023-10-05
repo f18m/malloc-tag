@@ -44,6 +44,8 @@ class MallocTree:
         self.nFreeTrackingFailed = tree_dict["nFreeTrackingFailed"]
         self.nMaxTreeNodes = tree_dict["nMaxTreeNodes"]
         self.nVmSizeAtCreation = tree_dict["nVmSizeAtCreation"]
+        if "manipulatedByRule" in tree_dict:
+            self.manipulatedByRule = tree_dict["manipulatedByRule"]
         if self.nPushNodeFailures > 0:
             print(
                 f"WARNING: found malloc-tag failures in tracking mem allocations inside the tree {self.name}"
@@ -73,7 +75,7 @@ class MallocTree:
             "nVmSizeAtCreation": self.nVmSizeAtCreation,
         }
         if self.manipulatedByRule:
-            d["manipulatedBy"] = self.manipulatedByRule
+            d["manipulatedByRule"] = self.manipulatedByRule
         d[SCOPE_PREFIX + self.treeRootNode.name] = self.treeRootNode.get_as_dict()
         return d
 
@@ -85,7 +87,7 @@ class MallocTree:
         labels.append(f"nPushNodeFailures={self.nPushNodeFailures}")
         labels.append(f"nTreeNodesInUse/Max={nTreeNodesInUse}/{self.nMaxTreeNodes}")
         if self.manipulatedByRule:
-            labels.append(f"manipulatedBy={self.manipulatedByRule}")
+            labels.append(f"manipulatedByRule={self.manipulatedByRule}")
  
         # create one graph for each MallocTree
         tree_graph = graphviz.Digraph(name=f"cluster_TID{self.tid}", node_attr={"colorscheme":"reds9", "style":"filled"})
