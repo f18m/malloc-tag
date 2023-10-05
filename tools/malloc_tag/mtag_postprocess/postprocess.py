@@ -16,6 +16,7 @@ import os
 import sys
 import re
 import decimal
+import importlib
 from decimal import *
 from malloc_tag.libs.mtag_node import *
 from malloc_tag.libs.mtag_tree import *
@@ -25,7 +26,7 @@ from malloc_tag.libs.mtag_snapshot import *
 # GLOBALs
 # =======================================================================================================
 
-THIS_SCRIPT_VERSION = "0.0.1"
+THIS_SCRIPT_PYPI_PACKAGE = "malloctag-tools"
 
 
 # =======================================================================================================
@@ -184,7 +185,12 @@ def parse_command_line():
     verbose = args.verbose
 
     if args.version:
-        print(f"Version: {THIS_SCRIPT_VERSION}")
+        try:
+            from importlib.metadata import version
+        except:
+            from importlib_metadata import version
+        this_script_version = version(THIS_SCRIPT_PYPI_PACKAGE)
+        print(f"Version: {this_script_version}")
         sys.exit(0)
 
     if args.input is None:
