@@ -2,12 +2,12 @@
     "comment": "This is a simple example of postprocessing rules",
     "rule0": {
         "aggregate_trees": {
-            "matching_prefix": "ExampleThr/*"
+            "matching_regex": "ExampleThr/[0-9]*"
         }
     },
     "rule1": {
         "aggregate_trees": {
-            "matching_prefix": "YetAnThr/*"
+            "matching_regex": "YetAnThr/[0-9]*"
         }
     }
 }

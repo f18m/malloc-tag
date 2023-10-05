@@ -36,36 +36,43 @@ THIS_SCRIPT_PYPI_PACKAGE = "malloctag-tools"
 class PostProcessAggregationRule:
     def __init__(self, ruleIdx: int):
         self.ruleIdx = ruleIdx
-        self.matchingPrefix = ""
+        self.matchingRegex = ""
+        self.regex = None
 
     def load(self, cfg_dict):
-        self.matchingPrefix = cfg_dict["aggregate_trees"]["matching_prefix"]
+        self.matchingRegex = cfg_dict["aggregate_trees"]["matching_regex"]
+        try:
+            self.regex = re.compile(self.matchingRegex)
+            return True
+        except:
+            print(
+                f"{self.logprefix()} Invalid regex [{self.matchingRegex}]. Aborting."
+            )
+            return False
 
     def logprefix(self):
         return f"Rule#{self.ruleIdx}:"
 
     def apply(self, snapshot: MallocTagSnapshot):
-        regex = re.compile(self.matchingPrefix)
-
         matching_tids = [
             tid
             for tid in snapshot.treeRegistry
-            if re.match(regex, snapshot.treeRegistry[tid].name)
+            if re.match(self.regex, snapshot.treeRegistry[tid].name)
         ]
         if len(matching_tids) == 0:
             print(
-                f"{self.logprefix()} Could not find any tree matching the prefix [{self.matchingPrefix}]"
+                f"{self.logprefix()} Could not find any tree matching the regex [{self.matchingRegex}]"
             )
         elif len(matching_tids) == 1:
             print(
-                f"{self.logprefix()} Found only 1 tree matching the prefix [{self.matchingPrefix}]. Nothing to aggregate."
+                f"{self.logprefix()} Found only 1 tree matching the regex [{self.matchingRegex}]. Nothing to aggregate."
             )
         else:
             print(
-                f"{self.logprefix()} Found {len(matching_tids)} trees matching the prefix [{self.matchingPrefix}] with TIDs: {matching_tids}"
+                f"{self.logprefix()} Found {len(matching_tids)} trees matching the prefix [{self.matchingRegex}] with TIDs: {matching_tids}"
             )
 
-            rule = AggregationRuleDescriptor(self.ruleIdx, f"{self.logprefix()}: aggregate threads {self.matchingPrefix}")
+            rule = AggregationRuleDescriptor(self.ruleIdx, f"{self.logprefix()}: aggregate threads {self.matchingRegex}")
 
             firstTid = matching_tids[0]
             for otherTid in matching_tids[1:]:
@@ -113,7 +120,8 @@ class PostProcessConfig:
 
             if mode == "aggregate_trees":
                 t = PostProcessAggregationRule(nrule)
-                t.load(wholejson[rule])
+                if not t.load(wholejson[rule]):
+                    sys.exit(1)
                 self.rules.append(t)
                 nrule += 1
             else:
