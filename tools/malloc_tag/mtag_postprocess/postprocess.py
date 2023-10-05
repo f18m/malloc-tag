@@ -35,39 +35,40 @@ THIS_SCRIPT_VERSION = "0.0.1"
 class PostProcessAggregationRule:
     def __init__(self, ruleIdx: int):
         self.ruleIdx = ruleIdx
-        self.matching_prefix = ""
+        self.matchingPrefix = ""
 
     def load(self, cfg_dict):
-        self.matching_prefix = cfg_dict["aggregate_trees"]["matching_prefix"]
+        self.matchingPrefix = cfg_dict["aggregate_trees"]["matching_prefix"]
 
     def logprefix(self):
         return f"Rule#{self.ruleIdx}:"
 
     def apply(self, snapshot: MallocTagSnapshot):
-        # TODO
-        regex = re.compile(self.matching_prefix)
+        regex = re.compile(self.matchingPrefix)
 
         matching_tids = [
             tid
             for tid in snapshot.treeRegistry
             if re.match(regex, snapshot.treeRegistry[tid].name)
         ]
-        print(
-            f"{self.logprefix()} Found trees matching the prefix [{self.matching_prefix}] with TIDs: {matching_tids}"
-        )
-
         if len(matching_tids) == 0:
             print(
-                f"{self.logprefix()} Could not find any tree matching the prefix [{self.matching_prefix}]"
+                f"{self.logprefix()} Could not find any tree matching the prefix [{self.matchingPrefix}]"
             )
         elif len(matching_tids) == 1:
             print(
-                f"{self.logprefix()} Found only 1 tree matching the prefix [{self.matching_prefix}]. Nothing to aggregate."
+                f"{self.logprefix()} Found only 1 tree matching the prefix [{self.matchingPrefix}]. Nothing to aggregate."
             )
         else:
+            print(
+                f"{self.logprefix()} Found {len(matching_tids)} trees matching the prefix [{self.matchingPrefix}] with TIDs: {matching_tids}"
+            )
+
+            rule = AggregationRuleDescriptor(self.ruleIdx, f"Aggregate threads prefixed as {self.matchingPrefix}")
+
             firstTid = matching_tids[0]
             for otherTid in matching_tids[1:]:
-                snapshot.aggregate_thread_trees(firstTid, otherTid)
+                snapshot.aggregate_thread_trees(firstTid, otherTid, rule)
             print(f"{self.logprefix()} Aggregation completed.")
 
 

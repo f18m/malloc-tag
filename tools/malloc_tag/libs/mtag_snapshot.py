@@ -35,6 +35,17 @@ class DecimalEncoder(json.JSONEncoder):
 
 
 # =======================================================================================================
+# AggregationRuleDescriptor
+# =======================================================================================================
+
+class AggregationRuleDescriptor:
+    def __init__(self, index: int, name: str):
+        self.index = index
+        self.name = name
+
+
+
+# =======================================================================================================
 # MallocTagSnapshot
 # =======================================================================================================
 
@@ -171,9 +182,9 @@ class MallocTagSnapshot:
             f"Loaded a total of {len(self.treeRegistry)} trees containing {num_nodes} nodes."
         )
 
-    def aggregate_thread_trees(self, tid1: int, tid2: int):
+    def aggregate_thread_trees(self, tid1: int, tid2: int, rule: "AggregationRuleDescriptor"):
         # do the aggregation
-        self.treeRegistry[tid1].aggregate_with(self.treeRegistry[tid2])
+        self.treeRegistry[tid1].aggregate_with(self.treeRegistry[tid2], rule)
         # remove the aggregated tree:
         del self.treeRegistry[tid2]
         # update all node weights:
