@@ -60,9 +60,9 @@ This allows to easily chain and combine different post-processing steps.
 The post-processed JSON file can then be used as input of the `mtag-json2dot` utility.
 As an example check this picture: 
 
-![multithread_aggregated_example_svg](examples/multithread/multithread_stats.aggregated.svg?raw=true "Malloc-tag aggregated output")
+![multithread_aggregated_example_svg](../examples/multithread/multithread_stats.aggregated.svg?raw=true "Malloc-tag aggregated output")
 
 And compare it against the non-aggregated picture:
 
-![multithread_example_svg](examples/multithread/multithread_stats.dot.svg?raw=true "Malloc-tag output for MULTITHREAD example")
+![multithread_example_svg](../examples/multithread/multithread_stats.dot.svg?raw=true "Malloc-tag output for MULTITHREAD example")
 
