@@ -38,6 +38,7 @@ class DecimalEncoder(json.JSONEncoder):
 # AggregationRuleDescriptor
 # =======================================================================================================
 
+
 class AggregationRuleDescriptor:
     def __init__(self, index: int, name: str, desc: str):
         self.index = index
@@ -140,7 +141,7 @@ class MallocTagSnapshot:
         # create the main node:
         mainNodeName = f"Process_{self.pid}"
         thegraph.node(mainNodeName, label="\\n".join(labels))
-        #thegraph.attr(colorscheme="reds9", style="filled")
+        # thegraph.attr(colorscheme="reds9", style="filled")
 
         # used to compute weights later:
         totalloc, totfreed = self.collect_allocated_freed_recursively()
@@ -163,7 +164,8 @@ class MallocTagSnapshot:
                 label=wstr,
             )
 
-        if output_fname.endswith(".dot"):
+        output_fname_root, extension = os.path.splitext(output_fname)
+        if extension == ".dot":
             # NOTE: writing the .source property of the graphviz.Digraph() on disk seems to produce
             # later better results compared to
             #    thegraph.render(outfile=output_fname)
@@ -171,10 +173,25 @@ class MallocTagSnapshot:
             # that typically break label lines (e.g. "num_malloc_self=0" becomes "num_malloc_", newline and then "self=0")
             with open(output_fname, "w") as file:
                 file.write(thegraph.source)
-        else:
+        elif extension == ".gv":
             thegraph.render(outfile=output_fname)
-        
+        elif extension in [".svg", ".svgz", ".png", ".jpeg", ".jpg", ".gif", ".bmp"]:
+            thegraph.render(outfile=output_fname)
+            # the graphviz package will create a .gv file automatically... this is not actually what the user has asked for,
+            # so let's remove this new .gv file:
+            try:
+                temp_file = output_fname_root + ".gv"
+                if os.path.isfile(temp_file):
+                    print(f"Removing the ancillary/temporary output file {temp_file}")
+                    os.remove(temp_file)
+            except:
+                pass
+        else:
+            print(f"Unknown output file extension: {extension}")
+            return False
+
         print(f"Saved rendered JSON as Graphviz format into {output_fname}")
+        return True
 
     def print_stats(self):
         num_nodes = sum(
@@ -184,7 +201,9 @@ class MallocTagSnapshot:
             f"Loaded a total of {len(self.treeRegistry)} trees containing {num_nodes} nodes."
         )
 
-    def aggregate_thread_trees(self, tid1: int, tid2: int, rule: "AggregationRuleDescriptor"):
+    def aggregate_thread_trees(
+        self, tid1: int, tid2: int, rule: "AggregationRuleDescriptor"
+    ):
         # do the aggregation
         self.treeRegistry[tid1].aggregate_with(self.treeRegistry[tid2], rule)
         # remove the aggregated tree:

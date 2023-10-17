@@ -117,14 +117,17 @@ It may be useful to add to the LD_LIBRARY_PATH env variable the directory where 
 
 ## Part 3: analyze the results
 
-Perhaps the easiest way to grasp the memory utilization of each "malloc tag" is to invoke the 'dot' utility, part of the [Graphviz package](https://graphviz.org/), to render the .dot stats file produced by the `MallocTagEngine::write_stats_on_disk()` API:
+Analyzing the results is an activity that can range from "very simple" to "very complex".
+For small applications the suggested way is to directly graph the results using the powerful [Graphviz package](https://graphviz.org/) and the malloc-tag `mtag-json2dot` CLI utility to render the .dot stats file produced by the `MallocTagEngine::write_stats_on_disk()` API:
 
 ```
-dot -Tsvg -O ${MTAG_STATS_OUTPUT_GRAPHVIZ_DOT}
+
 ```
 
 Then open the resulting SVG file with any suitable viewer.
 In practice, you will often need to post-process the JSON file containing the memory usage snapshot; for this purpose there are a few [Python tools](tools/README.md) that you can employ.
+
+
 
 ## TcMalloc integration
 

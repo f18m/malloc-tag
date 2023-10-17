@@ -88,9 +88,12 @@ class MallocTree:
         labels.append(f"nTreeNodesInUse/Max={nTreeNodesInUse}/{self.nMaxTreeNodes}")
         if self.manipulatedByRule:
             labels.append(f"manipulatedByRule={self.manipulatedByRule}")
- 
+
         # create one graph for each MallocTree
-        tree_graph = graphviz.Digraph(name=f"cluster_TID{self.tid}", node_attr={"colorscheme":"reds9", "style":"filled"})
+        tree_graph = graphviz.Digraph(
+            name=f"cluster_TID{self.tid}",
+            node_attr={"colorscheme": "reds9", "style": "filled"},
+        )
         tree_graph.attr(label="\\n".join(labels), labelloc="b", fontsize="20")
         self.treeRootNode.save_as_graphviz_dot(tree_graph)
 

@@ -39,7 +39,7 @@ def parse_command_line():
     parser.add_argument(
         "-o",
         "--output",
-        help="The name of the output Graphviz DOT/SVG file. The file type is auto-detected from file extension.",
+        help="The name of the output Graphviz file. The file type is auto-detected from file extension. Supported extensions include: .dot, .svg, .png, .jpeg",
         default=None,
     )
     parser.add_argument(
@@ -104,7 +104,9 @@ def json2dot_main():
 
     # if requested, save the output:
     if config["output_file"]:
-        t.save_graphviz(config["output_file"])
+        if not t.save_graphviz(config["output_file"]):
+            # exit with non-zero exit code; as per logging, save_graphviz() should have printed already
+            sys.exit(2)
 
 
 # =======================================================================================================
