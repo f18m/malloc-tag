@@ -66,3 +66,4 @@ And compare it against the non-aggregated picture:
 
 ![multithread_example_svg](../examples/multithread/multithread_stats.dot.svg?raw=true "Malloc-tag output for MULTITHREAD example")
 
+You can see the configuration file used to produce such picture with the `mtag-postprocess` tool [here](../examples/multithread/postprocess_agg_rules.json).
