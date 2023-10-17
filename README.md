@@ -118,15 +118,17 @@ It may be useful to add to the LD_LIBRARY_PATH env variable the directory where 
 ## Part 3: analyze the results
 
 Analyzing the results is an activity that can range from "very simple" to "very complex".
-For small applications the suggested way is to directly graph the results using the powerful [Graphviz package](https://graphviz.org/) and the malloc-tag `mtag-json2dot` CLI utility to render the .dot stats file produced by the `MallocTagEngine::write_stats_on_disk()` API:
+For small applications the suggested way is to directly graph the results using the powerful [Graphviz package](https://graphviz.org/) and the malloc-tag `mtag-json2dot` CLI utility to render the `.json` snapshot files produced by the `MallocTagEngine::write_stats_on_disk()` API:
 
 ```
-
+pip3 install malloctag-tools
+mtag-json2dot --output nice-picture.svg  <malloc-tag-snapshot-file.json>
 ```
 
-Then open the resulting SVG file with any suitable viewer.
-In practice, you will often need to post-process the JSON file containing the memory usage snapshot; for this purpose there are a few [Python tools](tools/README.md) that you can employ.
+This produces a `nice-picture.svg` file that you can open with any suitable viewer. `mtag-json2dot` utility is the same tool used to produce example pictures like those you can see in the [Example Output](#example-output) section.
 
+As you can see from the snippet above, the post-processing tools for malloc-tag snapshots are published on [Pypi repository](https://pypi.org/project/malloctag-tools/) and they're written in Python in order to allow to extend them with flexibility to cover more usecases and more investigations compared to what is described here.
+Indeed in more complex scenarios/application you will often need to post-process the JSON file containing the memory usage snapshot; please refer to the [Python tools README](tools/README.md) for more information about e.g. the `mtag-postprocess` tool.
 
 
 ## TcMalloc integration

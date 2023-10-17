@@ -1,7 +1,7 @@
-{"PID": 1513480,
-"tmStartProfiling": "2023-10-17 @ 18:23:37 CEST",
-"tmCurrentSnapshot": "2023-10-17 @ 18:23:37 CEST",
-"tree_for_TID1513480": {"TID": 1513480,
+{"PID": 1527259,
+"tmStartProfiling": "2023-10-17 @ 18:40:06 CEST",
+"tmCurrentSnapshot": "2023-10-17 @ 18:40:06 CEST",
+"tree_for_TID1527259": {"TID": 1527259,
 "ThreadName": "multithread",
 "nTreeLevels": 1,
 "nTreeNodesInUse": 1,
@@ -21,7 +21,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID1513481": {"TID": 1513481,
+,"tree_for_TID1527260": {"TID": 1527260,
 "ThreadName": "ExampleThr/0",
 "nTreeLevels": 4,
 "nTreeNodesInUse": 5,
@@ -85,7 +85,7 @@
 }
 }
 }
-,"tree_for_TID1513482": {"TID": 1513482,
+,"tree_for_TID1527261": {"TID": 1527261,
 "ThreadName": "ExampleThr/1",
 "nTreeLevels": 4,
 "nTreeNodesInUse": 5,
@@ -149,7 +149,7 @@
 }
 }
 }
-,"tree_for_TID1513483": {"TID": 1513483,
+,"tree_for_TID1527262": {"TID": 1527262,
 "ThreadName": "NonInstrThr",
 "nTreeLevels": 1,
 "nTreeNodesInUse": 1,
@@ -169,7 +169,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID1513484": {"TID": 1513484,
+,"tree_for_TID1527263": {"TID": 1527263,
 "ThreadName": "YetAnThr/0",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 3,
@@ -211,7 +211,7 @@
 }
 }
 }
-,"tree_for_TID1513485": {"TID": 1513485,
+,"tree_for_TID1527264": {"TID": 1527264,
 "ThreadName": "YetAnThr/1",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 3,
@@ -256,5 +256,5 @@
 ,"nBytesAllocBeforeInit": 559208,
 "nBytesMallocTagSelfUsage": 430224,
 "vmSizeNowBytes": 241636000,
-"vmRSSNowBytes": 2932000,
+"vmRSSNowBytes": 4348000,
 "nTotalTrackedBytes": 702914464}

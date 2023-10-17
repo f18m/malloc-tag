@@ -81,10 +81,12 @@ minimal_example: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
 		examples/minimal/minimal
+	# produce the .dot output file:
 	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
 		tools/malloc_tag/mtag_json2dot/json2dot.py \
 		-o examples/minimal/minimal_stats.dot \
 		examples/minimal/minimal_stats.json
+	# produce the .svg output file:
 	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
 		tools/malloc_tag/mtag_json2dot/json2dot.py \
 		-o examples/minimal/minimal_stats.dot.svg \
@@ -133,15 +135,26 @@ multithread_example: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
 		examples/multithread/multithread
+	# produce the .dot output file
 	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
 		tools/malloc_tag/mtag_json2dot/json2dot.py \
 		-o examples/multithread/multithread_stats.dot \
 		examples/multithread/multithread_stats.json
+	# produce the .svg output file
 	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
 		tools/malloc_tag/mtag_json2dot/json2dot.py \
 		-o examples/multithread/multithread_stats.dot.svg \
 		examples/multithread/multithread_stats.json
-	#@dot -Tsvg -O $(PWD)/examples/multithread/multithread_stats.dot
+	# aggregate JSON snapshot and produce a .svg file for the aggregation result
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		tools/malloc_tag/mtag_postprocess/postprocess.py \
+		-o examples/multithread/multithread_stats.aggregated.json \
+		-c examples/multithread/postprocess_agg_rules.json \
+		examples/multithread/multithread_stats.json
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		tools/malloc_tag/mtag_json2dot/json2dot.py \
+		-o examples/multithread/multithread_stats.aggregated.svg \
+		examples/multithread/multithread_stats.aggregated.json
 ifeq ($(SHOW_JSON),1)
 	@echo
 	@echo "JSON of output stats:"
