@@ -67,7 +67,7 @@ class MallocTagSnapshot:
         self.nBytesMallocTagSelfUsage = snapshot_dict["nBytesMallocTagSelfUsage"]
         self.vmSizeNowBytes = snapshot_dict["vmSizeNowBytes"]
         self.vmRSSNowBytes = snapshot_dict["vmRSSNowBytes"]
-        self.nTotalTrackedBytes = snapshot_dict["nTotalTrackedBytes"]
+        self.nTotalNetTrackedBytes = snapshot_dict["nTotalNetTrackedBytes"]
 
         for thread_tree in snapshot_dict.keys():
             if thread_tree.startswith("tree_for_"):
@@ -108,7 +108,7 @@ class MallocTagSnapshot:
         outdict["nBytesMallocTagSelfUsage"] = self.nBytesMallocTagSelfUsage
         outdict["vmSizeNowBytes"] = self.vmSizeNowBytes
         outdict["vmRSSNowBytes"] = self.vmRSSNowBytes
-        outdict["nTotalTrackedBytes"] = self.nTotalTrackedBytes
+        outdict["nTotalNetTrackedBytes"] = self.nTotalNetTrackedBytes
 
         getcontext().prec = 2
         try:
@@ -132,7 +132,7 @@ class MallocTagSnapshot:
             f"allocated_mem_by_malloctag_itself={GraphVizUtils.pretty_print_bytes(self.nBytesMallocTagSelfUsage)}"
         )
         labels.append(
-            f"allocated_mem={GraphVizUtils.pretty_print_bytes(self.nTotalTrackedBytes)}"
+            f"net_tracked_mem={GraphVizUtils.pretty_print_bytes(self.nTotalNetTrackedBytes)}"
         )
         labels.append(
             f"vm_size_now={GraphVizUtils.pretty_print_bytes(self.vmSizeNowBytes)}"
