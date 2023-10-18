@@ -77,12 +77,12 @@ public:
 
     void collect_allocated_freed_recursively(size_t* allocated, size_t* freed);
 
-    size_t get_total_allocated_bytes_tracked() const
+    size_t get_total_net_bytes_tracked() const
     {
         // call this function only after collect_stats_recursively() API.
         // the result will be an approximated result: it will report the total memory accounted by this tree
         // at the time collect_stats_recursively() API was called the last time.
-        return m_nVmSizeAtCreation + m_pRootNode->get_net_total_bytes();
+        return m_pRootNode->get_net_total_bytes();
     }
     size_t get_total_allocated_bytes() const
     {

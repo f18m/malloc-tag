@@ -52,6 +52,7 @@ class MallocTagNode:
 
         # load self properties
         self.nBytesTotalAllocated = node_dict["nBytesTotalAllocated"]
+        self.nBytesTotalFreed = node_dict["nBytesTotalFreed"]
         self.nBytesSelfAllocated = node_dict["nBytesSelfAllocated"]
         self.nBytesSelfFreed = node_dict["nBytesSelfFreed"]
         self.nTimesEnteredAndExited = node_dict["nTimesEnteredAndExited"]
@@ -76,6 +77,7 @@ class MallocTagNode:
     def get_as_dict(self):
         d = {
             "nBytesTotalAllocated": self.nBytesTotalAllocated,
+            "nBytesTotalFreed": self.nBytesTotalFreed,
             "nBytesSelfAllocated": self.nBytesSelfAllocated,
             "nBytesSelfFreed": self.nBytesSelfFreed,
             "nTimesEnteredAndExited": self.nTimesEnteredAndExited,
@@ -202,6 +204,8 @@ class MallocTagNode:
         self.nBytesSelfAllocated += other.nBytesSelfAllocated
         self.nBytesSelfFreed += other.nBytesSelfFreed
         self.nTimesEnteredAndExited += other.nTimesEnteredAndExited
+
+        # sum all stats by memory operation:
         self.nCallsTo_malloc += other.nCallsTo_malloc
         self.nCallsTo_realloc += other.nCallsTo_realloc
         self.nCallsTo_calloc += other.nCallsTo_calloc
@@ -209,6 +213,9 @@ class MallocTagNode:
 
         # recurse into children:
         for scopeName in other.childrenNodes.keys():
+
+            # for each scope of the "other" node, check if there is an identical children
+            # also in this node and aggregate them:
             if scopeName in self.childrenNodes:
                 # same scope is already present... aggregate!
                 self.childrenNodes[scopeName].aggregate_with(
@@ -216,6 +223,7 @@ class MallocTagNode:
                 )
             else:
                 # this is a new scope... present only in the 'other' node... add it
+                # as new scope also to this node:
                 self.childrenNodes[scopeName] = other.childrenNodes[scopeName]
 
     def get_num_levels(self):
@@ -240,6 +248,21 @@ class MallocTagNode:
             #                get_net_self_bytes() / m_nTimesEnteredAndExited
             return int(self.nBytesSelfAllocated / self.nTimesEnteredAndExited)
         return 0
+    
+    def get_net_tracked_bytes(self):
+        """
+        Returns the "net" memory tracked by malloc-tag: 
+          TOTAL BYTES ALLOCATED - TOTAL BYTES FREED
+        Invoke this function only after using collect_allocated_and_freed_recursively() since this function
+        relies on stats updated by collect_allocated_and_freed_recursively().
+        """
+        if self.nBytesTotalAllocated >= self.nBytesTotalFreed:
+            return self.nBytesTotalAllocated - self.nBytesTotalFreed
+        else:
+            # this case is reached when the application is using realloc(): malloc-tag is unable
+            # to properly adjust counters for realloc()ed memory areas, so eventually it will turn out
+            # that apparently we free more memory than what we allocate:
+            return 0
 
     def get_graphviz_node_name(self):
         # create a name that is unique in the whole graphviz DOT document:
@@ -249,13 +272,13 @@ class MallocTagNode:
         # (but the colons will still appear in the node label)
         return graphviz.escape(f"{self.ownerTID}_{self.name}").replace(":", "_")
 
-    def collect_allocated_freed_recursively(self):
+    def collect_allocated_and_freed_recursively(self):
         # Postorder traversal of a tree:
         # First, traverse all children subtrees:
         alloc_bytes = 0
         freed_bytes = 0
         for child in self.childrenNodes:
-            a, f = self.childrenNodes[child].collect_allocated_freed_recursively()
+            a, f = self.childrenNodes[child].collect_allocated_and_freed_recursively()
             alloc_bytes += a
             freed_bytes += f
 

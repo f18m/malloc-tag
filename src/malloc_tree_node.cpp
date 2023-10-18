@@ -89,6 +89,7 @@ void MallocTreeNode::collect_stats_recursively_MAP(MallocTagStatMap_t& out, cons
 
     // provide a programmer-friendly way to get stats out of a "flat dictionary":
     out[fullName + ".nBytesTotalAllocated"] = m_nBytesTotalAllocated;
+    out[fullName + ".nBytesTotalFreed"] = m_nBytesTotalFreed;
     out[fullName + ".nBytesSelfAllocated"] = m_nBytesSelfAllocated;
     out[fullName + ".nBytesSelfFreed"] = m_nBytesSelfFreed;
     out[fullName + ".nTimesEnteredAndExited"] = m_nTimesEnteredAndExited;
@@ -110,6 +111,7 @@ void MallocTreeNode::collect_stats_recursively_JSON(std::string& out)
     JsonUtils::start_object(out, "scope_" + get_node_name());
 
     JsonUtils::append_field(out, "nBytesTotalAllocated", m_nBytesTotalAllocated);
+    JsonUtils::append_field(out, "nBytesTotalFreed", m_nBytesTotalFreed);
     JsonUtils::append_field(out, "nBytesSelfAllocated", m_nBytesSelfAllocated);
     JsonUtils::append_field(out, "nBytesSelfFreed", m_nBytesSelfFreed);
     JsonUtils::append_field(out, "nTimesEnteredAndExited", m_nTimesEnteredAndExited);

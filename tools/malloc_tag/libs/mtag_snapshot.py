@@ -35,6 +35,18 @@ class DecimalEncoder(json.JSONEncoder):
 
 
 # =======================================================================================================
+# AggregationRuleDescriptor
+# =======================================================================================================
+
+
+class AggregationRuleDescriptor:
+    def __init__(self, index: int, name: str, desc: str):
+        self.index = index
+        self.name = name
+        self.desc = desc
+
+
+# =======================================================================================================
 # MallocTagSnapshot
 # =======================================================================================================
 
@@ -55,7 +67,9 @@ class MallocTagSnapshot:
         self.nBytesMallocTagSelfUsage = snapshot_dict["nBytesMallocTagSelfUsage"]
         self.vmSizeNowBytes = snapshot_dict["vmSizeNowBytes"]
         self.vmRSSNowBytes = snapshot_dict["vmRSSNowBytes"]
-        self.nTotalTrackedBytes = snapshot_dict["nTotalTrackedBytes"]
+        self.nTotalNetTrackedBytes = 0 # will be recomputed later
+        self.nTotalAllocBytes = 0 # will be recomputed later
+        self.nTotalFreedBytes = 0 # will be recomputed later
 
         for thread_tree in snapshot_dict.keys():
             if thread_tree.startswith("tree_for_"):
@@ -73,14 +87,14 @@ class MallocTagSnapshot:
             f.close()
             wholejson = json.loads(text)
         except json.decoder.JSONDecodeError as err:
-            print("Invalid input JSON file '%s': %s" % (json_infile, err))
+            print(f"Invalid input JSON file '{json_infile}': {err}")
             sys.exit(1)
 
         # process it
         self.__expand(wholejson)
 
-        # recompute weights
-        self.compute_node_weights_recursively()
+        # recompute weights and other KPIs
+        self.recompute_kpis_across_trees()
 
     def save_json(self, json_outfile: str):
         outdict = {
@@ -96,12 +110,17 @@ class MallocTagSnapshot:
         outdict["nBytesMallocTagSelfUsage"] = self.nBytesMallocTagSelfUsage
         outdict["vmSizeNowBytes"] = self.vmSizeNowBytes
         outdict["vmRSSNowBytes"] = self.vmRSSNowBytes
-        outdict["nTotalTrackedBytes"] = self.nTotalTrackedBytes
+        outdict["nTotalNetTrackedBytes"] = self.nTotalNetTrackedBytes
 
         getcontext().prec = 2
-        with open(json_outfile, "w", encoding="utf-8") as f:
-            json.dump(outdict, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
+        try:
+            with open(json_outfile, "w", encoding="utf-8") as f:
+                json.dump(outdict, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
+        except Exception as ex:
+            print(f"Failed to write the JSON results into {json_outfile}: {ex}")
+            return False
         print(f"Saved postprocessed results into {json_outfile}.")
+        return True
 
     def save_graphviz(self, output_fname: str):
         thegraph = graphviz.Digraph(comment="Malloc-tag snapshot")
@@ -115,13 +134,19 @@ class MallocTagSnapshot:
             f"allocated_mem_by_malloctag_itself={GraphVizUtils.pretty_print_bytes(self.nBytesMallocTagSelfUsage)}"
         )
         labels.append(
-            f"allocated_mem={GraphVizUtils.pretty_print_bytes(self.nTotalTrackedBytes)}"
-        )
-        labels.append(
             f"vm_size_now={GraphVizUtils.pretty_print_bytes(self.vmSizeNowBytes)}"
         )
         labels.append(
             f"vm_rss_now={GraphVizUtils.pretty_print_bytes(self.vmRSSNowBytes)}"
+        )
+        labels.append(
+            f"tracked_malloc={GraphVizUtils.pretty_print_bytes(self.nTotalAllocBytes)}"
+        )
+        labels.append(
+            f"tracked_free={GraphVizUtils.pretty_print_bytes(self.nTotalFreedBytes)}"
+        )
+        labels.append(
+            f"net_tracked_mem={GraphVizUtils.pretty_print_bytes(self.nTotalNetTrackedBytes)}"
         )
         labels.append(f"malloctag_start_ts={self.tmStartProfiling}")
         labels.append(f"this_snapshot_ts={self.tmCurrentSnapshot}")
@@ -129,10 +154,10 @@ class MallocTagSnapshot:
         # create the main node:
         mainNodeName = f"Process_{self.pid}"
         thegraph.node(mainNodeName, label="\\n".join(labels))
-        #thegraph.attr(colorscheme="reds9", style="filled")
+        # thegraph.attr(colorscheme="reds9", style="filled")
 
         # used to compute weights later:
-        totalloc, totfreed = self.collect_allocated_freed_recursively()
+        totalloc, totfreed = self.collect_allocated_and_freed_recursively()
 
         # now create subgraphs for each and every tree:
         for t in self.treeRegistry.keys():
@@ -141,7 +166,7 @@ class MallocTagSnapshot:
             # compute the weight for the 't'-th tree:
             treealloc, treefree = self.treeRegistry[
                 t
-            ].collect_allocated_freed_recursively()
+            ].collect_allocated_and_freed_recursively()
             w = 0 if totalloc == 0 else 100 * treealloc / totalloc
             wstr = f"%.2f%%" % w
 
@@ -152,7 +177,8 @@ class MallocTagSnapshot:
                 label=wstr,
             )
 
-        if output_fname.endswith(".dot"):
+        output_fname_root, extension = os.path.splitext(output_fname)
+        if extension == ".dot":
             # NOTE: writing the .source property of the graphviz.Digraph() on disk seems to produce
             # later better results compared to
             #    thegraph.render(outfile=output_fname)
@@ -160,8 +186,25 @@ class MallocTagSnapshot:
             # that typically break label lines (e.g. "num_malloc_self=0" becomes "num_malloc_", newline and then "self=0")
             with open(output_fname, "w") as file:
                 file.write(thegraph.source)
-        else:
+        elif extension == ".gv":
             thegraph.render(outfile=output_fname)
+        elif extension in [".svg", ".svgz", ".png", ".jpeg", ".jpg", ".gif", ".bmp"]:
+            thegraph.render(outfile=output_fname)
+            # the graphviz package will create a .gv file automatically... this is not actually what the user has asked for,
+            # so let's remove this new .gv file:
+            try:
+                temp_file = output_fname_root + ".gv"
+                if os.path.isfile(temp_file):
+                    print(f"Removing the ancillary/temporary output file {temp_file}")
+                    os.remove(temp_file)
+            except:
+                pass
+        else:
+            print(f"Unknown output file extension: {extension}")
+            return False
+
+        print(f"Saved rendered JSON as Graphviz format into {output_fname}")
+        return True
 
     def print_stats(self):
         num_nodes = sum(
@@ -171,26 +214,34 @@ class MallocTagSnapshot:
             f"Loaded a total of {len(self.treeRegistry)} trees containing {num_nodes} nodes."
         )
 
-    def aggregate_thread_trees(self, tid1: int, tid2: int):
+    def aggregate_thread_trees(
+        self, tid1: int, tid2: int, rule: "AggregationRuleDescriptor"
+    ):
         # do the aggregation
-        self.treeRegistry[tid1].aggregate_with(self.treeRegistry[tid2])
+        self.treeRegistry[tid1].aggregate_with(self.treeRegistry[tid2], rule)
         # remove the aggregated tree:
         del self.treeRegistry[tid2]
         # update all node weights:
-        self.compute_node_weights_recursively()
+        self.recompute_kpis_across_trees()
 
-    def collect_allocated_freed_recursively(self):
+    def collect_allocated_and_freed_recursively(self):
         totalloc = 0
         totfreed = 0
         for t in self.treeRegistry.keys():
-            a, f = self.treeRegistry[t].collect_allocated_freed_recursively()
+            a, f = self.treeRegistry[t].collect_allocated_and_freed_recursively()
             totalloc += a
             totfreed += f
         return totalloc, totfreed
 
-    def compute_node_weights_recursively(self):
-        totalloc, totfreed = self.collect_allocated_freed_recursively()
+    def recompute_kpis_across_trees(self):
+        self.nTotalAllocBytes, self.nTotalFreedBytes = self.collect_allocated_and_freed_recursively()
 
         # in each tree, recompute node weights using the total allocated as denominator:
+        total_net_memory = 0
         for t in self.treeRegistry.keys():
-            self.treeRegistry[t].compute_node_weights_recursively(totalloc)
+            self.treeRegistry[t].compute_node_weights_recursively(self.nTotalAllocBytes)
+            total_net_memory += self.treeRegistry[t].get_net_tracked_bytes()
+
+        # recompute the "total net" memory tracked: TOT_ALLOC - TOT_FREED
+        self.nTotalNetTrackedBytes = total_net_memory
+

@@ -138,11 +138,11 @@ void MallocTreeRegistry::collect_stats(
         stats_str += "Process VmSize=" + GraphVizUtils::pretty_print_bytes(vmSizeNowBytes) + "\n";
         stats_str += "Process VmRSS=" + GraphVizUtils::pretty_print_bytes(vmRSSNowBytes) + "\n";
 
-        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
+        size_t tot_net_tracked_bytes = 0;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(
                 stats_str, format, output_options, nTotalBytesAllocatedFromAllTrees);
-            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
+            tot_net_tracked_bytes += m_pMallocTreeRegistry[i]->get_total_net_bytes_tracked();
         }
     } break;
 
@@ -152,11 +152,11 @@ void MallocTreeRegistry::collect_stats(
         JsonUtils::append_field(stats_str, "tmStartProfiling", tmStartProfilingStr);
         JsonUtils::append_field(stats_str, "tmCurrentSnapshot", tmCurrentStr);
 
-        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
+        size_t tot_net_tracked_bytes = 0;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(
                 stats_str, format, output_options, nTotalBytesAllocatedFromAllTrees);
-            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
+            tot_net_tracked_bytes += m_pMallocTreeRegistry[i]->get_total_net_bytes_tracked();
             stats_str += ",";
         }
 
@@ -168,7 +168,7 @@ void MallocTreeRegistry::collect_stats(
         // but they can potentially reduce vmSizeNowBytes
         JsonUtils::append_field(stats_str, "vmSizeNowBytes", vmSizeNowBytes);
         JsonUtils::append_field(stats_str, "vmRSSNowBytes", vmRSSNowBytes);
-        JsonUtils::append_field(stats_str, "nTotalTrackedBytes", tot_tracked_mem_bytes, true /* is_last */);
+        JsonUtils::append_field(stats_str, "nTotalNetTrackedBytes", tot_net_tracked_bytes, true /* is_last */);
         JsonUtils::end_document(stats_str);
     } break;
 
@@ -191,11 +191,11 @@ void MallocTreeRegistry::collect_stats(
         std::string mainNode = "Process " + std::to_string(getpid());
         GraphVizUtils::append_node(stats_str, mainNode, labels);
 
-        size_t tot_tracked_mem_bytes = g_bytes_allocated_before_init;
+        size_t tot_net_tracked_bytes = 0;
         for (size_t i = 0; i < num_trees; i++) {
             m_pMallocTreeRegistry[i]->collect_stats_recursively(
                 stats_str, format, output_options, nTotalBytesAllocatedFromAllTrees);
-            tot_tracked_mem_bytes += m_pMallocTreeRegistry[i]->get_total_allocated_bytes_tracked();
+            tot_net_tracked_bytes += m_pMallocTreeRegistry[i]->get_total_net_bytes_tracked();
             stats_str += "\n";
 
             float w = 0;

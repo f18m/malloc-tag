@@ -119,8 +119,10 @@ int main()
     }
     threads.clear();
 
-    // launch one more dummy threads
-    threads.push_back(std::thread(YetAnotherThread::MainEvLoop, NUM_EXAMPLE_THREADS));
+    // launch 2 more dummy threads
+    for (int i = 0; i < NUM_EXAMPLE_THREADS; i++) {
+        threads.push_back(std::thread(YetAnotherThread::MainEvLoop, i));
+    }
 
     // wait till all threads are terminated:
     for (auto& th : threads) {

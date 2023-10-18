@@ -42,6 +42,8 @@ LIB_VER = 1
 SHOW_JSON=0
 SHOW_DOT=0
 
+PYTHON_MODULE_PATH=tools
+
 
 # Targets
 
@@ -65,7 +67,6 @@ cpp_tests: $(BINS)
 	@echo "Starting C++ UNIT TESTS application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/tests/dummystats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/tests/dummystats.dot \
 		tests/unit_tests
 	jq . tests/dummystats.json >tests/dummystats.json.tmp && \
 		mv tests/dummystats.json.tmp tests/dummystats.json
@@ -79,9 +80,17 @@ minimal_example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
 		examples/minimal/minimal
-	@dot -Tsvg -O $(PWD)/examples/minimal/minimal_stats.dot
+	# produce the .dot output file:
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		tools/malloc_tag/mtag_json2dot/json2dot.py \
+		-o examples/minimal/minimal_stats.dot \
+		examples/minimal/minimal_stats.json
+	# produce the .svg output file:
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		tools/malloc_tag/mtag_json2dot/json2dot.py \
+		-o examples/minimal/minimal_stats.dot.svg \
+		examples/minimal/minimal_stats.json
 ifeq ($(SHOW_JSON),1)
 	@echo
 	@echo "JSON of output stats:"
@@ -99,14 +108,12 @@ endif
 minimal_strace: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
 		strace -e trace=%memory,%file \
 		examples/minimal/minimal
 
 minimal_debug: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
 		gdb \
 		examples/minimal/minimal
 minimal_valgrind: $(BINS)
@@ -114,7 +121,6 @@ minimal_valgrind: $(BINS)
 	#            that has been "lost" at the end of the program
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/minimal/minimal_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/minimal/minimal_stats.dot \
 		valgrind \
 		examples/minimal/minimal
 
@@ -128,9 +134,27 @@ multithread_example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
 		examples/multithread/multithread
-	@dot -Tsvg -O $(PWD)/examples/multithread/multithread_stats.dot
+	# produce the .dot output file
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		tools/malloc_tag/mtag_json2dot/json2dot.py \
+		-o examples/multithread/multithread_stats.dot \
+		examples/multithread/multithread_stats.json
+	# produce the .svg output file
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		tools/malloc_tag/mtag_json2dot/json2dot.py \
+		-o examples/multithread/multithread_stats.dot.svg \
+		examples/multithread/multithread_stats.json
+	# aggregate JSON snapshot and produce a .svg file for the aggregation result
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		tools/malloc_tag/mtag_postprocess/postprocess.py \
+		-o examples/multithread/multithread_stats.aggregated.json \
+		-c examples/multithread/postprocess_agg_rules.json \
+		examples/multithread/multithread_stats.json
+	PYTHONPATH=$(PYTHON_MODULE_PATH):$(PYTHONPATH) \
+		tools/malloc_tag/mtag_json2dot/json2dot.py \
+		-o examples/multithread/multithread_stats.aggregated.svg \
+		examples/multithread/multithread_stats.aggregated.json
 ifeq ($(SHOW_JSON),1)
 	@echo
 	@echo "JSON of output stats:"
@@ -147,19 +171,16 @@ endif
 multithread_strace: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
 		strace -e trace=%memory,%file -t -f \
 		examples/multithread/multithread
 multithread_debug: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
 		gdb \
 		examples/multithread/multithread
 multithread_valgrind: $(BINS)
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/multithread/multithread_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/multithread/multithread_stats.dot \
 		valgrind \
 		examples/multithread/multithread
 
@@ -170,14 +191,12 @@ tcmalloc_example: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.dot \
 		examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
 
 tcmalloc_debug: $(BINS)
 	@echo "Starting example application"
 	LD_LIBRARY_PATH=$(PWD)/src:$(LD_LIBRARY_PATH) \
 	MTAG_STATS_OUTPUT_JSON=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.json \
-	MTAG_STATS_OUTPUT_GRAPHVIZ_DOT=$(PWD)/examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc_stats.dot \
 		gdb \
 		examples/malloctag_and_tcmalloc/malloctag_and_tcmalloc
 endif

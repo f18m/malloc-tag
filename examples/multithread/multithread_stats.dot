@@ -1,83 +1,64 @@
-digraph AllMallocTrees {
- node [colorscheme=reds9 style=filled]
-  "Process 285397" [label="Whole process stats\nallocated_mem_before_malloctag_init=500kB\nallocated_mem_by_malloctag_itself=358kB\nallocated_mem=842kB\nvm_size_now=241MB\nvm_rss_now=4MB\nmalloctag_start_ts=2023-10-03 @ 14:35:44 CEST\nthis_snapshot_ts=2023-10-03 @ 14:35:44 CEST\n"
-]
- subgraph cluster_TID285397 {
-  node [colorscheme=reds9 style=filled]
-  labelloc="b"
-  label="TID=285397\nnPushNodeFailures=0\nnTreeNodesInUse/Max=1/256\n"
-  "285397_multithread" [label="thread=multithread\nTID=285397\ntotal_alloc=self_alloc=6kB (0.79%)\nself_freed=4kB\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=14\nnum_calloc_self=3\nnum_free_self=25\n"
- shape=box fillcolor=1 fontsize=9]
- }
-
-  "Process 285397" -> "285397_multithread" [label="w=0.00%"]
- subgraph cluster_TID285398 {
-  node [colorscheme=reds9 style=filled]
-  labelloc="b"
-  label="TID=285398\nnPushNodeFailures=0\nnTreeNodesInUse/Max=5/256\n"
-  "285398_ExampleThr/0" [label="thread=ExampleThr/0\nTID=285398\ntotal_alloc=144kB (17.11%)\nself_alloc=40B (0.00%)\nself_freed=64B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\nnum_free_self=3\n"
- shape=box fillcolor=1 fontsize=9]
-  "285398_ExampleThr/0" -> "285398_ExampleThread" [label="w=17.11%"]
-  "285398_ExampleThread" [label="scope=ExampleThread\ntotal_alloc=144kB (17.11%)\nself_alloc=24B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=24B\nnum_malloc_self=1\n"
- fillcolor=1 fontsize=9]
-  "285398_ExampleThread" -> "285398_FuncA" [label="w=8.55%"]
-  "285398_ExampleThread" -> "285398_FuncB" [label="w=8.54%"]
-  "285398_FuncA" [label="scope=FuncA\ntotal_alloc=72kB (8.55%)\nself_alloc=104B (0.01%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=104B\nnum_malloc_self=1\n"
- fillcolor=1 fontsize=9]
-  "285398_FuncA" -> "285398_FuncB" [label="w=8.54%"]
-  "285398_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=72kB (8.54%)\nself_freed=72kB\nvisited_times=1\nself_alloc_per_visit=72kB\nnum_malloc_self=1000\nnum_free_self=1000\n"
- fillcolor=2 fontsize=10]
-  "285398_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=72kB (8.54%)\nself_freed=72kB\nvisited_times=1\nself_alloc_per_visit=72kB\nnum_malloc_self=1000\nnum_free_self=1000\n"
- fillcolor=2 fontsize=10]
- }
-
-  "Process 285397" -> "285398_ExampleThr/0" [label="w=17.00%"]
- subgraph cluster_TID285399 {
-  node [colorscheme=reds9 style=filled]
-  labelloc="b"
-  label="TID=285399\nnPushNodeFailures=0\nnTreeNodesInUse/Max=5/256\n"
-  "285399_ExampleThr/1" [label="thread=ExampleThr/1\nTID=285399\ntotal_alloc=289kB (34.33%)\nself_alloc=40B (0.00%)\nself_freed=64B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\nnum_free_self=3\n"
- shape=box fillcolor=1 fontsize=9]
-  "285399_ExampleThr/1" -> "285399_ExampleThread" [label="w=34.32%"]
-  "285399_ExampleThread" [label="scope=ExampleThread\ntotal_alloc=289kB (34.32%)\nself_alloc=24B (0.00%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=24B\nnum_malloc_self=1\n"
- fillcolor=1 fontsize=9]
-  "285399_ExampleThread" -> "285399_FuncA" [label="w=17.22%"]
-  "285399_ExampleThread" -> "285399_FuncB" [label="w=17.09%"]
-  "285399_FuncA" [label="scope=FuncA\ntotal_alloc=145kB (17.22%)\nself_alloc=1kB (0.13%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=1kB\nnum_malloc_self=1\n"
- fillcolor=1 fontsize=9]
-  "285399_FuncA" -> "285399_FuncB" [label="w=17.09%"]
-  "285399_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=144kB (17.09%)\nself_freed=144kB\nvisited_times=1\nself_alloc_per_visit=144kB\nnum_malloc_self=2000\nnum_free_self=2000\n"
- fillcolor=3 fontsize=12]
-  "285399_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=144kB (17.09%)\nself_freed=144kB\nvisited_times=1\nself_alloc_per_visit=144kB\nnum_malloc_self=2000\nnum_free_self=2000\n"
- fillcolor=3 fontsize=12]
- }
-
-  "Process 285397" -> "285399_ExampleThr/1" [label="w=34.00%"]
- subgraph cluster_TID285400 {
-  node [colorscheme=reds9 style=filled]
-  labelloc="b"
-  label="TID=285400\nnPushNodeFailures=0\nnTreeNodesInUse/Max=1/256\n"
-  "285400_NonInstrThr" [label="thread=NonInstrThr\nTID=285400\ntotal_alloc=self_alloc=164kB (19.54%)\nself_freed=164kB\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1101\nnum_free_self=1103\n"
- shape=box fillcolor=3 fontsize=12]
- }
-
-  "Process 285397" -> "285400_NonInstrThr" [label="w=19.00%"]
- subgraph cluster_TID285401 {
-  node [colorscheme=reds9 style=filled]
-  labelloc="b"
-  label="TID=285401\nnPushNodeFailures=0\nnTreeNodesInUse/Max=3/256\n"
-  "285401_YetAnThr/2" [label="thread=YetAnThr/2\nTID=285401\ntotal_alloc=237kB (28.21%)\nself_alloc=40B (0.00%)\nself_freed=64B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\nnum_free_self=3\n"
- shape=box fillcolor=1 fontsize=9]
-  "285401_YetAnThr/2" -> "285401_YetAnThr::MainEvLoop" [label="w=28.20%"]
-  "285401_YetAnThr::MainEvLoop" [label="scope=YetAnThr::MainEvLoop\ntotal_alloc=237kB (28.20%)\nself_alloc=21kB (2.56%)\nself_freed=21kB\nvisited_times=1\nself_alloc_per_visit=21kB\nnum_malloc_self=300\nnum_free_self=300\n"
- fillcolor=1 fontsize=9]
-  "285401_YetAnThr::MainEvLoop" -> "285401_FuncB" [label="w=25.64%"]
-  "285401_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=216kB (25.64%)\nself_freed=216kB\nvisited_times=1\nself_alloc_per_visit=216kB\nnum_malloc_self=3000\nnum_free_self=3000\n"
- fillcolor=4 fontsize=14]
- }
-
-  "Process 285397" -> "285401_YetAnThr/2" [label="w=28.00%"]
- labelloc="b"
- label="Legend:\n'w' stands for self-allocation-weight, defined as BYTES_ALLOCATED_BY_NODE / BYTES_ALLOCATED_BY_ALL_TREES\nSquare box: indicates the root node of a MallocTree for an application thread\nNodes having an high self-allocation-weight are drawn bigger and with dark shade of red\n"
+// Malloc-tag snapshot
+digraph {
+	Process_2164091 [label="Process-wide stats\n\nallocated_mem_before_malloctag_init=560kB\nallocated_mem_by_malloctag_itself=430kB\nvm_size_now=241MB\nvm_rss_now=4MB\ntracked_malloc=864kB\ntracked_free=860kB\nnet_tracked_mem=3kB\nmalloctag_start_ts=2023-10-18 @ 15:31:01 CEST\nthis_snapshot_ts=2023-10-18 @ 15:31:01 CEST"]
+	subgraph cluster_TID2164091 {
+		node [colorscheme=reds9 style=filled]
+		fontsize=20 label="TID=2164091\nnPushNodeFailures=0\nnTreeNodesInUse/Max=1/256" labelloc=b
+		"2164091_multithread" [label="thread=multithread\nTID=2164091\ntotal_alloc=self_alloc=6kB (0.78%)\nself_freed=4kB\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=15\nnum_calloc_self=3\nnum_free_self=42" fillcolor=1 fontsize=9 shape=box]
+	}
+	Process_2164091 -> "2164091_multithread" [label="0.78%"]
+	subgraph cluster_TID2164092 {
+		node [colorscheme=reds9 style=filled]
+		fontsize=20 label="TID=2164092\nnPushNodeFailures=0\nnTreeNodesInUse/Max=5/256" labelloc=b
+		"2164092_ExampleThr/0" [label="thread=ExampleThr/0\nTID=2164092\ntotal_alloc=144kB (16.69%)\nself_alloc=40B (0.0%)\nself_freed=64B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\nnum_free_self=3" fillcolor=1 fontsize=9 shape=box]
+		"2164092_ExampleThr/0" -> "2164092_ExampleThread" [label="w=16.68%"]
+		"2164092_ExampleThread" [label="scope=ExampleThread\ntotal_alloc=144kB (16.68%)\nself_alloc=24B (0.0%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=24B\nnum_malloc_self=1" fillcolor=1 fontsize=9 shape=ellipse]
+		"2164092_ExampleThread" -> "2164092_FuncA" [label="w=8.35%"]
+		"2164092_ExampleThread" -> "2164092_FuncB" [label="w=8.33%"]
+		"2164092_FuncA" [label="scope=FuncA\ntotal_alloc=72kB (8.35%)\nself_alloc=104B (0.01%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=104B\nnum_malloc_self=1" fillcolor=1 fontsize=9 shape=ellipse]
+		"2164092_FuncA" -> "2164092_FuncB" [label="w=8.33%"]
+		"2164092_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=72kB (8.33%)\nself_freed=72kB\nvisited_times=1\nself_alloc_per_visit=72kB\nnum_malloc_self=1000\nnum_free_self=1000" fillcolor=2 fontsize=10 shape=ellipse]
+		"2164092_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=72kB (8.33%)\nself_freed=72kB\nvisited_times=1\nself_alloc_per_visit=72kB\nnum_malloc_self=1000\nnum_free_self=1000" fillcolor=2 fontsize=10 shape=ellipse]
+	}
+	Process_2164091 -> "2164092_ExampleThr/0" [label="16.69%"]
+	subgraph cluster_TID2164093 {
+		node [colorscheme=reds9 style=filled]
+		fontsize=20 label="TID=2164093\nnPushNodeFailures=0\nnTreeNodesInUse/Max=5/256" labelloc=b
+		"2164093_ExampleThr/1" [label="thread=ExampleThr/1\nTID=2164093\ntotal_alloc=289kB (33.47%)\nself_alloc=40B (0.0%)\nself_freed=64B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\nnum_free_self=3" fillcolor=1 fontsize=9 shape=box]
+		"2164093_ExampleThr/1" -> "2164093_ExampleThread" [label="w=33.47%"]
+		"2164093_ExampleThread" [label="scope=ExampleThread\ntotal_alloc=289kB (33.47%)\nself_alloc=24B (0.0%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=24B\nnum_malloc_self=1" fillcolor=1 fontsize=9 shape=ellipse]
+		"2164093_ExampleThread" -> "2164093_FuncA" [label="w=16.8%"]
+		"2164093_ExampleThread" -> "2164093_FuncB" [label="w=16.67%"]
+		"2164093_FuncA" [label="scope=FuncA\ntotal_alloc=145kB (16.8%)\nself_alloc=1kB (0.13%)\nself_freed=0B\nvisited_times=1\nself_alloc_per_visit=1kB\nnum_malloc_self=1" fillcolor=1 fontsize=9 shape=ellipse]
+		"2164093_FuncA" -> "2164093_FuncB" [label="w=16.67%"]
+		"2164093_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=144kB (16.67%)\nself_freed=144kB\nvisited_times=1\nself_alloc_per_visit=144kB\nnum_malloc_self=2000\nnum_free_self=2000" fillcolor=3 fontsize=12 shape=ellipse]
+		"2164093_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=144kB (16.67%)\nself_freed=144kB\nvisited_times=1\nself_alloc_per_visit=144kB\nnum_malloc_self=2000\nnum_free_self=2000" fillcolor=3 fontsize=12 shape=ellipse]
+	}
+	Process_2164091 -> "2164093_ExampleThr/1" [label="33.47%"]
+	subgraph cluster_TID2164094 {
+		node [colorscheme=reds9 style=filled]
+		fontsize=20 label="TID=2164094\nnPushNodeFailures=0\nnTreeNodesInUse/Max=1/256" labelloc=b
+		"2164094_NonInstrThr" [label="thread=NonInstrThr\nTID=2164094\ntotal_alloc=self_alloc=164kB (19.05%)\nself_freed=164kB\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1101\nnum_free_self=1103" fillcolor=3 fontsize=12 shape=box]
+	}
+	Process_2164091 -> "2164094_NonInstrThr" [label="19.05%"]
+	subgraph cluster_TID2164095 {
+		node [colorscheme=reds9 style=filled]
+		fontsize=20 label="TID=2164095\nnPushNodeFailures=0\nnTreeNodesInUse/Max=3/256" labelloc=b
+		"2164095_YetAnThr/0" [label="thread=YetAnThr/0\nTID=2164095\ntotal_alloc=93kB (10.84%)\nself_alloc=40B (0.0%)\nself_freed=64B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\nnum_free_self=3" fillcolor=1 fontsize=9 shape=box]
+		"2164095_YetAnThr/0" -> "2164095_YetAnThr__MainEvLoop" [label="w=10.83%"]
+		"2164095_YetAnThr__MainEvLoop" [label="scope=YetAnThr::MainEvLoop\ntotal_alloc=93kB (10.83%)\nself_alloc=21kB (2.5%)\nself_freed=21kB\nvisited_times=1\nself_alloc_per_visit=21kB\nnum_malloc_self=300\nnum_free_self=300" fillcolor=1 fontsize=9 shape=ellipse]
+		"2164095_YetAnThr__MainEvLoop" -> "2164095_FuncB" [label="w=8.33%"]
+		"2164095_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=72kB (8.33%)\nself_freed=72kB\nvisited_times=1\nself_alloc_per_visit=72kB\nnum_malloc_self=1000\nnum_free_self=1000" fillcolor=2 fontsize=10 shape=ellipse]
+	}
+	Process_2164091 -> "2164095_YetAnThr/0" [label="10.84%"]
+	subgraph cluster_TID2164096 {
+		node [colorscheme=reds9 style=filled]
+		fontsize=20 label="TID=2164096\nnPushNodeFailures=0\nnTreeNodesInUse/Max=3/256" labelloc=b
+		"2164096_YetAnThr/1" [label="thread=YetAnThr/1\nTID=2164096\ntotal_alloc=165kB (19.17%)\nself_alloc=40B (0.0%)\nself_freed=64B\nvisited_times=0\nself_alloc_per_visit=0B\nnum_malloc_self=1\nnum_free_self=3" fillcolor=1 fontsize=9 shape=box]
+		"2164096_YetAnThr/1" -> "2164096_YetAnThr__MainEvLoop" [label="w=19.17%"]
+		"2164096_YetAnThr__MainEvLoop" [label="scope=YetAnThr::MainEvLoop\ntotal_alloc=165kB (19.17%)\nself_alloc=21kB (2.5%)\nself_freed=21kB\nvisited_times=1\nself_alloc_per_visit=21kB\nnum_malloc_self=300\nnum_free_self=300" fillcolor=1 fontsize=9 shape=ellipse]
+		"2164096_YetAnThr__MainEvLoop" -> "2164096_FuncB" [label="w=16.67%"]
+		"2164096_FuncB" [label="scope=FuncB\ntotal_alloc=self_alloc=144kB (16.67%)\nself_freed=144kB\nvisited_times=1\nself_alloc_per_visit=144kB\nnum_malloc_self=2000\nnum_free_self=2000" fillcolor=3 fontsize=12 shape=ellipse]
+	}
+	Process_2164091 -> "2164096_YetAnThr/1" [label="19.17%"]
 }
-

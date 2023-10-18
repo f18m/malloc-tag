@@ -16,6 +16,7 @@ import os
 import sys
 import re
 import decimal
+import importlib
 from decimal import *
 from malloc_tag.libs.mtag_node import *
 from malloc_tag.libs.mtag_tree import *
@@ -25,7 +26,7 @@ from malloc_tag.libs.mtag_snapshot import *
 # GLOBALs
 # =======================================================================================================
 
-THIS_SCRIPT_VERSION = "0.0.1"
+THIS_SCRIPT_PYPI_PACKAGE = "malloctag-tools"
 
 
 # =======================================================================================================
@@ -33,41 +34,65 @@ THIS_SCRIPT_VERSION = "0.0.1"
 # =======================================================================================================
 
 class PostProcessAggregationRule:
+
+    RULE_NAME = "aggregate_trees"
+    PROPERTY_NAME = "matching_regex"
+
     def __init__(self, ruleIdx: int):
         self.ruleIdx = ruleIdx
-        self.matching_prefix = ""
+        self.matchingRegex = ""
+        self.regex = None
 
     def load(self, cfg_dict):
-        self.matching_prefix = cfg_dict["aggregate_trees"]["matching_prefix"]
+
+        rulename = PostProcessAggregationRule.RULE_NAME
+        pname = PostProcessAggregationRule.PROPERTY_NAME
+
+        if rulename not in cfg_dict:
+            print(f"{self.logprefix()} Invalid syntax for aggregation rule.")
+            return False
+
+        if pname not in cfg_dict[rulename]:
+            print(f"{self.logprefix()} Missing property {pname} inside {rulename}.")
+            return False
+
+        self.matchingRegex = cfg_dict[rulename][pname]
+        try:
+            self.regex = re.compile(self.matchingRegex)
+            return True
+        except:
+            print(
+                f"{self.logprefix()} Invalid regex [{self.matchingRegex}]. Aborting."
+            )
+            return False
 
     def logprefix(self):
         return f"Rule#{self.ruleIdx}:"
 
     def apply(self, snapshot: MallocTagSnapshot):
-        # TODO
-        regex = re.compile(self.matching_prefix)
-
         matching_tids = [
             tid
             for tid in snapshot.treeRegistry
-            if re.match(regex, snapshot.treeRegistry[tid].name)
+            if re.match(self.regex, snapshot.treeRegistry[tid].name)
         ]
-        print(
-            f"{self.logprefix()} Found trees matching the prefix [{self.matching_prefix}] with TIDs: {matching_tids}"
-        )
-
         if len(matching_tids) == 0:
             print(
-                f"{self.logprefix()} Could not find any tree matching the prefix [{self.matching_prefix}]"
+                f"{self.logprefix()} Could not find any tree matching the regex [{self.matchingRegex}]"
             )
         elif len(matching_tids) == 1:
             print(
-                f"{self.logprefix()} Found only 1 tree matching the prefix [{self.matching_prefix}]. Nothing to aggregate."
+                f"{self.logprefix()} Found only 1 tree matching the regex [{self.matchingRegex}]. Nothing to aggregate."
             )
         else:
+            print(
+                f"{self.logprefix()} Found {len(matching_tids)} trees matching the prefix [{self.matchingRegex}] with TIDs: {matching_tids}"
+            )
+
+            rule = AggregationRuleDescriptor(self.ruleIdx, self.matchingRegex, f"{self.logprefix()} aggregate threads {self.matchingRegex}")
+
             firstTid = matching_tids[0]
             for otherTid in matching_tids[1:]:
-                snapshot.aggregate_thread_trees(firstTid, otherTid)
+                snapshot.aggregate_thread_trees(firstTid, otherTid, rule)
             print(f"{self.logprefix()} Aggregation completed.")
 
 
@@ -109,9 +134,10 @@ class PostProcessConfig:
 
             mode = next(iter(wholejson[rule]))
 
-            if mode == "aggregate_trees":
+            if mode == PostProcessAggregationRule.RULE_NAME:
                 t = PostProcessAggregationRule(nrule)
-                t.load(wholejson[rule])
+                if not t.load(wholejson[rule]):
+                    sys.exit(1)
                 self.rules.append(t)
                 nrule += 1
             else:
@@ -183,7 +209,12 @@ def parse_command_line():
     verbose = args.verbose
 
     if args.version:
-        print(f"Version: {THIS_SCRIPT_VERSION}")
+        try:
+            from importlib.metadata import version
+        except:
+            from importlib_metadata import version
+        this_script_version = version(THIS_SCRIPT_PYPI_PACKAGE)
+        print(f"Version: {this_script_version}")
         sys.exit(0)
 
     if args.input is None:
@@ -223,7 +254,10 @@ def postprocess_main():
 
     # if requested, save the output:
     if config["output_file"]:
-        t.save_json(config["output_file"])
+        if not t.save_json(config["output_file"]):
+            # exit with non-zero exit code; as per logging, save_json() should have printed already
+            sys.exit(2)
+
 
 # =======================================================================================================
 # MAIN

@@ -1,5 +1,5 @@
 {
-    "comment": "This is a simple example of postprocessing rules",
+    "comment": "This configuration is used to aggregate together the results from the application threads produced by the 'multithread' example",
     "rule0": {
         "aggregate_trees": {
             "matching_regex": "ExampleThr/[0-9]*"

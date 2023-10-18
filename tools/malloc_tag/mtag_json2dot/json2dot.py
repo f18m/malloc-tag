@@ -22,7 +22,7 @@ from malloc_tag.libs.mtag_snapshot import *
 # GLOBALs
 # =======================================================================================================
 
-THIS_SCRIPT_VERSION = "0.0.1"
+THIS_SCRIPT_PYPI_PACKAGE = "malloctag-tools"
 
 # =======================================================================================================
 # MAIN HELPERS
@@ -39,7 +39,7 @@ def parse_command_line():
     parser.add_argument(
         "-o",
         "--output",
-        help="The name of the output Graphviz DOT/SVG file. The file type is auto-detected from file extension.",
+        help="The name of the output Graphviz file. The file type is auto-detected from file extension. Supported extensions include: .dot, .svg, .png, .jpeg",
         default=None,
     )
     parser.add_argument(
@@ -68,7 +68,12 @@ def parse_command_line():
     verbose = args.verbose
 
     if args.version:
-        print(f"Version: {THIS_SCRIPT_VERSION}")
+        try:
+            from importlib.metadata import version
+        except:
+            from importlib_metadata import version
+        this_script_version = version(THIS_SCRIPT_PYPI_PACKAGE)
+        print(f"Version: {this_script_version}")
         sys.exit(0)
 
     if args.input is None:
@@ -99,7 +104,9 @@ def json2dot_main():
 
     # if requested, save the output:
     if config["output_file"]:
-        t.save_graphviz(config["output_file"])
+        if not t.save_graphviz(config["output_file"]):
+            # exit with non-zero exit code; as per logging, save_graphviz() should have printed already
+            sys.exit(2)
 
 
 # =======================================================================================================

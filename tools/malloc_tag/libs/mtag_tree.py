@@ -32,6 +32,7 @@ class MallocTree:
 
     def __init__(self):
         self.treeRootNode = None
+        self.manipulatedByRule = None
 
     def load_json(self, tree_dict: dict):
         """
@@ -43,6 +44,8 @@ class MallocTree:
         self.nFreeTrackingFailed = tree_dict["nFreeTrackingFailed"]
         self.nMaxTreeNodes = tree_dict["nMaxTreeNodes"]
         self.nVmSizeAtCreation = tree_dict["nVmSizeAtCreation"]
+        if "manipulatedByRule" in tree_dict:
+            self.manipulatedByRule = tree_dict["manipulatedByRule"]
         if self.nPushNodeFailures > 0:
             print(
                 f"WARNING: found malloc-tag failures in tracking mem allocations inside the tree {self.name}"
@@ -71,6 +74,8 @@ class MallocTree:
             "nFreeTrackingFailed": self.nFreeTrackingFailed,
             "nVmSizeAtCreation": self.nVmSizeAtCreation,
         }
+        if self.manipulatedByRule:
+            d["manipulatedByRule"] = self.manipulatedByRule
         d[SCOPE_PREFIX + self.treeRootNode.name] = self.treeRootNode.get_as_dict()
         return d
 
@@ -81,26 +86,41 @@ class MallocTree:
         labels.append(f"TID={self.tid}")
         labels.append(f"nPushNodeFailures={self.nPushNodeFailures}")
         labels.append(f"nTreeNodesInUse/Max={nTreeNodesInUse}/{self.nMaxTreeNodes}")
- 
+        if self.manipulatedByRule:
+            labels.append(f"manipulatedByRule={self.manipulatedByRule}")
+
         # create one graph for each MallocTree
-        tree_graph = graphviz.Digraph(name=f"cluster_TID{self.tid}", node_attr={"colorscheme":"reds9", "style":"filled"})
+        tree_graph = graphviz.Digraph(
+            name=f"cluster_TID{self.tid}",
+            node_attr={"colorscheme": "reds9", "style": "filled"},
+        )
         tree_graph.attr(label="\\n".join(labels), labelloc="b", fontsize="20")
         self.treeRootNode.save_as_graphviz_dot(tree_graph)
 
         # finally add the graph into the "big one" as subgraph
         graph.subgraph(tree_graph)
 
-    def aggregate_with(self, other: "MallocTree"):
-        self.tid = -1  # the TID makes no sense anymore
+    def aggregate_with(self, other: "MallocTree", rule: "AggregationRuleDescriptor"):
+        # the TID associated with a tree that has been aggregated with another one, makes no sense anymore;
+        # on the other hand we still need to assign a number "as unique as possible" because the MallocTagSnapshot
+        # class is using the TID as (unique) key for each tree;
+        # the trick done here is to use the rule index as fake TID assuming that within the same rule, only one
+        # tree will contain the aggregation result
+        self.tid = rule.index
+        self.manipulatedByRule = rule.desc
         self.name += "," + other.name
         self.nPushNodeFailures += other.nPushNodeFailures
         self.nFreeTrackingFailed += other.nFreeTrackingFailed
         self.nMaxTreeNodes = max(self.nMaxTreeNodes, other.nMaxTreeNodes)
         self.nVmSizeAtCreation = max(self.nVmSizeAtCreation, other.nVmSizeAtCreation)
         self.treeRootNode.aggregate_with(other.treeRootNode)
+        self.treeRootNode.name = rule.name
 
-    def collect_allocated_freed_recursively(self):
-        return self.treeRootNode.collect_allocated_freed_recursively()
+    def collect_allocated_and_freed_recursively(self):
+        return self.treeRootNode.collect_allocated_and_freed_recursively()
+    
+    def get_net_tracked_bytes(self):
+        return self.treeRootNode.get_net_tracked_bytes()
 
     def compute_node_weights_recursively(self, allTreesTotalAllocatedBytes):
         self.treeRootNode.compute_node_weights_recursively(allTreesTotalAllocatedBytes)

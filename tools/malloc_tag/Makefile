@@ -23,11 +23,11 @@ test_load_and_save_without_processing:
 	@cmp --silent /tmp/input_prettyprinted.json.2 /tmp/nopostprocess_prettyprinted.json.2 || ( \
 		echo; \
 		echo "!! Failed test; the two files are different !!" ; \
-		diff -bU3 /tmp/input_prettyprinted.json /tmp/nopostprocess_prettyprinted.json ; \
+		diff -bU3 /tmp/input_prettyprinted.json.2 /tmp/nopostprocess_prettyprinted.json.2 ; \
 		echo; \
 		exit 2 \
 	)
-	rm -f /tmp/nopostprocess_prettyprinted.json /tmp/input_prettyprinted.json
+	rm -f /tmp/nopostprocess_prettyprinted.json* /tmp/input_prettyprinted.json*
 
 test_thread_aggregation:
 	@echo
