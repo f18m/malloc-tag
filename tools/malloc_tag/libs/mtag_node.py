@@ -52,6 +52,7 @@ class MallocTagNode:
 
         # load self properties
         self.nBytesTotalAllocated = node_dict["nBytesTotalAllocated"]
+        self.nBytesTotalFreed = node_dict["nBytesTotalFreed"]
         self.nBytesSelfAllocated = node_dict["nBytesSelfAllocated"]
         self.nBytesSelfFreed = node_dict["nBytesSelfFreed"]
         self.nTimesEnteredAndExited = node_dict["nTimesEnteredAndExited"]
@@ -76,6 +77,7 @@ class MallocTagNode:
     def get_as_dict(self):
         d = {
             "nBytesTotalAllocated": self.nBytesTotalAllocated,
+            "nBytesTotalFreed": self.nBytesTotalFreed,
             "nBytesSelfAllocated": self.nBytesSelfAllocated,
             "nBytesSelfFreed": self.nBytesSelfFreed,
             "nTimesEnteredAndExited": self.nTimesEnteredAndExited,
@@ -246,6 +248,21 @@ class MallocTagNode:
             #                get_net_self_bytes() / m_nTimesEnteredAndExited
             return int(self.nBytesSelfAllocated / self.nTimesEnteredAndExited)
         return 0
+    
+    def get_net_tracked_bytes(self):
+        """
+        Returns the "net" memory tracked by malloc-tag: 
+          TOTAL BYTES ALLOCATED - TOTAL BYTES FREED
+        Invoke this function only after using collect_allocated_and_freed_recursively() since this function
+        relies on stats updated by collect_allocated_and_freed_recursively().
+        """
+        if self.nBytesTotalAllocated >= self.nBytesTotalFreed:
+            return self.nBytesTotalAllocated - self.nBytesTotalFreed
+        else:
+            # this case is reached when the application is using realloc(): malloc-tag is unable
+            # to properly adjust counters for realloc()ed memory areas, so eventually it will turn out
+            # that apparently we free more memory than what we allocate:
+            return 0
 
     def get_graphviz_node_name(self):
         # create a name that is unique in the whole graphviz DOT document:

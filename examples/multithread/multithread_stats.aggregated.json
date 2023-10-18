@@ -1,9 +1,9 @@
 {
-    "PID": 2075325,
-    "tmStartProfiling": "2023-10-18 @ 12:43:30 CEST",
-    "tmCurrentSnapshot": "2023-10-18 @ 12:43:30 CEST",
-    "tree_for_TID2075325": {
-        "TID": 2075325,
+    "PID": 2164091,
+    "tmStartProfiling": "2023-10-18 @ 15:31:01 CEST",
+    "tmCurrentSnapshot": "2023-10-18 @ 15:31:01 CEST",
+    "tree_for_TID2164091": {
+        "TID": 2164091,
         "ThreadName": "multithread",
         "nTreeLevels": 1,
         "nTreeNodesInUse": 1,
@@ -13,6 +13,7 @@
         "nVmSizeAtCreation": 20440000,
         "scope_multithread": {
             "nBytesTotalAllocated": 6736,
+            "nBytesTotalFreed": 4608,
             "nBytesSelfAllocated": 6736,
             "nBytesSelfFreed": 4608,
             "nTimesEnteredAndExited": 0,
@@ -24,7 +25,7 @@
             "nestedScopes": {}
         }
     },
-    "tree_for_TID2075326": {
+    "tree_for_TID2164092": {
         "TID": 0,
         "ThreadName": "ExampleThr/0,ExampleThr/1",
         "nTreeLevels": 4,
@@ -36,6 +37,7 @@
         "manipulatedByRule": "Rule#0: aggregate threads ExampleThr/[0-9]*",
         "scope_ExampleThr/[0-9]*": {
             "nBytesTotalAllocated": 433360,
+            "nBytesTotalFreed": 432128,
             "nBytesSelfAllocated": 80,
             "nBytesSelfFreed": 128,
             "nTimesEnteredAndExited": 0,
@@ -47,6 +49,7 @@
             "nestedScopes": {
                 "scope_ExampleThread": {
                     "nBytesTotalAllocated": 433280,
+                    "nBytesTotalFreed": 432000,
                     "nBytesSelfAllocated": 48,
                     "nBytesSelfFreed": 0,
                     "nTimesEnteredAndExited": 2,
@@ -58,6 +61,7 @@
                     "nestedScopes": {
                         "scope_FuncA": {
                             "nBytesTotalAllocated": 217232,
+                            "nBytesTotalFreed": 216000,
                             "nBytesSelfAllocated": 1232,
                             "nBytesSelfFreed": 0,
                             "nTimesEnteredAndExited": 2,
@@ -69,6 +73,7 @@
                             "nestedScopes": {
                                 "scope_FuncB": {
                                     "nBytesTotalAllocated": 216000,
+                                    "nBytesTotalFreed": 216000,
                                     "nBytesSelfAllocated": 216000,
                                     "nBytesSelfFreed": 216000,
                                     "nTimesEnteredAndExited": 2,
@@ -83,6 +88,7 @@
                         },
                         "scope_FuncB": {
                             "nBytesTotalAllocated": 216000,
+                            "nBytesTotalFreed": 216000,
                             "nBytesSelfAllocated": 216000,
                             "nBytesSelfFreed": 216000,
                             "nTimesEnteredAndExited": 2,
@@ -98,8 +104,8 @@
             }
         }
     },
-    "tree_for_TID2075328": {
-        "TID": 2075328,
+    "tree_for_TID2164094": {
+        "TID": 2164094,
         "ThreadName": "NonInstrThr",
         "nTreeLevels": 1,
         "nTreeNodesInUse": 1,
@@ -109,6 +115,7 @@
         "nVmSizeAtCreation": 136388608,
         "scope_NonInstrThr": {
             "nBytesTotalAllocated": 164632,
+            "nBytesTotalFreed": 164656,
             "nBytesSelfAllocated": 164632,
             "nBytesSelfFreed": 164656,
             "nTimesEnteredAndExited": 0,
@@ -120,7 +127,7 @@
             "nestedScopes": {}
         }
     },
-    "tree_for_TID2075329": {
+    "tree_for_TID2164095": {
         "TID": 1,
         "ThreadName": "YetAnThr/0,YetAnThr/1",
         "nTreeLevels": 3,
@@ -132,6 +139,7 @@
         "manipulatedByRule": "Rule#1: aggregate threads YetAnThr/[0-9]*",
         "scope_YetAnThr/[0-9]*": {
             "nBytesTotalAllocated": 259280,
+            "nBytesTotalFreed": 259328,
             "nBytesSelfAllocated": 80,
             "nBytesSelfFreed": 128,
             "nTimesEnteredAndExited": 0,
@@ -143,6 +151,7 @@
             "nestedScopes": {
                 "scope_YetAnThr::MainEvLoop": {
                     "nBytesTotalAllocated": 259200,
+                    "nBytesTotalFreed": 259200,
                     "nBytesSelfAllocated": 43200,
                     "nBytesSelfFreed": 43200,
                     "nTimesEnteredAndExited": 2,
@@ -154,6 +163,7 @@
                     "nestedScopes": {
                         "scope_FuncB": {
                             "nBytesTotalAllocated": 216000,
+                            "nBytesTotalFreed": 216000,
                             "nBytesSelfAllocated": 216000,
                             "nBytesSelfFreed": 216000,
                             "nTimesEnteredAndExited": 2,
@@ -169,9 +179,9 @@
             }
         }
     },
-    "nBytesAllocBeforeInit": 559208,
+    "nBytesAllocBeforeInit": 560360,
     "nBytesMallocTagSelfUsage": 430224,
     "vmSizeNowBytes": 241636000,
-    "vmRSSNowBytes": 4452000,
-    "nTotalNetTrackedBytes": 3288
+    "vmRSSNowBytes": 4616000,
+    "nTotalNetTrackedBytes": 3360
 }

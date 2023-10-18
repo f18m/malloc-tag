@@ -1,7 +1,7 @@
-{"PID": 2075325,
-"tmStartProfiling": "2023-10-18 @ 12:43:30 CEST",
-"tmCurrentSnapshot": "2023-10-18 @ 12:43:30 CEST",
-"tree_for_TID2075325": {"TID": 2075325,
+{"PID": 2164091,
+"tmStartProfiling": "2023-10-18 @ 15:31:01 CEST",
+"tmCurrentSnapshot": "2023-10-18 @ 15:31:01 CEST",
+"tree_for_TID2164091": {"TID": 2164091,
 "ThreadName": "multithread",
 "nTreeLevels": 1,
 "nTreeNodesInUse": 1,
@@ -10,6 +10,7 @@
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 20440000,
 "scope_multithread": {"nBytesTotalAllocated": 6736,
+"nBytesTotalFreed": 4608,
 "nBytesSelfAllocated": 6736,
 "nBytesSelfFreed": 4608,
 "nTimesEnteredAndExited": 0,
@@ -21,7 +22,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID2075326": {"TID": 2075326,
+,"tree_for_TID2164092": {"TID": 2164092,
 "ThreadName": "ExampleThr/0",
 "nTreeLevels": 4,
 "nTreeNodesInUse": 5,
@@ -30,6 +31,7 @@
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 136388608,
 "scope_ExampleThr/0": {"nBytesTotalAllocated": 144168,
+"nBytesTotalFreed": 144064,
 "nBytesSelfAllocated": 40,
 "nBytesSelfFreed": 64,
 "nTimesEnteredAndExited": 0,
@@ -39,6 +41,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 3,
 "nestedScopes": {"scope_ExampleThread": {"nBytesTotalAllocated": 144128,
+"nBytesTotalFreed": 144000,
 "nBytesSelfAllocated": 24,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -48,6 +51,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
 "nestedScopes": {"scope_FuncA": {"nBytesTotalAllocated": 72104,
+"nBytesTotalFreed": 72000,
 "nBytesSelfAllocated": 104,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -57,6 +61,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
 "nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 72000,
+"nBytesTotalFreed": 72000,
 "nBytesSelfAllocated": 72000,
 "nBytesSelfFreed": 72000,
 "nTimesEnteredAndExited": 1,
@@ -70,6 +75,7 @@
 }
 }
 ,"scope_FuncB": {"nBytesTotalAllocated": 72000,
+"nBytesTotalFreed": 72000,
 "nBytesSelfAllocated": 72000,
 "nBytesSelfFreed": 72000,
 "nTimesEnteredAndExited": 1,
@@ -85,7 +91,7 @@
 }
 }
 }
-,"tree_for_TID2075327": {"TID": 2075327,
+,"tree_for_TID2164093": {"TID": 2164093,
 "ThreadName": "ExampleThr/1",
 "nTreeLevels": 4,
 "nTreeNodesInUse": 5,
@@ -94,6 +100,7 @@
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 136388608,
 "scope_ExampleThr/1": {"nBytesTotalAllocated": 289192,
+"nBytesTotalFreed": 288064,
 "nBytesSelfAllocated": 40,
 "nBytesSelfFreed": 64,
 "nTimesEnteredAndExited": 0,
@@ -103,6 +110,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 3,
 "nestedScopes": {"scope_ExampleThread": {"nBytesTotalAllocated": 289152,
+"nBytesTotalFreed": 288000,
 "nBytesSelfAllocated": 24,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -112,6 +120,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
 "nestedScopes": {"scope_FuncA": {"nBytesTotalAllocated": 145128,
+"nBytesTotalFreed": 144000,
 "nBytesSelfAllocated": 1128,
 "nBytesSelfFreed": 0,
 "nTimesEnteredAndExited": 1,
@@ -121,6 +130,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 0,
 "nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 144000,
+"nBytesTotalFreed": 144000,
 "nBytesSelfAllocated": 144000,
 "nBytesSelfFreed": 144000,
 "nTimesEnteredAndExited": 1,
@@ -134,6 +144,7 @@
 }
 }
 ,"scope_FuncB": {"nBytesTotalAllocated": 144000,
+"nBytesTotalFreed": 144000,
 "nBytesSelfAllocated": 144000,
 "nBytesSelfFreed": 144000,
 "nTimesEnteredAndExited": 1,
@@ -149,7 +160,7 @@
 }
 }
 }
-,"tree_for_TID2075328": {"TID": 2075328,
+,"tree_for_TID2164094": {"TID": 2164094,
 "ThreadName": "NonInstrThr",
 "nTreeLevels": 1,
 "nTreeNodesInUse": 1,
@@ -158,6 +169,7 @@
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 136388608,
 "scope_NonInstrThr": {"nBytesTotalAllocated": 164632,
+"nBytesTotalFreed": 164656,
 "nBytesSelfAllocated": 164632,
 "nBytesSelfFreed": 164656,
 "nTimesEnteredAndExited": 0,
@@ -169,7 +181,7 @@
 "nestedScopes": {}
 }
 }
-,"tree_for_TID2075329": {"TID": 2075329,
+,"tree_for_TID2164095": {"TID": 2164095,
 "ThreadName": "YetAnThr/0",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 3,
@@ -178,6 +190,7 @@
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 136388608,
 "scope_YetAnThr/0": {"nBytesTotalAllocated": 93640,
+"nBytesTotalFreed": 93664,
 "nBytesSelfAllocated": 40,
 "nBytesSelfFreed": 64,
 "nTimesEnteredAndExited": 0,
@@ -187,6 +200,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 3,
 "nestedScopes": {"scope_YetAnThr::MainEvLoop": {"nBytesTotalAllocated": 93600,
+"nBytesTotalFreed": 93600,
 "nBytesSelfAllocated": 21600,
 "nBytesSelfFreed": 21600,
 "nTimesEnteredAndExited": 1,
@@ -196,6 +210,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 300,
 "nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 72000,
+"nBytesTotalFreed": 72000,
 "nBytesSelfAllocated": 72000,
 "nBytesSelfFreed": 72000,
 "nTimesEnteredAndExited": 1,
@@ -211,7 +226,7 @@
 }
 }
 }
-,"tree_for_TID2075330": {"TID": 2075330,
+,"tree_for_TID2164096": {"TID": 2164096,
 "ThreadName": "YetAnThr/1",
 "nTreeLevels": 3,
 "nTreeNodesInUse": 3,
@@ -220,6 +235,7 @@
 "nFreeTrackingFailed": 0,
 "nVmSizeAtCreation": 136388608,
 "scope_YetAnThr/1": {"nBytesTotalAllocated": 165640,
+"nBytesTotalFreed": 165664,
 "nBytesSelfAllocated": 40,
 "nBytesSelfFreed": 64,
 "nTimesEnteredAndExited": 0,
@@ -229,6 +245,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 3,
 "nestedScopes": {"scope_YetAnThr::MainEvLoop": {"nBytesTotalAllocated": 165600,
+"nBytesTotalFreed": 165600,
 "nBytesSelfAllocated": 21600,
 "nBytesSelfFreed": 21600,
 "nTimesEnteredAndExited": 1,
@@ -238,6 +255,7 @@
 "nCallsTo_calloc": 0,
 "nCallsTo_free": 300,
 "nestedScopes": {"scope_FuncB": {"nBytesTotalAllocated": 144000,
+"nBytesTotalFreed": 144000,
 "nBytesSelfAllocated": 144000,
 "nBytesSelfFreed": 144000,
 "nTimesEnteredAndExited": 1,
@@ -253,8 +271,8 @@
 }
 }
 }
-,"nBytesAllocBeforeInit": 559208,
+,"nBytesAllocBeforeInit": 560360,
 "nBytesMallocTagSelfUsage": 430224,
 "vmSizeNowBytes": 241636000,
-"vmRSSNowBytes": 4452000,
+"vmRSSNowBytes": 4616000,
 "nTotalNetTrackedBytes": 3360}

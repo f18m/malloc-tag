@@ -118,6 +118,9 @@ class MallocTree:
 
     def collect_allocated_and_freed_recursively(self):
         return self.treeRootNode.collect_allocated_and_freed_recursively()
+    
+    def get_net_tracked_bytes(self):
+        return self.treeRootNode.get_net_tracked_bytes()
 
     def compute_node_weights_recursively(self, allTreesTotalAllocatedBytes):
         self.treeRootNode.compute_node_weights_recursively(allTreesTotalAllocatedBytes)

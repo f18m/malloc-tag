@@ -237,9 +237,11 @@ class MallocTagSnapshot:
         self.nTotalAllocBytes, self.nTotalFreedBytes = self.collect_allocated_and_freed_recursively()
 
         # in each tree, recompute node weights using the total allocated as denominator:
+        total_net_memory = 0
         for t in self.treeRegistry.keys():
             self.treeRegistry[t].compute_node_weights_recursively(self.nTotalAllocBytes)
+            total_net_memory += self.treeRegistry[t].get_net_tracked_bytes()
 
         # recompute the "total net" memory tracked: TOT_ALLOC - TOT_FREED
-        self.nTotalNetTrackedBytes = self.nTotalAllocBytes - self.nTotalFreedBytes
+        self.nTotalNetTrackedBytes = total_net_memory
 
