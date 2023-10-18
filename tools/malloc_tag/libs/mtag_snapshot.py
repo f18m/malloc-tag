@@ -111,9 +111,14 @@ class MallocTagSnapshot:
         outdict["nTotalTrackedBytes"] = self.nTotalTrackedBytes
 
         getcontext().prec = 2
-        with open(json_outfile, "w", encoding="utf-8") as f:
-            json.dump(outdict, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
+        try:
+            with open(json_outfile, "w", encoding="utf-8") as f:
+                json.dump(outdict, f, ensure_ascii=False, indent=4, cls=DecimalEncoder)
+        except Exception as ex:
+            print(f"Failed to write the JSON results into {json_outfile}: {ex}")
+            return False
         print(f"Saved postprocessed results into {json_outfile}.")
+        return True
 
     def save_graphviz(self, output_fname: str):
         thegraph = graphviz.Digraph(comment="Malloc-tag snapshot")

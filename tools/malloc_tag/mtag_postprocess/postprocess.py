@@ -254,7 +254,10 @@ def postprocess_main():
 
     # if requested, save the output:
     if config["output_file"]:
-        t.save_json(config["output_file"])
+        if not t.save_json(config["output_file"]):
+            # exit with non-zero exit code; as per logging, save_json() should have printed already
+            sys.exit(2)
+
 
 # =======================================================================================================
 # MAIN
