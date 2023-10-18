@@ -67,7 +67,9 @@ class MallocTagSnapshot:
         self.nBytesMallocTagSelfUsage = snapshot_dict["nBytesMallocTagSelfUsage"]
         self.vmSizeNowBytes = snapshot_dict["vmSizeNowBytes"]
         self.vmRSSNowBytes = snapshot_dict["vmRSSNowBytes"]
-        self.nTotalNetTrackedBytes = snapshot_dict["nTotalNetTrackedBytes"]
+        self.nTotalNetTrackedBytes = 0 # will be recomputed later
+        self.nTotalAllocBytes = 0 # will be recomputed later
+        self.nTotalFreedBytes = 0 # will be recomputed later
 
         for thread_tree in snapshot_dict.keys():
             if thread_tree.startswith("tree_for_"):
@@ -91,8 +93,8 @@ class MallocTagSnapshot:
         # process it
         self.__expand(wholejson)
 
-        # recompute weights
-        self.compute_node_weights_recursively()
+        # recompute weights and other KPIs
+        self.recompute_kpis_across_trees()
 
     def save_json(self, json_outfile: str):
         outdict = {
@@ -132,13 +134,19 @@ class MallocTagSnapshot:
             f"allocated_mem_by_malloctag_itself={GraphVizUtils.pretty_print_bytes(self.nBytesMallocTagSelfUsage)}"
         )
         labels.append(
-            f"net_tracked_mem={GraphVizUtils.pretty_print_bytes(self.nTotalNetTrackedBytes)}"
-        )
-        labels.append(
             f"vm_size_now={GraphVizUtils.pretty_print_bytes(self.vmSizeNowBytes)}"
         )
         labels.append(
             f"vm_rss_now={GraphVizUtils.pretty_print_bytes(self.vmRSSNowBytes)}"
+        )
+        labels.append(
+            f"tracked_malloc={GraphVizUtils.pretty_print_bytes(self.nTotalAllocBytes)}"
+        )
+        labels.append(
+            f"tracked_free={GraphVizUtils.pretty_print_bytes(self.nTotalFreedBytes)}"
+        )
+        labels.append(
+            f"net_tracked_mem={GraphVizUtils.pretty_print_bytes(self.nTotalNetTrackedBytes)}"
         )
         labels.append(f"malloctag_start_ts={self.tmStartProfiling}")
         labels.append(f"this_snapshot_ts={self.tmCurrentSnapshot}")
@@ -149,7 +157,7 @@ class MallocTagSnapshot:
         # thegraph.attr(colorscheme="reds9", style="filled")
 
         # used to compute weights later:
-        totalloc, totfreed = self.collect_allocated_freed_recursively()
+        totalloc, totfreed = self.collect_allocated_and_freed_recursively()
 
         # now create subgraphs for each and every tree:
         for t in self.treeRegistry.keys():
@@ -158,7 +166,7 @@ class MallocTagSnapshot:
             # compute the weight for the 't'-th tree:
             treealloc, treefree = self.treeRegistry[
                 t
-            ].collect_allocated_freed_recursively()
+            ].collect_allocated_and_freed_recursively()
             w = 0 if totalloc == 0 else 100 * treealloc / totalloc
             wstr = f"%.2f%%" % w
 
@@ -214,20 +222,24 @@ class MallocTagSnapshot:
         # remove the aggregated tree:
         del self.treeRegistry[tid2]
         # update all node weights:
-        self.compute_node_weights_recursively()
+        self.recompute_kpis_across_trees()
 
-    def collect_allocated_freed_recursively(self):
+    def collect_allocated_and_freed_recursively(self):
         totalloc = 0
         totfreed = 0
         for t in self.treeRegistry.keys():
-            a, f = self.treeRegistry[t].collect_allocated_freed_recursively()
+            a, f = self.treeRegistry[t].collect_allocated_and_freed_recursively()
             totalloc += a
             totfreed += f
         return totalloc, totfreed
 
-    def compute_node_weights_recursively(self):
-        totalloc, totfreed = self.collect_allocated_freed_recursively()
+    def recompute_kpis_across_trees(self):
+        self.nTotalAllocBytes, self.nTotalFreedBytes = self.collect_allocated_and_freed_recursively()
 
         # in each tree, recompute node weights using the total allocated as denominator:
         for t in self.treeRegistry.keys():
-            self.treeRegistry[t].compute_node_weights_recursively(totalloc)
+            self.treeRegistry[t].compute_node_weights_recursively(self.nTotalAllocBytes)
+
+        # recompute the "total net" memory tracked: TOT_ALLOC - TOT_FREED
+        self.nTotalNetTrackedBytes = self.nTotalAllocBytes - self.nTotalFreedBytes
+

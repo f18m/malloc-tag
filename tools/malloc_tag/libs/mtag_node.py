@@ -255,13 +255,13 @@ class MallocTagNode:
         # (but the colons will still appear in the node label)
         return graphviz.escape(f"{self.ownerTID}_{self.name}").replace(":", "_")
 
-    def collect_allocated_freed_recursively(self):
+    def collect_allocated_and_freed_recursively(self):
         # Postorder traversal of a tree:
         # First, traverse all children subtrees:
         alloc_bytes = 0
         freed_bytes = 0
         for child in self.childrenNodes:
-            a, f = self.childrenNodes[child].collect_allocated_freed_recursively()
+            a, f = self.childrenNodes[child].collect_allocated_and_freed_recursively()
             alloc_bytes += a
             freed_bytes += f
 

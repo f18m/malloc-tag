@@ -116,8 +116,8 @@ class MallocTree:
         self.treeRootNode.aggregate_with(other.treeRootNode)
         self.treeRootNode.name = rule.name
 
-    def collect_allocated_freed_recursively(self):
-        return self.treeRootNode.collect_allocated_freed_recursively()
+    def collect_allocated_and_freed_recursively(self):
+        return self.treeRootNode.collect_allocated_and_freed_recursively()
 
     def compute_node_weights_recursively(self, allTreesTotalAllocatedBytes):
         self.treeRootNode.compute_node_weights_recursively(allTreesTotalAllocatedBytes)
