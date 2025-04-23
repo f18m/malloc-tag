@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  # add a cron job to run every month -- this project is not very active, at least ensure there's a valid CI build every month
+  # this is also useful to check if something breaks e.g. due to infrastructure changes (e.g. Ubuntu OS)
+  schedule:
+    - cron: '0 0 1 * *'
 
 jobs:
   build_and_test:
@@ -16,10 +20,12 @@ jobs:
     - name: install debian-packaged dependencies
       run: sudo apt install -y jq clang-format graphviz libgoogle-perftools-dev libunwind-dev libgtest-dev
 
-    - uses: actions/checkout@v4
+    - name: show g++ version
+      run: g++ --version
+
     - name: install pypi-packaged dependencies
       run: sudo pip3 install graphviz build
-
+      
     - name: build malloc-tag
       run: make all
     - name: check formatting

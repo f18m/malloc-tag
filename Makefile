@@ -11,8 +11,8 @@ endif
 # Start of Makefile
 
 CC=g++
-CXXFLAGS_OPT= -fPIC -std=c++11 -Iinclude -O3 -pthread -Wno-attributes -Wno-unused-result
-CXXFLAGS_DBG= -fPIC -std=c++11 -Iinclude -g -O0 -pthread -Wno-attributes -Wno-unused-result
+CXXFLAGS_OPT= -fPIC -std=c++14 -Iinclude -O3 -pthread -Wno-attributes -Wno-unused-result
+CXXFLAGS_DBG= -fPIC -std=c++14 -Iinclude -g -O0 -pthread -Wno-attributes -Wno-unused-result
 
 LIB_HDR = \
 	include/malloc_tag.h \
