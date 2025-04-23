@@ -27,3 +27,10 @@ mtag-json2dot = "malloc_tag.mtag_json2dot.json2dot:json2dot_main"
 [build-system]
 requires = ["hatchling","graphviz>=0.19.1"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+include = [
+  "malloc_tag/libs/*.py",
+  "mtag_json2dot/*.py",
+  "mtag_postprocess/*.py",
+]
