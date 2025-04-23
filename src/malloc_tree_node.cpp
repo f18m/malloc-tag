@@ -139,7 +139,7 @@ void MallocTreeNode::collect_stats_recursively_JSON(std::string& out)
 
 void MallocTreeNode::collect_stats_recursively_HUMANFRIENDLY(std::string& out)
 {
-    std::string b((m_nTreeLevel)*2, ' ');
+    std::string b((m_nTreeLevel) * 2, ' ');
     std::string i((m_nTreeLevel + 1) * 2, ' ');
 
     float w = get_total_weight_percentage();

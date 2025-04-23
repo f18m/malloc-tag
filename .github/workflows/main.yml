@@ -22,6 +22,8 @@ jobs:
 
     - name: show g++ version
       run: g++ --version
+    - name: show clang-format version
+      run: clang-format --version
 
     - name: install pypi-packaged dependencies
       run: sudo pip3 install graphviz build
