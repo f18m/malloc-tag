@@ -12,11 +12,11 @@ jobs:
 
     steps:
     # install deps
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: install debian-packaged dependencies
       run: sudo apt install -y jq clang-format graphviz libgoogle-perftools-dev libunwind-dev libgtest-dev
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: install pypi-packaged dependencies
       run: sudo pip3 install graphviz build
 
@@ -63,7 +63,7 @@ jobs:
         make tcmalloc_example
 
     # coredump collection to help debug failures inside the CI
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: ${{ failure() }}  # Run only if something went wrong
       with:
         name: coredump
