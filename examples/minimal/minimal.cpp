@@ -12,6 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <vector>
+#include <stdint.h>
 
 void FuncA();
 void FuncB();
